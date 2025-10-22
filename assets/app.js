@@ -1,25 +1,45 @@
-/* ===================== 1) Cloudflare Pages：GAS 相容層 ===================== */
-/* 在非 Apps Script 環境，自動把 google.script.run.* 轉送到 /api/* */
+/* ===================== 1) Apps Script 相容層（直連 /exec） ===================== */
+/* 若在 GAS 內就用原生 google.script.run；否則用 fetch 打你的 Web App */
 (function installGASShim(){
-    if (window.google?.script?.run) return;   // 在 GAS 內就用原生
-    const API = '/api';
-    const headers = {'Content-Type':'application/json'};
-    const qToItems = (q) => Object.entries(q||{}).map(([id,qty])=>({ sku:id, qty:Number(qty)||0 }));
+    if (window.google?.script?.run) return;           // 在 GAS HtmlService 內就不用 shim
   
+    // 🔧 換成你「已重新部署、可任何人存取」的 Web App URL（一定要 /exec）
+    const EXEC = 'https://script.google.com/macros/s/AKfycbwc09A_Sj_kxrZZYn1y0QXgNbTVuQ0159ok6zUrg6u9xOEenrBFUXVwoxVJB_Zs6qANlA/exec';
+    const enc = encodeURIComponent;
+  
+    // 全部用 GET 避免 preflight；後端 doGet(e) 用 e.parameter 取值
     const run = {
       _ok:null,_fail:null,
       withSuccessHandler(fn){ this._ok=fn; return this; },
       withFailureHandler(fn){ this._fail=fn; return this; },
-      _exec(p){ return p.then(d=>this._ok&&this._ok(d)).catch(e=>this._fail&&this._fail(e)).finally(()=>{this._ok=this._fail=null;}); },
-      getConfig(){ return this._exec(fetch(`${API}/config`).then(r=>r.json())); },
-      previewTotals(qMap, method, promo){
-        const body = { items:qToItems(qMap), shipping:{method}, promo:(promo||'').toUpperCase() };
-        return this._exec(fetch(`${API}/quote`, { method:'POST', headers, body:JSON.stringify(body) }).then(r=>r.json()));
+      _exec(p){ return p.then(d=>this._ok&&this._ok(d))
+                       .catch(e=>this._fail&&this._fail(e))
+                       .finally(()=>{ this._ok=this._fail=null; }); },
+  
+      // === 對應你的 doGet router: fn=getConfig / previewTotals / submitOrder / searchStores / apiGetCustomerByPhone / apiUpsertCustomer ===
+      getConfig(){
+        return this._exec(fetch(`${EXEC}?fn=getConfig`).then(r=>r.json()));
       },
-      submitOrder(payload){ return this._exec(fetch(`${API}/order`, { method:'POST', headers, body:JSON.stringify(payload||{}) }).then(r=>r.json())); },
-      searchStores(payload){ return this._exec(fetch(`${API}/storeSearch`, { method:'POST', headers, body:JSON.stringify(payload||{}) }).then(r=>r.json())); },
-      apiGetCustomerByPhone(phone){ return this._exec(fetch(`${API}/member?phone=${encodeURIComponent(phone||'')}`).then(r=>r.json())); },
-      apiUpsertCustomer(obj){ return this._exec(fetch(`${API}/memberUpsert`, { method:'POST', headers, body:JSON.stringify(obj||{}) }).then(r=>r.json())); }
+      previewTotals(qMap, method, promo){
+        const url = `${EXEC}?fn=previewTotals&items=${enc(JSON.stringify(qMap||{}))}&method=${enc(method||'store')}&promo=${enc((promo||'').toUpperCase())}`;
+        return this._exec(fetch(url).then(r=>r.json()));
+      },
+      submitOrder(payload){
+        const url = `${EXEC}?fn=submitOrder&p=${enc(JSON.stringify(payload||{}))}`;
+        return this._exec(fetch(url).then(r=>r.json()));
+      },
+      searchStores(payload){
+        const url = `${EXEC}?fn=searchStores&p=${enc(JSON.stringify(payload||{}))}`;
+        return this._exec(fetch(url).then(r=>r.json()));
+      },
+      apiGetCustomerByPhone(phone){
+        const url = `${EXEC}?fn=apiGetCustomerByPhone&phone=${enc(phone||'')}`;
+        return this._exec(fetch(url).then(r=>r.json()));
+      },
+      apiUpsertCustomer(obj){
+        const url = `${EXEC}?fn=apiUpsertCustomer&p=${enc(JSON.stringify(obj||{}))}`;
+        return this._exec(fetch(url).then(r=>r.json()));
+      }
     };
     window.google = { script: { run } };
   })();
