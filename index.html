@@ -4,10 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>茶店下單測試</title>
-    <style>
-      body { font-family: system-ui, -apple-system, "Noto Sans TC", Arial; padding: 24px; }
-      button { padding: 10px 16px; margin-right: 12px; border-radius: 10px; border: 1px solid #ccc; }
-    </style>
+    <link rel="preload" href="/src/styles/main.css" as="style">
+    <link rel="stylesheet" href="/src/styles/main.css">
   </head>
   <body>
     <h1>茶店下單（Cloudflare Pages ↔ GAS）</h1>
@@ -15,6 +13,6 @@
       <button onclick="testQuote()">試算 Quote</button>
       <button onclick="submitOrder()">送出訂單</button>
     </p>
-    <script type="module" src="/src/main.js"></script>
+    <script type="module" src="/src/js/main.js"></script>
   </body>
 </html>
