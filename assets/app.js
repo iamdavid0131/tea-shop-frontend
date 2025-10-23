@@ -685,6 +685,11 @@ function updateCartSheetTotals({ sub, discount, ship, tot }) {
     ? `小計 ${money(subAfter)}，運費 ${money(ship)}，共 ${money(tot)}`
     : '尚未選購商品';
 }
+function calcDiscountFront(codeRaw, subtotal) {
+    const normalized = String(codeRaw || '').trim().toUpperCase();
+    // 前端只負責顯示用（0 折扣），實際折扣交給 API.previewTotals
+    return { discount: 0, normalizedCode: normalized, message: "" };
+}
 
 // 計算金額（全動態）
 function compute(){

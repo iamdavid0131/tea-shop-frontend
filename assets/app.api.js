@@ -1,112 +1,42 @@
-// assets/app.api.js
-const API = '/api'; // Cloudflare Worker 在 hsianghsing.org 綁的路徑
+// app.api.js
+// 將 BASE 換成你的 Worker 網址（建議用子網域，例如 https://api.hsianghsing.org/ ）
+// 若先用 workers.dev 測試，也可以填 https://<你的 workers 子網域>.workers.dev/
+const BASE = "https://api.hsianghsing.org/"; // 結尾保留斜線
 
-async function call(action, payload = {}) {
-  const r = await fetch(API, {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ action, payload })
+async function post(action, payload) {
+  const r = await fetch(BASE, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(
+      payload === undefined ? { action } : { action, payload }
+    ),
+    // credentials: "omit" // 同網域不需要帶 cookie
   });
-  const json = await r.json().catch(() => ({}));
-  if (!r.ok || json.ok === false) {
-    throw new Error(json.error || `HTTP ${r.status}`);
-    }
-    
-    return await response.json();
-  } catch (error) {
-    console.error(`API call to ${fn} failed:`, error);
-    throw error;
+  if (!r.ok) throw new Error("http_" + r.status);
+  const json = await r.json();
+  // GAS doPost 有兩種回傳型態，這裡統一處理：
+  // 1) { ok:true, data: {...} } → 回傳 data
+  // 2) { ok:true, ...直接是資料... } → 原樣回傳
+  if (json && json.ok && Object.prototype.hasOwnProperty.call(json, "data")) {
+    return json.data;
   }
+  return json;
 }
 
-// 導出 API 方法
 export const api = {
-  // 取得設定
-  async getConfig() {
-    const res = await call('getConfig');
-    // 統一處理回應格式
-    const data = res.ok === false ? {} : res; // 如果回傳 { ok: false, error: ... } 則使用空物件
-    
-    return {
-      PRICES: data.PRICES || {},
-      PRODUCTS: data.PRODUCTS || [],
-      FREE_SHIPPING_THRESHOLD: data.FREE_SHIPPING_THRESHOLD ?? 1000,
-      BASE_SHIPPING_FEE: data.BASE_SHIPPING_FEE ?? 60,
-      COD_SHIP_FEE: data.COD_SHIP_FEE ?? 100,
-      COD_FREE_SHIPPING_THRESHOLD: data.COD_FREE_SHIPPING_THRESHOLD ?? 2000,
-      STOCKS: data.STOCKS || {}
-    };
+  getConfig() {
+    return post("getConfig");
   },
-  
-  // 計算總金額
-  async previewTotals(items, shippingMethod, promoCode) {
-    const res = await call('previewTotals', { 
-      items, 
-      shippingMethod, 
-      promoCode 
-    });
-    
-    // 如果回傳格式是 { ok: true, data: {...} }
-    if (res && typeof res === 'object' && 'data' in res) {
-      return res.ok ? res.data : Promise.reject(res.error || 'Unknown error');
-    }
-    
-    // 直接回傳結果
-    return res;
+  previewTotals(items, shippingMethod, promoCode) {
+    return post("previewTotals", { items, shippingMethod, promoCode });
   },
-  
-  // 提交訂單
-  async submitOrder(payload) {
-    const res = await call('submitOrder', payload);
-    
-    // 處理錯誤情況
-    if (res && res.ok === false) {
-      throw new Error(res.error || '提交訂單失敗');
-    }
-    
-    return res;
+  submitOrder(payload) {
+    return post("submitOrder", payload);
   },
-  
-  // 搜尋超商
-  async searchStores(params) {
-    const res = await call('searchStores', params);
-    
-    // 統一回傳格式
-    if (res && Array.isArray(res)) {
-      return { ok: true, results: res };
-    }
-    
-    return res.ok === false ? Promise.reject(res.error) : res;
+  searchStores(payload) {
+    return post("searchStores", payload);
   },
-  
-  // 取得顧客資料
-  async apiGetCustomerByPhone(phone) {
-    if (!phone) throw new Error('電話號碼不能為空');
-    const res = await call('apiGetCustomerByPhone', { phone });
-    
-    // 處理錯誤情況
-    if (res && res.ok === false) {
-      // 如果沒有找到顧客，回傳 null 而不是拋出錯誤
-      if (res.error && res.error.includes('not found')) {
-        return null;
-      }
-      throw new Error(res.error || '取得顧客資料失敗');
-    }
-    
-    return res;
+  getPlaceDetail(place_id) {
+    return post("getPlaceDetail", { place_id });
   },
-  
-  // 更新或新增顧客
-  async apiUpsertCustomer(customerData) {
-    if (!customerData) throw new Error('顧客資料不能為空');
-    
-    const res = await call('apiUpsertCustomer', customerData);
-    
-    // 處理錯誤情況
-    if (res && res.ok === false) {
-      throw new Error(res.error || '儲存顧客資料失敗');
-    }
-    
-    return res;
-  }
 };
