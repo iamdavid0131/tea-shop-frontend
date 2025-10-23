@@ -1,8 +1,22 @@
 // 使用 Cloudflare Worker 的 API 客戶端
-import { api as UpstreamAPI } from './app.api.js';
+import { api } from './app.api.js';
+
 // 全域 DOM helper（ESM 不會自動掛到 window，手動掛）
 window.$  ??= (id) => document.getElementById(id);
 window.$$ ??= (sel, root=document) => Array.from(root.querySelectorAll(sel));
+
+// 預設設定
+const DEFAULT_CONFIG = {
+  PRICES: {},
+  PRODUCTS: [],
+  FREE_SHIPPING_THRESHOLD: 1000,
+  BASE_SHIPPING_FEE: 60,
+  COD_SHIP_FEE: 100,
+  COD_FREE_SHIPPING_THRESHOLD: 2000,
+  STOCKS: {}
+};
+
+let CONFIG = { ...DEFAULT_CONFIG };
 
 /* ============================================================
    API 相容層：優先使用已匯入的 UpstreamAPI；失敗則降級到 GAS EXEC
@@ -1739,84 +1753,105 @@ try {
   })();
 
   // ---- 啟動 ----
-  document.addEventListener('DOMContentLoaded', () => {
-    const first = $('itemsCard'); if (first) first.classList.add('is-step-active');
-    setStep(0);
-    bindSegments();
-    installStickyPaddingSync();
-    installStickyBarPin();
-
-    // RWD 切換
-    window.addEventListener('resize', () => {
-      if (isMobile()) {
-        setStep(stepIndex);
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      // 初始化 UI 元素
+      const first = $('itemsCard'); 
+      if (first) first.classList.add('is-step-active');
+      
+      // 載入設定
+      console.log('正在載入設定...');
+      const cfg = await api.getConfig();
+      
+      // 合併設定
+      CONFIG = {
+        ...DEFAULT_CONFIG,
+        ...(cfg || {})
+      };
+      
+      console.log('設定載入成功:', CONFIG);
+      
+      // 初始化 UI 元件
+      if (CONFIG.PRODUCTS && CONFIG.PRODUCTS.length > 0) {
+        console.log('正在建立商品卡片...');
+        buildItemCards(CONFIG.PRODUCTS);
+        installCategoryAccordion();
+        renderPrices();
+        renderStocks();
       } else {
-        // 桌機：全展開、隱藏上一步、主鍵文案
-        STEPS.forEach(id => { const el = $(id); if (el) el.classList.add('is-step-active'); });
-        const prevBtn = $('stepPrev'); if (prevBtn) prevBtn.style.display = 'none';
-        const submit  = $('submitBtnSticky'); if (submit) submit.textContent = '送出訂單';
-        if (typeof window.validate === 'function') window.validate();
-        syncStickyPadding();
+        console.warn('沒有可用的商品資料');
       }
-    });
-  });
-
-  // 對外輸出（必要時可從其他程式呼叫）
-  window.setStep = setStep;
+      
+      // 還原表單狀態
+      restoreForm();
+      
+      // 綁定事件
+      bind();
+      
+      // 計算初始總價
+      compute();
+      
+      // 設定 RWD 相關
+      setStep(0);
+      bindSegments();
+      installStickyPaddingSync();
+      installStickyBarPin();
+      
+      // RWD 切換處理
+      window.addEventListener('resize', () => {
+        if (isMobile()) {
+          setStep(stepIndex);
+        } else {
+          // 桌機：全展開、隱藏上一步、主鍵文案
+          const prevBtn = $('stepPrev'); 
+          if (prevBtn) prevBtn.style.display = 'none';
+          const submit = $('submitBtnSticky'); 
+          if (submit) submit.textContent = '送出訂單';
+          if (typeof window.validate === 'function') window.validate();
+          syncStickyPadding();
+        }
+      });
+      
+    } catch (error) {
+      console.error('初始化失敗:', error);
+      
+      // 使用預設設定重試
+      CONFIG = { ...DEFAULT_CONFIG };
+      
+      if (CONFIG.PRODUCTS && CONFIG.PRODUCTS.length > 0) {
+        buildItemCards(CONFIG.PRODUCTS);
+        installCategoryAccordion();
+        renderPrices();
+        renderStocks();
+        restoreForm();
+        bind();
+        compute();
+      }
+      
+      // 顯示錯誤訊息
+      alert('無法載入伺服器設定，請稍後再試。錯誤: ' + (error.message || '未知錯誤'));
+    }
 })();
 
-  /* ===== 初始化（載入設定 → 建立商品卡 → 綁手風琴/事件 → 回填 → 計算） ===== */
-  (async function init(){
-    try {
-      const cfg = await api.getConfig();
-      CONFIG = (cfg && cfg.PRODUCTS) ? cfg : DEFAULT_CONFIG;
-      buildItemCards(CONFIG.PRODUCTS);
-      installCategoryAccordion();
-      renderPrices();
-      renderStocks();
-      restoreForm();
-      bind();
-      compute();
-    } catch (e) {
-      CONFIG = DEFAULT_CONFIG;
-      buildItemCards(CONFIG.PRODUCTS);
-      installCategoryAccordion();
-      renderPrices();
-      renderStocks();
-      restoreForm();
-      bind();
-      compute();
-      alert('無法載入伺服端設定（/api）。');
-    }
-    // Add this after your API initialization
-    console.log('API initialized with GAS_EXEC:', GAS_EXEC);
-
-    // Test the API call
-    API.getConfig()
-    .then(config => console.log('Config loaded:', config))
-    .catch(err => console.error('Failed to load config:', err));
-  })();
-  
-
 // 放在你的全域腳本裡
-  const __custCache = new Map(); // phone -> { carrier, storeName, address, name }
+const __custCache = new Map(); // phone -> { carrier, storeName, address, name }
 
-  function primeCustomerCache(rec){
-    if (!rec || !rec.phone) return;
-    const key = rec.phone;
-    __custCache.set(key, {
-      carrier: rec.carrier || '',
-      storeName: rec.storeName || '',
-      address: rec.address || '',
-      name: rec.name || ''
-    });
-    try {
-      // 讓跨頁/重整也留著
-      localStorage.setItem('cust:'+key, JSON.stringify(__custCache.get(key)));
-    } catch(_) {}
-  }
+function primeCustomerCache(rec) {
+  if (!rec || !rec.phone) return;
+  const key = rec.phone;
+  __custCache.set(key, {
+    carrier: rec.carrier || '',
+    storeName: rec.storeName || '',
+    address: rec.address || '',
+    name: rec.name || ''
+  });
+  try {
+    // 讓跨頁/重整也留著
+    localStorage.setItem('cust:'+key, JSON.stringify(__custCache.get(key)));
+  } catch(_) {}
+}
 
-  function getCustomerFromLocal(phone){
+function getCustomerFromLocal(phone){
     const key = phone;
     if (__custCache.has(key)) return __custCache.get(key);
     try{
