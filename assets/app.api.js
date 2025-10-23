@@ -1,7 +1,7 @@
 // app.api.js
 // 將 BASE 換成你的 Worker 網址（建議用子網域，例如 https://api.hsianghsing.org/ ）
 // 若先用 workers.dev 測試，也可以填 https://<你的 workers 子網域>.workers.dev/
-const BASE = "https://api.hsianghsing.org/"; // 結尾保留斜線
+const BASE = "/api"; // 結尾保留斜線
 
 async function post(action, payload) {
   const r = await fetch(BASE, {
