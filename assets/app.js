@@ -1788,6 +1788,13 @@ try {
       compute();
       alert('無法載入伺服端設定（/api）。');
     }
+    // Add this after your API initialization
+    console.log('API initialized with GAS_EXEC:', GAS_EXEC);
+
+    // Test the API call
+    API.getConfig()
+    .then(config => console.log('Config loaded:', config))
+    .catch(err => console.error('Failed to load config:', err));
   })();
   
 
