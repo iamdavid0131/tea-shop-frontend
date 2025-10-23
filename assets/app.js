@@ -686,21 +686,6 @@ function updateCartSheetTotals({ sub, discount, ship, tot }) {
     : '尚未選購商品';
 }
 
-async function computeTotals(items, shippingMethod, promoCode) {
-    const r = await fetch(API, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        action: "previewTotals",
-        payload: { items, shippingMethod, promoCode }
-      })
-    });
-    const json = await r.json();
-    if (!json.ok) throw new Error(json.error || "previewTotals failed");
-    // 回傳結構：{ subtotal, discount, freeship, shippingFee, total, appliedCode }
-    return json.data;
-  }
-
 // 計算金額（全動態）
 function compute(){
   const q = getQuantities();
@@ -715,7 +700,7 @@ function compute(){
   // 2) 前端只做正規化與占位訊息（折扣以後端為準）
   const APPLY_DISCOUNT_BEFORE_FREE_SHIP = true;
   const codeRaw = ($('promoCode')?.value || '').trim();
-  const { subtotal, discount, freeship, shippingFee, total, appliedCode } =computeTotals(items, shippingMethod, promoCode);
+  const { discount, normalizedCode, message } = calcDiscountFront(codeRaw, sub);
 
   // GA / 標記
   try {
