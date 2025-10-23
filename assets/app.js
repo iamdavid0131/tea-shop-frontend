@@ -1,5 +1,8 @@
 // 使用 Cloudflare Worker 的 API 客戶端
 import { api as UpstreamAPI } from './app.api.js';
+// 全域 DOM helper（ESM 不會自動掛到 window，手動掛）
+window.$  ??= (id) => document.getElementById(id);
+window.$$ ??= (sel, root=document) => Array.from(root.querySelectorAll(sel));
 
 /* ============================================================
    API 相容層：優先使用已匯入的 UpstreamAPI；失敗則降級到 GAS EXEC
