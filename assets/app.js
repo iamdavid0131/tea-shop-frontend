@@ -1,19 +1,54 @@
 // 使用 Cloudflare Worker 的 API 客戶端
-import { api } from './app.api.js';
+import { api as UpstreamAPI } from './app.api.js';
 
-  
-  /* ===================== 2) 你的前端程式：整段貼在這下面 ===================== */
+/* ============================================================
+   API 相容層：優先使用已匯入的 UpstreamAPI；失敗則降級到 GAS EXEC
+   - 可在 HTML 放入：<meta name="gas-exec" content="https://script.google.com/macros/s/xxxx/exec">
+     或在全域設 window.GAS_EXEC_URL='...'
+   ============================================================ */
+const GAS_EXEC =
+  window.GAS_EXEC_URL ||
+  document.querySelector('meta[name="gas-exec"]')?.content ||
+  '';
 
-  // 進頁清暫存
-  try { localStorage.removeItem('teaOrderForm'); } catch (e) {}
+const enc = encodeURIComponent;
 
+async function viaEXEC(name, ...args){
+  if (!GAS_EXEC) throw new Error('no_exec_url');
+  const q = (o)=>enc(JSON.stringify(o||{}));
+  const routes = {
+    getConfig:        () => `${GAS_EXEC}?fn=getConfig`,
+    previewTotals:    (qMap, method, promo) => `${GAS_EXEC}?fn=previewTotals&items=${enc(JSON.stringify(qMap||{}))}&method=${enc(method||'store')}&promo=${enc((promo||'').toUpperCase())}`,
+    submitOrder:      (payload)             => `${GAS_EXEC}?fn=submitOrder&p=${q(payload)}`,
+    searchStores:     (payload)             => `${GAS_EXEC}?fn=searchStores&p=${q(payload)}`,
+    apiGetCustomerByPhone: (phone)          => `${GAS_EXEC}?fn=apiGetCustomerByPhone&phone=${enc(phone||'')}`,
+    apiUpsertCustomer:    (obj)             => `${GAS_EXEC}?fn=apiUpsertCustomer&p=${q(obj)}`
+  };
+  const url = routes[name]?.(...args);
+  if (!url) throw new Error('exec_unsupported:'+name);
+  const r = await fetch(url, { credentials:'omit' });
+  if (!r.ok) throw new Error('exec_http_'+r.status);
+  return r.json();
+}
 
-// 伺服端會回來 { PRICES, PRODUCTS, FREE_SHIPPING_THRESHOLD, BASE_SHIPPING_FEE }
-let CONFIG = { PRICES:{}, PRODUCTS:[], FREE_SHIPPING_THRESHOLD:1000, BASE_SHIPPING_FEE:60, COD_SHIP_FEE:100, COD_FREE_SHIPPING_THRESHOLD:2000 };
-const DEFAULT_CONFIG = { PRICES:{}, PRODUCTS:[], FREE_SHIPPING_THRESHOLD:1000, BASE_SHIPPING_FEE:60, COD_SHIP_FEE:100, COD_FREE_SHIPPING_THRESHOLD:2000 };
+function createCompatAPI(upstream){
+  // 嘗試 upstream（/api），失敗再降級到 GAS EXEC
+  const call = async (name, ...args)=>{
+    try { return await upstream[name](...args); }
+    catch(_e){ try { return await viaEXEC(name, ...args); } catch(e2){ throw _e || e2; } }
+  };
+  return {
+    getConfig:             (...a)=>call('getConfig', ...a),
+    previewTotals:         (...a)=>call('previewTotals', ...a),
+    submitOrder:           (...a)=>call('submitOrder', ...a),
+    searchStores:          (...a)=>call('searchStores', ...a),
+    apiGetCustomerByPhone: (...a)=>call('apiGetCustomerByPhone', ...a),
+    apiUpsertCustomer:     (...a)=>call('apiUpsertCustomer', ...a),
+  };
+}
 
-const $ = (id)=>document.getElementById(id);
-const money = (n)=>'NT$ ' + (Math.round(Number(n)||0)).toLocaleString('zh-Hant-TW');
+// 統一使用 API（具降級能力）
+const API = createCompatAPI(UpstreamAPI);
 
 // ============ 玻璃卡・分類手風琴（最小可用版） ============
 
