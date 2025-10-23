@@ -1,0 +1,15 @@
+name = "tea-edge"
+main = "worker.js"
+compatibility_date = "2024-10-01"
+
+# 將 /api/* 這條路徑綁給此 Worker
+routes = [
+  { pattern = "hsianghsing.org/api", custom_domain = true },
+  { pattern = "hsianghsing.org/api/*", custom_domain = true }
+]
+
+[vars]
+# 你的 GAS Web App（/exec）網址
+GAS_URL = "https://script.google.com/macros/s/AKfycbwc09A_Sj_kxrZZYn1y0QXgNbTVuQ0159ok6zUrg6u9xOEenrBFUXVwoxVJB_Zs6qANlA/exec"
+# 因為是同源路由，前端不會跨網域；這裡就不需要 ALLOW_ORIGIN 了（留空或不使用）
+ALLOW_ORIGIN = ""

@@ -1,48 +1,6 @@
-/* ===================== 1) Apps Script 相容層（直連 /exec） ===================== */
-/* 若在 GAS 內就用原生 google.script.run；否則用 fetch 打你的 Web App */
-(function installGASShim(){
-    if (window.google?.script?.run) return;           // 在 GAS HtmlService 內就不用 shim
-  
-    // 🔧 換成你「已重新部署、可任何人存取」的 Web App URL（一定要 /exec）
-    const EXEC = 'https://script.google.com/macros/s/AKfycbwc09A_Sj_kxrZZYn1y0QXgNbTVuQ0159ok6zUrg6u9xOEenrBFUXVwoxVJB_Zs6qANlA/exec';
-    const enc = encodeURIComponent;
-  
-    // 全部用 GET 避免 preflight；後端 doGet(e) 用 e.parameter 取值
-    const run = {
-      _ok:null,_fail:null,
-      withSuccessHandler(fn){ this._ok=fn; return this; },
-      withFailureHandler(fn){ this._fail=fn; return this; },
-      _exec(p){ return p.then(d=>this._ok&&this._ok(d))
-                       .catch(e=>this._fail&&this._fail(e))
-                       .finally(()=>{ this._ok=this._fail=null; }); },
-  
-      // === 對應你的 doGet router: fn=getConfig / previewTotals / submitOrder / searchStores / apiGetCustomerByPhone / apiUpsertCustomer ===
-      getConfig(){
-        return this._exec(fetch(`${EXEC}?fn=getConfig`).then(r=>r.json()));
-      },
-      previewTotals(qMap, method, promo){
-        const url = `${EXEC}?fn=previewTotals&items=${enc(JSON.stringify(qMap||{}))}&method=${enc(method||'store')}&promo=${enc((promo||'').toUpperCase())}`;
-        return this._exec(fetch(url).then(r=>r.json()));
-      },
-      submitOrder(payload){
-        const url = `${EXEC}?fn=submitOrder&p=${enc(JSON.stringify(payload||{}))}`;
-        return this._exec(fetch(url).then(r=>r.json()));
-      },
-      searchStores(payload){
-        const url = `${EXEC}?fn=searchStores&p=${enc(JSON.stringify(payload||{}))}`;
-        return this._exec(fetch(url).then(r=>r.json()));
-      },
-      apiGetCustomerByPhone(phone){
-        const url = `${EXEC}?fn=apiGetCustomerByPhone&phone=${enc(phone||'')}`;
-        return this._exec(fetch(url).then(r=>r.json()));
-      },
-      apiUpsertCustomer(obj){
-        const url = `${EXEC}?fn=apiUpsertCustomer&p=${enc(JSON.stringify(obj||{}))}`;
-        return this._exec(fetch(url).then(r=>r.json()));
-      }
-    };
-    window.google = { script: { run } };
-  })();
+// 使用 Cloudflare Worker 的 API 客戶端
+import { api } from './app.api.js';
+
   
   /* ===================== 2) 你的前端程式：整段貼在這下面 ===================== */
 
@@ -722,42 +680,36 @@ function compute(){
 
   updateCartSheetTotals({ sub, discount, ship, tot }); // ★ 新增：先用暫時計算更新購物車面板
 
-  // ====== 若後端預覽可用，請它覆蓋真正數字 ======
-  if (google && google.script && google.script.run && typeof google.script.run.previewTotals === 'function') {
+  // 後端覆蓋真正數字（以 /api）
+{
     const shippingMethod = method;
     const promoCode = normalizedCode;
-
-    google.script.run
-      .withSuccessHandler((res) => {
-        // res: { subtotal, discount, freeship, shippingFee, total, appliedCode }
+    api.previewTotals(q, shippingMethod, promoCode)
+      .then(res => {
         const help = document.getElementById('promoMsg');
         if (help) {
           help.textContent = res.appliedCode
-            ? `已套用：${res.appliedCode}（折 NT$${res.discount.toLocaleString('zh-Hant-TW')}${res.freeship ? '、免運' : ''}）`
+            ? `已套用：${res.appliedCode}（折 NT$${res.discount.toLocaleString('zh-TW')}${res.freeship ? '、免運' : ''}）`
             : (promoCode ? '此優惠碼不適用或已失效' : '');
         }
-
         renderTotals({
           sub: res.subtotal,
           discount: res.discount,
           ship: res.shippingFee,
           tot: res.total,
-          baseForShip: (true ? res.subtotal - res.discount : res.subtotal), // 與上方 APPLY_DISCOUNT_BEFORE_FREE_SHIP 一致
+          baseForShip: (true ? res.subtotal - res.discount : res.subtotal),
           method, cfg, code: res.appliedCode || promoCode
         });
-
-        updateCartSheetTotals({                                // ★ 新增：用後端結果覆寫購物車面板
+        updateCartSheetTotals({
           sub: res.subtotal,
           discount: res.discount,
           ship: res.shippingFee,
           tot: res.total
         });
       })
-      .withFailureHandler((err) => {
-        console.warn('previewTotals failed', err);
-      })
-      .previewTotals(q, shippingMethod, promoCode);
+      .catch(err => console.warn('previewTotals failed', err));
   }
+
 
   if (typeof window.validate === 'function') window.validate();
 
@@ -1422,171 +1374,139 @@ $('successClose')?.addEventListener('click', hideSuccess);
 
 
 // ===== 送出 =====
-function doSubmit() {
-  if (!validate()) return;
-
-  const totals = compute();
-  const zip = inferZipFromAddress($('address') ? $('address').value.trim() : '');
-  const { ok: phoneOK, normalized: phoneNorm } = validatePhoneNumber($('phone').value.trim());
-  if (!phoneOK) { alert('請輸入正確的電話格式'); return; }
-
-  const payload = {
-    items: getQuantities(),
-    receiver: { name: $('name').value.trim(), phone: phoneNorm },
-    shipping: {
-      method: currentShip(),
-      carrier: $('carrier').value,
-      storeName: $('storeName').value.trim(),
-      address: $('address') ? $('address').value.trim() : '',
-      zip
-    },
-    note: $('note').value.trim(),
-    consent: $('consent').checked,
-    pack: readPackState(),
-    promoCode: ($('promoCode')?.value || '').trim(),
-    totals: {
-      sub: totals.sub, discount: totals.discount, subAfter: totals.subAfter,
-      ship: totals.ship, total: totals.tot
-    },
-    pricingPolicy: { applyDiscountBeforeFreeShip: true }
-  };
-
-  // loading mask
-  $('loadingMask').style.display = 'flex';
-  $('submitBtnSticky').disabled = true;
-
-  try { localStorage.setItem('lastOrderPayload', JSON.stringify(payload)); } catch (_) {}
-
-  // === 呼叫 Apps Script ===
-  google.script.run
-  .withSuccessHandler(res => {
-    // ---- 關閉確認畫面 & 還原 UI ----
-    closeConfirmSheet?.();
-    resetUIAfterSuccess?.();
-
-    // 若後端沒回 total，用前端 totals
-    const safeRes = Object.assign({}, res || {}, {
-      total: (res && typeof res.total !== 'undefined') ? res.total : totals.tot
-    });
-
-    // ---- 顯示成功 modal ----
-    showSuccess(safeRes); // ✅ ← 新增：顯示 #successBackdrop
-
-    // ---- 本機快取會員資料 ----
+async function doSubmit() {
+    if (!validate()) return;
+  
+    const totals = compute();
+    const zip = inferZipFromAddress($('address') ? $('address').value.trim() : '');
+    const { ok: phoneOK, normalized: phoneNorm } = validatePhoneNumber($('phone').value.trim());
+    if (!phoneOK) { alert('請輸入正確的電話格式'); return; }
+  
+    const payload = {
+      items: getQuantities(),
+      receiver: { name: $('name').value.trim(), phone: phoneNorm },
+      shipping: {
+        method: currentShip(),
+        carrier: $('carrier').value,
+        storeName: $('storeName').value.trim(),
+        address: $('address') ? $('address').value.trim() : '',
+        zip
+      },
+      note: $('note').value.trim(),
+      consent: $('consent').checked,
+      pack: readPackState(),
+      promoCode: ($('promoCode')?.value || '').trim(),
+      totals: {
+        sub: totals.sub, discount: totals.discount, subAfter: totals.subAfter,
+        ship: totals.ship, total: totals.tot
+      },
+      pricingPolicy: { applyDiscountBeforeFreeShip: true }
+    };
+  
+    $('loadingMask').style.display = 'flex';
+    $('submitBtnSticky').disabled = true;
+    try { localStorage.setItem('lastOrderPayload', JSON.stringify(payload)); } catch (_) {}
+  
     try {
-      const ph = payload?.receiver?.phone || '';
-      if (ph) {
-        const m = payload?.shipping?.method;
-        const rec = { phone: ph, name: payload?.receiver?.name || '' };
-        if (m === 'store') {
-          rec.carrier = payload?.shipping?.carrier || '';
-          rec.storeName = payload?.shipping?.storeName || '';
-        } else if (m === 'cod') {
-          rec.address = payload?.shipping?.address || '';
-        }
-        primeCustomerCache(rec);
-      }
-    } catch (_) {}
-
-    // ---- GA 追蹤 ----
-    try {
-      const q = getQuantities();
-      const items = (CONFIG.PRODUCTS || []).map(p => {
-        const qty = Number(q[p.id] || 0);
-        const price = Number((CONFIG.PRICES || {})[p.id] || 0);
-        if (!qty) return null;
-        return {
-          item_id: p.id, item_name: p.title, item_brand: '祥興台灣茶',
-          item_category: p.category || '', price, quantity: qty
-        };
-      }).filter(Boolean);
-
-      const t = compute();
-      const txId = safeRes.orderId ? String(safeRes.orderId) : 'PREVIEW-' + Date.now();
-
-      gtag('event', 'purchase', {
-        transaction_id: txId,
-        currency: 'TWD',
-        value: t.tot,
-        shipping: t.ship || 0,
-        coupon: window.__appliedCoupon || '',
-        items
-      });
-    } catch (_) {}
-
-    // ---- 上傳會員資料到 Members 表 ----
-    try {
-      const ph = payload?.receiver?.phone || '';
-      if (ph) {
-        const isStore = payload?.shipping?.method === 'store';
-        const isCOD = payload?.shipping?.method === 'cod';
-        google.script.run
-          .withFailureHandler(_ => {})
-          .apiUpsertCustomer({
+      const res = await api.submitOrder(payload);
+  
+      // 收尾（與原本成功流程一致）
+      closeConfirmSheet?.();
+      resetUIAfterSuccess?.();
+  
+      const safeRes = { ...res, total: (typeof res.total !== 'undefined') ? res.total : totals.tot };
+      showSuccess(safeRes);
+  
+      // 會員上傳（改用 /api）
+      try {
+        const ph = payload?.receiver?.phone || '';
+        if (ph) {
+          const isStore = payload?.shipping?.method === 'store';
+          const isCOD   = payload?.shipping?.method === 'cod';
+          api.apiUpsertCustomer({
             phone: ph,
             name: payload?.receiver?.name || '',
-            carrier: isStore ? (payload?.shipping?.carrier || '') : '',
-            storeName: isStore ? (payload?.shipping?.storeName || '') : '',
-            address: isCOD ? (payload?.shipping?.address || '') : '',
+            carrier:  isStore ? (payload?.shipping?.carrier || '')   : '',
+            storeName:isStore ? (payload?.shipping?.storeName || '') : '',
+            address:  isCOD   ? (payload?.shipping?.address || '')   : '',
             updatedAt: new Date().toISOString()
+          }).catch(()=>{});
+        }
+      } catch(_) {}
+  
+      // 更新前端庫存顯示
+      try {
+        if (CONFIG && CONFIG.STOCKS){
+          Object.entries(payload.items || {}).forEach(([id, qty])=>{
+            const left = getStockFor(id);
+            if (left !== null){
+              CONFIG.STOCKS[id] = Math.max(0, left - (Number(qty)||0));
+            }
           });
-      }
-    } catch (_) {}
-
-  //更新庫存
-  try {
-    if (CONFIG && CONFIG.STOCKS){
-    Object.entries(payload.items || {}).forEach(([id, qty])=>{
-      const left = getStockFor(id);
-      if (left !== null){
-        CONFIG.STOCKS[id] = Math.max(0, left - (Number(qty)||0));
-      }
-    });
-    renderStocks();
-  } 
-    } catch(_) {}
-
-
-    // ---- 收尾 ----
-    $('loadingMask').style.display = 'none';
-    $('submitBtnSticky').disabled = false;
-  })
-  .withFailureHandler(err => {
-    alert('送出失敗：' + (err && err.message ? err.message : err));
-    $('loadingMask').style.display = 'none';
-    $('submitBtnSticky').disabled = false;
-  })
-  .submitOrder(payload);
-
-}
+          renderStocks();
+        }
+      } catch(_) {}
+  
+      // GA（原封不動）
+      try {
+        const q = getQuantities();
+        const items = (CONFIG.PRODUCTS || []).map(p => {
+          const qty = Number(q[p.id] || 0);
+          const price = Number((CONFIG.PRICES || {})[p.id] || 0);
+          if (!qty) return null;
+          return {
+            item_id: p.id, item_name: p.title, item_brand: '祥興台灣茶',
+            item_category: p.category || '', price, quantity: qty
+          };
+        }).filter(Boolean);
+  
+        const t = compute();
+        const txId = safeRes.orderId ? String(safeRes.orderId) : 'PREVIEW-' + Date.now();
+  
+        gtag('event', 'purchase', {
+          transaction_id: txId,
+          currency: 'TWD',
+          value: t.tot,
+          shipping: t.ship || 0,
+          coupon: window.__appliedCoupon || '',
+          items
+        });
+      } catch (_) {}
+  
+    } catch (err) {
+      alert('送出失敗：' + (err && err.message ? err.message : err));
+    } finally {
+      $('loadingMask').style.display = 'none';
+      $('submitBtnSticky').disabled = false;
+    }
+  }
+  
 
 
 
 // ===== 重送最後訂單 =====
-function retryLastOrder() {
-  try {
-    const raw = localStorage.getItem('lastOrderPayload');
-    if (!raw) { alert('沒有可重試的訂單'); return; }
-    const payload = JSON.parse(raw);
-    $('loadingMask').style.display = 'flex';
-    $('submitBtnSticky').disabled = true;
-    google.script.run
-      .withSuccessHandler(res => {
-        closeConfirmSheet?.();
-        resetUIAfterSuccess?.();
-        $('successOrderId').textContent = res.orderId || '';
-        $('successTotal').textContent = (res.total || 0).toLocaleString('zh-TW');
-      })
-      .withFailureHandler(err => {
-        alert(`重試失敗：${(err && err.message) ? err.message : err}`);
-        $('loadingMask').style.display = 'none';
-        $('submitBtnSticky').disabled = false;
-      })
-      .submitOrder(payload);
-  } catch (e) {
-    alert('重試資料無法讀取');
+async function retryLastOrder() {
+    try {
+      const raw = localStorage.getItem('lastOrderPayload');
+      if (!raw) { alert('沒有可重試的訂單'); return; }
+      const payload = JSON.parse(raw);
+  
+      $('loadingMask').style.display = 'flex';
+      $('submitBtnSticky').disabled = true;
+  
+      const res = await api.submitOrder(payload);
+      closeConfirmSheet?.();
+      resetUIAfterSuccess?.();
+      $('successOrderId').textContent = res.orderId || '';
+      $('successTotal').textContent = (res.total || 0).toLocaleString('zh-TW');
+    } catch (err) {
+      alert(`重試失敗：${(err && err.message) ? err.message : err}`);
+    } finally {
+      $('loadingMask').style.display = 'none';
+      $('submitBtnSticky').disabled = false;
+    }
   }
-}
+  
 
 
 /* === Mobile Wizard：三步 + 事件委派（最後一步直接送出） === */
@@ -1808,42 +1728,30 @@ try {
 })();
 
   /* ===== 初始化（載入設定 → 建立商品卡 → 綁手風琴/事件 → 回填 → 計算） ===== */
-(function init(){
-  try {
-    google.script.run
-      .withSuccessHandler(cfg => {
-        CONFIG = (cfg && cfg.PRODUCTS) ? cfg : DEFAULT_CONFIG;
-        buildItemCards(CONFIG.PRODUCTS);     // 先造 DOM（含分類/商品/變體）
-        installCategoryAccordion();          // 安裝分類手風琴
-        renderPrices();                      // 顯示單價
-        renderStocks();                      // 顯示庫存
-        restoreForm();                       // 回填本機暫存（含裝罐狀態）
-        bind();                              // 綁定 + / − 、輸入事件
-        compute();                           // 初始金額
-      })
-      .withFailureHandler(_ => {
-        CONFIG = DEFAULT_CONFIG;             // 後端失敗 → 用預設（可能空資料）
-        buildItemCards(CONFIG.PRODUCTS);
-        installCategoryAccordion();
-        renderPrices();
-        renderStocks();
-        restoreForm();                       // 失敗也盡量回填使用者暫存
-        bind();
-        compute();
-        alert('無法載入伺服端設定，已使用預設。請確認部署包含 getConfig()。');
-      })
-      .getConfig();
-  } catch (e) {
-    // 非 Apps Script 環境（本機/預覽）
-    buildItemCards(CONFIG.PRODUCTS);
-    installCategoryAccordion();
-    renderPrices();
-    renderStocks(); 
-    restoreForm();
-    bind();
-    compute();
-  }
-})();
+  (async function init(){
+    try {
+      const cfg = await api.getConfig();
+      CONFIG = (cfg && cfg.PRODUCTS) ? cfg : DEFAULT_CONFIG;
+      buildItemCards(CONFIG.PRODUCTS);
+      installCategoryAccordion();
+      renderPrices();
+      renderStocks();
+      restoreForm();
+      bind();
+      compute();
+    } catch (e) {
+      CONFIG = DEFAULT_CONFIG;
+      buildItemCards(CONFIG.PRODUCTS);
+      installCategoryAccordion();
+      renderPrices();
+      renderStocks();
+      restoreForm();
+      bind();
+      compute();
+      alert('無法載入伺服端設定（/api）。');
+    }
+  })();
+  
 
 // 放在你的全域腳本裡
   const __custCache = new Map(); // phone -> { carrier, storeName, address, name }
@@ -1903,223 +1811,196 @@ document.addEventListener('input', (e)=>{
   }
 }, true);
 
-/* ===== 電話帶出上次門市（整理版：相容新舊回傳 + 單一路徑 Debounce） ===== */
+/* ===== 電話帶出上次門市（整理版：相容新舊回傳 + 單一路徑 Debounce）— 改為走 /api ===== */
 (function installAutoFillStoreByPhone(){
-  // 防重複安裝
-  if (window.__autoFillInstalled) return;
-  window.__autoFillInstalled = true;
-
-  const phoneInput = document.getElementById('phone');
-  if (!phoneInput) return;
-
-  let debounceTimer = null;
-  let lastQueried = '';// 兩個電話字串做規格化後比較（支援你的 validatePhoneNumber）
-  function sameNormalized(a, b){
-    try{
-      // 盡量用你前面定義的 validatePhoneNumber，把 +886 / 全形 / 破折號 都處理掉
-      const norm = (v) => {
-        if (typeof validatePhoneNumber === 'function') {
-          const r = validatePhoneNumber(v || '');
-          return (r && r.normalized) ? r.normalized : String(v || '').trim();
-        }
-        return String(v || '').trim();
-      };
-      return norm(a) === norm(b);
-    }catch(_){
-      // 保底：當作純字串比較
-      return String(a || '').trim() === String(b || '').trim();
-    }
-  }
-
-  // —— 讓前端能吃「有 found 的物件」與「整列物件（舊版）」 ——
-  // 取代你現有的 normalizeCustomerResult
-function normalizeCustomerResult(res){
-  if (!res) return null;
-
-  // 鍵名標準化工具（忽略大小寫/底線/空白）
-  const normKey = k => String(k||'').trim().toLowerCase().replace(/[\s_]/g,'');
-  const pick = (obj, keys) => {
-    const map = {};
-    Object.keys(obj||{}).forEach(raw => map[normKey(raw)] = obj[raw]);
-    for (const k of keys) {
-      const v = map[normKey(k)];
-      if (v != null && String(v).trim() !== '') return String(v).trim();
-    }
-    return '';
-  };
-  const normCarrier = (raw='')=>{
-    const s = String(raw).toLowerCase().replace(/\s|_/g,'');
-    if (/^7-?11|^7eleven|統一超商/.test(s)) return '7-11';
-    if (/familymart|^全家/.test(s)) return '全家';
-    return '';
-  };
-
-  // 新格式（後端已做 found）
-  if (res.found) {
-    return {
-      name:      (res.name || '').toString().trim(),
-      carrier:   normCarrier(res.carrier || ''),
-      storeName: (res.storeName || '').toString().trim(),
-      address:   (res.address || '').toString().trim(),
-      method:    (res.method || '').toString().trim()
-    };
-  }
-
-  // 舊格式：整列物件（你的 Members 表頭）
-  const name      = pick(res, ['name','buyerName','收件姓名']);
-  const carrier   = normCarrier(pick(res, ['default_carrier','carrier','storecarrier','store carrier','超商','超商品牌']));
-  const storeName =           pick(res, ['default_store_name','storename','store_name','門市','門市店名']);
-  const address   =           pick(res, ['default_address','address','codaddress','收件地址']);
-  const methodRaw =           pick(res, ['default_shipping_method','shippingmethod','ShippingMethod','運送方式']);
-
-  let method = '';
-  if (/cod|宅配|貨到/.test(methodRaw.toLowerCase())) method = 'cod';
-  else if (/store|超商|店到店/.test(methodRaw.toLowerCase())) method = 'store';
-
-  if (!name && !carrier && !storeName && !address && !method) return null;
-  return { name, carrier, storeName, address, method };
-}
-
-// 小改 applyCustomer：若有 method 一起套用（其餘不動）
-function applyCustomer(res){
-  // 先切換運送方式（若回來有 method）
-  if (res.method === 'store' || (!res.method && (res.carrier || res.storeName))) {
-    const r = document.querySelector('input[name=ship][value="store"]');
-    if (r){ r.checked = true; onShipChange(); }
-  } else if (res.method === 'cod' || (!res.method && res.address)) {
-    const r = document.querySelector('input[name=ship][value="cod"]');
-    if (r){ r.checked = true; onShipChange(); }
-  }
-
-  // 姓名（空才帶）
-  const nameEl = document.getElementById('name');
-  if (nameEl){
-    const cur = (nameEl.value||'').trim();
-    if (res.name && (!cur || cur === '-' || cur === '—')) nameEl.value = res.name;
-  }
-
-  // 超商 or 宅配
-  if (res.carrier || res.storeName){
-    try {
-      applyStoreSelection({ carrier: res.carrier || '', storeName: res.storeName || '' });
-    } catch(_) {
-      const carrierEl = document.getElementById('carrier');
-      const storeEl   = document.getElementById('storeName');
-      if (carrierEl && res.carrier)   carrierEl.value = res.carrier;
-      if (storeEl)                    storeEl.value   = res.storeName || '';
-    }
-  } else if (res.address){
-    const addrEl = document.getElementById('address');
-    if (addrEl) addrEl.value = res.address || '';
-    if (typeof inferZipFromAddress === 'function'){
-      const zip = inferZipFromAddress(res.address || '');
-      const zipHidden = document.getElementById('zipCode');
-      const zipDisp   = document.getElementById('zipDisplay');
-      if (zipHidden) zipHidden.value = zip || '';
-      if (zipDisp)   zipDisp.textContent = zip || '—';
-    }
-  }
-
-  try { saveForm(); compute(); validate(); } catch(_){}
-  const btn = document.getElementById('submitBtnSticky');
-  if (btn){ btn.classList.add('pulse-once'); setTimeout(()=>btn.classList.remove('pulse-once'), 800); }
-}
-
-
-
-  async function tryFetchAndApply(){
-    const raw = phoneInput.value || '';
-    const chk = (typeof validatePhoneNumber === 'function')
-      ? validatePhoneNumber(raw)
-      : { ok: !!raw, normalized: raw };
-
-    if (!chk.ok) return;                               // 格式不合法不查
-    if (sameNormalized(chk.normalized, lastQueried)) return;
-
-    // 1) 先查本機快取
-    try {
-      const cached = getCustomerFromLocal && getCustomerFromLocal(chk.normalized);
-      if (cached){
-        applyCustomer(cached);
-
-        // 背景打後端刷新快取（成功與否都不影響 UI）
-        try {
-          if (google?.script?.run) {
-            google.script.run
-              .withSuccessHandler(_=>{})
-              .withFailureHandler(_=>{})
-              .apiGetCustomerByPhone(chk.normalized);
+    if (window.__autoFillInstalled) return;
+    window.__autoFillInstalled = true;
+  
+    const phoneInput = document.getElementById('phone');
+    if (!phoneInput) return;
+  
+    let debounceTimer = null;
+    let lastQueried = '';
+  
+    function sameNormalized(a, b){
+      try{
+        const norm = (v) => {
+          if (typeof validatePhoneNumber === 'function') {
+            const r = validatePhoneNumber(v || '');
+            return (r && r.normalized) ? r.normalized : String(v || '').trim();
           }
-        } catch(_) {}
-
-        lastQueried = chk.normalized;
-        return;
+          return String(v || '').trim();
+        };
+        return norm(a) === norm(b);
+      }catch(_){
+        return String(a || '').trim() === String(b || '').trim();
       }
-    } catch(_) {}
-
-    // 2) 沒快取 → 打後端
-    lastQueried = chk.normalized; // 標記已查，避免狂打
-    try {
-      if (!google?.script?.run) {
-        console.info('非 Apps Script 環境，跳過後端查詢。');
-        return;
+    }
+  
+    // 將後端回傳標準化
+    function normalizeCustomerResult(res){
+      if (!res) return null;
+  
+      const normKey = k => String(k||'').trim().toLowerCase().replace(/[\s_]/g,'');
+      const pick = (obj, keys) => {
+        const map = {};
+        Object.keys(obj||{}).forEach(raw => map[normKey(raw)] = obj[raw]);
+        for (const k of keys) {
+          const v = map[normKey(k)];
+          if (v != null && String(v).trim() !== '') return String(v).trim();
+        }
+        return '';
+      };
+      const normCarrier = (raw='')=>{
+        const s = String(raw).toLowerCase().replace(/\s|_/g,'');
+        if (/^7-?11|^7eleven|統一超商/.test(s)) return '7-11';
+        if (/familymart|^全家/.test(s)) return '全家';
+        return '';
+      };
+  
+      if (res.found) {
+        return {
+          name:      (res.name || '').toString().trim(),
+          carrier:   normCarrier(res.carrier || ''),
+          storeName: (res.storeName || '').toString().trim(),
+          address:   (res.address || '').toString().trim(),
+          method:    (res.method || '').toString().trim()
+        };
       }
-      google.script.run
-        .withSuccessHandler(res => {
-          const shaped = normalizeCustomerResult(res);
-          console.debug('[apiGetCustomerByPhone] raw:', res, '→ shaped:', shaped);
-          if (!shaped) return;
-
-          // 存快取
+  
+      const name      = pick(res, ['name','buyerName','收件姓名']);
+      const carrier   = normCarrier(pick(res, ['default_carrier','carrier','storecarrier','store carrier','超商','超商品牌']));
+      const storeName =           pick(res, ['default_store_name','storename','store_name','門市','門市店名']);
+      const address   =           pick(res, ['default_address','address','codaddress','收件地址']);
+      const methodRaw =           pick(res, ['default_shipping_method','shippingmethod','ShippingMethod','運送方式']);
+  
+      let method = '';
+      if (/cod|宅配|貨到/.test((methodRaw||'').toLowerCase())) method = 'cod';
+      else if (/store|超商|店到店/.test((methodRaw||'').toLowerCase())) method = 'store';
+  
+      if (!name && !carrier && !storeName && !address && !method) return null;
+      return { name, carrier, storeName, address, method };
+    }
+  
+    function applyCustomer(res){
+      if (res.method === 'store' || (!res.method && (res.carrier || res.storeName))) {
+        const r = document.querySelector('input[name=ship][value="store"]');
+        if (r){ r.checked = true; onShipChange(); }
+      } else if (res.method === 'cod' || (!res.method && res.address)) {
+        const r = document.querySelector('input[name=ship][value="cod"]');
+        if (r){ r.checked = true; onShipChange(); }
+      }
+  
+      const nameEl = document.getElementById('name');
+      if (nameEl){
+        const cur = (nameEl.value||'').trim();
+        if (res.name && (!cur || cur === '-' || cur === '—')) nameEl.value = res.name;
+      }
+  
+      if (res.carrier || res.storeName){
+        try {
+          applyStoreSelection({ carrier: res.carrier || '', storeName: res.storeName || '' });
+        } catch(_) {
+          const carrierEl = document.getElementById('carrier');
+          const storeEl   = document.getElementById('storeName');
+          if (carrierEl && res.carrier)   carrierEl.value = res.carrier;
+          if (storeEl)                    storeEl.value   = res.storeName || '';
+        }
+      } else if (res.address){
+        const addrEl = document.getElementById('address');
+        if (addrEl) addrEl.value = res.address || '';
+        if (typeof inferZipFromAddress === 'function'){
+          const zip = inferZipFromAddress(res.address || '');
+          const zipHidden = document.getElementById('zipCode');
+          const zipDisp   = document.getElementById('zipDisplay');
+          if (zipHidden) zipHidden.value = zip || '';
+          if (zipDisp)   zipDisp.textContent = zip || '—';
+        }
+      }
+  
+      try { saveForm(); compute(); validate(); } catch(_){}
+      const btn = document.getElementById('submitBtnSticky');
+      if (btn){ btn.classList.add('pulse-once'); setTimeout(()=>btn.classList.remove('pulse-once'), 800); }
+    }
+  
+    async function tryFetchAndApply(){
+      const raw = phoneInput.value || '';
+      const chk = (typeof validatePhoneNumber === 'function')
+        ? validatePhoneNumber(raw)
+        : { ok: !!raw, normalized: raw };
+  
+      if (!chk.ok) return;
+      if (sameNormalized(chk.normalized, lastQueried)) return;
+  
+      // 1) 先查本機快取
+      try {
+        const cached = getCustomerFromLocal && getCustomerFromLocal(chk.normalized);
+        if (cached){
+          applyCustomer(cached);
+  
+          // 背景刷新（不影響 UI）
           try {
-            primeCustomerCache && primeCustomerCache({
-              phone: chk.normalized,
-              name:      shaped.name || '',
-              carrier:   shaped.carrier || '',
-              storeName: shaped.storeName || '',
-              address:   shaped.address || ''
-            });
+            if (window.api?.apiGetCustomerByPhone) {
+              window.api.apiGetCustomerByPhone(chk.normalized).catch(()=>{});
+            }
           } catch(_) {}
-
-          // 套用
-          applyCustomer(shaped);
-        })
-        .withFailureHandler(err => {
-          console.warn('查詢 Customer 失敗：', err && err.message ? err.message : err);
-        })
-        .apiGetCustomerByPhone(chk.normalized);
-    } catch (e) {
-      console.info('非 Apps Script 環境，跳過門市自動帶入。');
+  
+          lastQueried = chk.normalized;
+          return;
+        }
+      } catch(_) {}
+  
+      // 2) 沒快取 → 打 /api
+      lastQueried = chk.normalized;
+      try {
+        if (!window.api?.apiGetCustomerByPhone) {
+          console.info('前端沒有 api 客戶端（/api），略過查詢。');
+          return;
+        }
+        const res = await window.api.apiGetCustomerByPhone(chk.normalized);
+        const shaped = normalizeCustomerResult(res);
+        console.debug('[apiGetCustomerByPhone] raw:', res, '→ shaped:', shaped);
+        if (!shaped) return;
+  
+        try {
+          primeCustomerCache && primeCustomerCache({
+            phone: chk.normalized,
+            name:      shaped.name || '',
+            carrier:   shaped.carrier || '',
+            storeName: shaped.storeName || '',
+            address:   shaped.address || ''
+          });
+        } catch(_) {}
+  
+        applyCustomer(shaped);
+      } catch (err) {
+        console.warn('查詢 Customer 失敗：', err && err.message ? err.message : err);
+      }
     }
-  }
-
-  // —— 單一路徑：input/change 走 debounce；blur 立即查一次（保險） ——
-  const DEBOUNCE_MS = 350;
-
-  function schedule(){
-    clearTimeout(debounceTimer);
-    const raw = phoneInput.value || '';
-    const chk = (typeof validatePhoneNumber === 'function') ? validatePhoneNumber(raw) : { ok:false };
-    if (!chk.ok) return; // 不合法就不排程
-    debounceTimer = setTimeout(tryFetchAndApply, DEBOUNCE_MS);
-  }
-
-  phoneInput.addEventListener('input',  schedule, { passive:true });
-  phoneInput.addEventListener('change', schedule, { passive:true });
-  phoneInput.addEventListener('blur',   () => { clearTimeout(debounceTimer); tryFetchAndApply(); }, { passive:true });
-
-  // 切換運送方式時（若已填電話）也嘗試帶入
-  document.addEventListener('change', (e)=>{
-    if (e.target && e.target.name === 'ship' && (phoneInput.value||'').trim()){
-      tryFetchAndApply();
+  
+    const DEBOUNCE_MS = 350;
+    function schedule(){
+      clearTimeout(debounceTimer);
+      const raw = phoneInput.value || '';
+      const chk = (typeof validatePhoneNumber === 'function') ? validatePhoneNumber(raw) : { ok:false };
+      if (!chk.ok) return;
+      debounceTimer = setTimeout(tryFetchAndApply, DEBOUNCE_MS);
     }
-  }, true);
-
-  // 自動填入情境：開頁與 pageshow（例如 iOS 回到頁面）
-  setTimeout(()=>{ if (phoneInput.value) tryFetchAndApply(); }, 300);
-  window.addEventListener('pageshow', ()=>{ if (phoneInput.value) tryFetchAndApply(); });
-})();
-
+  
+    phoneInput.addEventListener('input',  schedule, { passive:true });
+    phoneInput.addEventListener('change', schedule, { passive:true });
+    phoneInput.addEventListener('blur',   () => { clearTimeout(debounceTimer); tryFetchAndApply(); }, { passive:true });
+  
+    document.addEventListener('change', (e)=>{
+      if (e.target && e.target.name === 'ship' && (phoneInput.value||'').trim()){
+        tryFetchAndApply();
+      }
+    }, true);
+  
+    setTimeout(()=>{ if (phoneInput.value) tryFetchAndApply(); }, 300);
+    window.addEventListener('pageshow', ()=>{ if (phoneInput.value) tryFetchAndApply(); });
+  })();
+  
 // === 依你的表單欄位名稱，這裡回填 ===
 function applyStoreSelection(data){
   const carrierEl = document.getElementById('carrier');
@@ -2380,30 +2261,21 @@ document.addEventListener('click', (e)=>{
   });
 
   // ---- 後端搜尋（Apps Script）----
-  function searchServer(payload){
-    try {
-      google.script.run
-        .withSuccessHandler(res=>{
-          uiBusy(false);
-          setOpenBtnBusy(false);
-          const rows = (res && res.ok && Array.isArray(res.results)) ? res.results : [];
-          renderResults(rows);
-        })
-        .withFailureHandler(err=>{
-          uiBusy(false);
-          setOpenBtnBusy(false);
-          console.error(err);
-          renderResults([]);
-          alert('搜尋失敗，請稍後再試');
-        })
-        .searchStores(payload);
-    } catch (e) {
-      // 非 Apps Script 環境：顯示提示
-      uiBusy(false);
-      setOpenBtnBusy(false);
-      list.innerHTML = '<div style="padding:12px;color:#666">預覽環境沒有後端搜尋。請在 Apps Script 環境測試。</div>';
-    }
-  }
+  api.searchStores(payload)
+  .then(res => {
+    uiBusy(false);
+    setOpenBtnBusy(false);
+    const rows = (res && res.ok && Array.isArray(res.results)) ? res.results : (res.results || []);
+    renderResults(rows);
+  })
+  .catch(err => {
+    uiBusy(false);
+    setOpenBtnBusy(false);
+    console.error(err);
+    renderResults([]);
+    alert('搜尋失敗，請稍後再試');
+  });
+
 
   // ---- 渲染結果 ----
     function renderResults(rows){
