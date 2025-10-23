@@ -15,6 +15,8 @@ const DEFAULT_CONFIG = {
   COD_FREE_SHIPPING_THRESHOLD: 2000,
   STOCKS: {}
 };
+// 全域金額格式：多處會用到
+function money(n){ return 'NT$ ' + Number(n || 0).toLocaleString('zh-Hant-TW'); }
 
 let CONFIG = { ...DEFAULT_CONFIG };
 
@@ -65,7 +67,7 @@ function createCompatAPI(upstream){
 }
 
 // 統一使用 API（具降級能力）
-const API = createCompatAPI(UpstreamAPI);
+const API = createCompatAPI(api);
 
 // ============ 玻璃卡・分類手風琴（最小可用版） ============
 
@@ -736,7 +738,7 @@ function compute(){
 {
     const shippingMethod = method;
     const promoCode = normalizedCode;
-    api.previewTotals(q, shippingMethod, promoCode)
+    API.previewTotals(q, shippingMethod, promoCode)
       .then(res => {
         const help = document.getElementById('promoMsg');
         if (help) {
@@ -1460,7 +1462,7 @@ async function doSubmit() {
     try { localStorage.setItem('lastOrderPayload', JSON.stringify(payload)); } catch (_) {}
   
     try {
-      const res = await api.submitOrder(payload);
+      const res = await API.submitOrder(payload);
   
       // 收尾（與原本成功流程一致）
       closeConfirmSheet?.();
@@ -1475,7 +1477,7 @@ async function doSubmit() {
         if (ph) {
           const isStore = payload?.shipping?.method === 'store';
           const isCOD   = payload?.shipping?.method === 'cod';
-          api.apiUpsertCustomer({
+          API.apiUpsertCustomer({
             phone: ph,
             name: payload?.receiver?.name || '',
             carrier:  isStore ? (payload?.shipping?.carrier || '')   : '',
@@ -1546,7 +1548,7 @@ async function retryLastOrder() {
       $('loadingMask').style.display = 'flex';
       $('submitBtnSticky').disabled = true;
   
-      const res = await api.submitOrder(payload);
+      const res = await API.submitOrder(payload);
       closeConfirmSheet?.();
       resetUIAfterSuccess?.();
       $('successOrderId').textContent = res.orderId || '';
@@ -1761,7 +1763,7 @@ try {
       
       // 載入設定
       console.log('正在載入設定...');
-      const cfg = await api.getConfig();
+      const cfg = await API.getConfig();
       
       // 合併設定
       CONFIG = {
@@ -2021,7 +2023,7 @@ document.addEventListener('input', (e)=>{
           // 背景刷新（不影響 UI）
           try {
             if (window.api?.apiGetCustomerByPhone) {
-              window.api.apiGetCustomerByPhone(chk.normalized).catch(()=>{});
+              API.apiGetCustomerByPhone(chk.normalized).catch(()=>{});
             }
           } catch(_) {}
   
@@ -2037,7 +2039,7 @@ document.addEventListener('input', (e)=>{
           console.info('前端沒有 api 客戶端（/api），略過查詢。');
           return;
         }
-        const res = await window.api.apiGetCustomerByPhone(chk.normalized);
+        const res = await API.apiGetCustomerByPhone(chk.normalized);
         const shaped = normalizeCustomerResult(res);
         console.debug('[apiGetCustomerByPhone] raw:', res, '→ shaped:', shaped);
         if (!shaped) return;
@@ -2341,20 +2343,27 @@ document.addEventListener('click', (e)=>{
   });
 
   // ---- 後端搜尋（Apps Script）----
-  api.searchStores(payload)
-  .then(res => {
-    uiBusy(false);
-    setOpenBtnBusy(false);
-    const rows = (res && res.ok && Array.isArray(res.results)) ? res.results : (res.results || []);
-    renderResults(rows);
-  })
-  .catch(err => {
-    uiBusy(false);
-    setOpenBtnBusy(false);
-    console.error(err);
-    renderResults([]);
-    alert('搜尋失敗，請稍後再試');
-  });
+  // ---- 後端搜尋（Apps Script）----
+// 封裝成函式，供 doTextSearch / 取得定位 後呼叫
+function searchServer(payload){
+    return API.searchStores(payload)
+      .then(res => {
+        uiBusy(false);
+        setOpenBtnBusy(false);
+        const rows = (res && res.ok && Array.isArray(res.results)) ? res.results : (res?.results || []);
+        renderResults(rows);
+        return rows;
+      })
+      .catch(err => {
+        uiBusy(false);
+        setOpenBtnBusy(false);
+        console.error(err);
+        renderResults([]);
+        alert('搜尋失敗，請稍後再試');
+        throw err;
+      });
+  }
+
 
 
   // ---- 渲染結果 ----
