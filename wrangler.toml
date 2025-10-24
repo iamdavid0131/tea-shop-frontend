@@ -4,8 +4,13 @@ compatibility_date = "2024-10-01"
 
 # 將 /api/* 這條路徑綁給此 Worker
 routes = [
+  # 涵蓋根網域 hsianghsing.org/api
   { pattern = "hsianghsing.org/api", custom_domain = true },
-  { pattern = "hsianghsing.org/api/*", custom_domain = true }
+  { pattern = "hsianghsing.org/api/*", custom_domain = true },
+  
+  # ★ 修正：涵蓋 www.hsianghsing.org/api
+  { pattern = "www.hsianghsing.org/api", custom_domain = true },
+  { pattern = "www.hsianghsing.org/api/*", custom_domain = true }
 ]
 
 [vars]
