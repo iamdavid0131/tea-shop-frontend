@@ -745,6 +745,11 @@ function compute(){
   const q = getQuantities();
   const cfg = CONFIG && CONFIG.PRICES ? CONFIG : DEFAULT_CONFIG;
 
+  // --- START DEBUG LOG A (亂跳金額) ---
+  const qsum_debug = Object.values(q).reduce((a,b)=>a+(Number(b)||0),0);
+  console.log(`%c[DEBUG-FRONT-COMPUTE] Total Q: ${qsum_debug}. Stack: ${new Error().stack.split('\n')[2]}`, 'color: #5C4832; font-weight: bold;');
+  // --- END DEBUG LOG A ---
+
   // 1) 原價小計 sub
   let sub = 0;
   for (const [id, price] of Object.entries(cfg.PRICES)){
@@ -799,6 +804,13 @@ function compute(){
             // 這是舊的請求，直接忽略，不要更新 UI
             return; 
           }
+        
+        // --- START DEBUG LOG B (亂跳金額) ---
+        if (res.total === 0 && qsum_debug > 0) {
+            console.error(`%c[DEBUG-FRONT-CRITICAL] API返回總額為 0！(Q: ${qsum_debug}). 請檢查 code.gs Logger。`, 'color: red; font-weight: bold;');
+        }
+        // --- END DEBUG LOG B ---
+
         const help = document.getElementById('promoMsg');
         if (help) {
           help.textContent = res.appliedCode
@@ -829,8 +841,6 @@ function compute(){
   // 回傳暫時值（相容既有呼叫）
   return { sub, discount, subAfter, ship, tot, q, normalizedCode, message };
 }
-
-
 
 
 /* ===== Collapsible Cart Logic ===== */
@@ -2404,12 +2414,22 @@ document.addEventListener('click', (e)=>{
   // ---- 後端搜尋（Apps Script）----
   // ---- 後端搜尋（Apps Script）----
 // 封裝成函式，供 doTextSearch / 取得定位 後呼叫
+// 封裝成函式，供 doTextSearch / 取得定位 後呼叫
 function searchServer(payload){
     return API.searchStores(payload)
       .then(res => {
         uiBusy(false);
         setOpenBtnBusy(false);
         const rows = (res && res.ok && Array.isArray(res.results)) ? res.results : (res?.results || []);
+        
+        // --- START BUG 1 CHECK ---
+        if (res?.error && res.error.includes('PLACES_API_KEY_SERVER')) {
+             alert('搜尋失敗：請檢查 Apps Script 中 Google Maps API Key 是否已設定！');
+             renderResults([]);
+             throw new Error('API Key Missing');
+        }
+        // --- END BUG 1 CHECK ---
+
         renderResults(rows);
         return rows;
       })
@@ -2418,7 +2438,16 @@ function searchServer(payload){
         setOpenBtnBusy(false);
         console.error(err);
         renderResults([]);
-        alert('搜尋失敗，請稍後再試');
+        
+        let msg = '門市搜尋失敗，請稍後再試。';
+        // 判斷是否為 GAS 傳回的關鍵字錯誤 (例如 code.gs 中的 PLACES_API_KEY_SERVER 未設定)
+        if (err.message && err.message.includes('Places API 錯誤')) {
+            msg = '服務端 API 異常。請確認您的 Google Cloud Places API 已啟用計費功能。';
+        } else if (err.message && err.message.includes('API Key Missing')) {
+            msg = '錯誤：請檢查 Apps Script 中 Google Maps API Key 是否已設定！';
+        }
+
+        alert(msg);
         throw err;
       });
   }
