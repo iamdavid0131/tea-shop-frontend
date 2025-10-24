@@ -32,30 +32,78 @@ const GAS_EXEC =
 
 const enc = encodeURIComponent;
 
+// 範例：修改 viaEXEC 函式
 async function viaEXEC(name, ...args){
-  if (!GAS_EXEC) throw new Error('no_exec_url');
-  const q = (o)=>enc(JSON.stringify(o||{}));
-  const routes = {
-    getConfig:        () => `${GAS_EXEC}?fn=getConfig`,
-    previewTotals:    (qMap, method, promo) => `${GAS_EXEC}?fn=previewTotals&items=${enc(JSON.stringify(qMap||{}))}&method=${enc(method||'store')}&promo=${enc((promo||'').toUpperCase())}`,
-    submitOrder:      (payload)             => `${GAS_EXEC}?fn=submitOrder&p=${q(payload)}`,
-    searchStores:     (payload)             => `${GAS_EXEC}?fn=searchStores&p=${q(payload)}`,
-    apiGetCustomerByPhone: (phone)          => `${GAS_EXEC}?fn=apiGetCustomerByPhone&phone=${enc(phone||'')}`,
-    apiUpsertCustomer:    (obj)             => `${GAS_EXEC}?fn=apiUpsertCustomer&p=${q(obj)}`
-  };
-  const url = routes[name]?.(...args);
-  if (!url) throw new Error('exec_unsupported:'+name);
-  const r = await fetch(url, { credentials:'omit' });
-  if (!r.ok) throw new Error('exec_http_'+r.status);
-  return r.json();
-}
+    if (!GAS_EXEC) throw new Error('no_exec_url');
+    
+    // 區分 GET 和 POST
+    const postFns = ['submitOrder', 'apiUpsertCustomer', 'searchStores', 'previewTotals'];
+    const isPost = postFns.includes(name);
+  
+    const enc = encodeURIComponent;
+    const q = (o) => enc(JSON.stringify(o || {}));
+  
+    let url, fetchOptions;
+  
+    if (isPost) {
+      // POST 請求：fn 放在 URL，參數放在 body
+      url = `${GAS_EXEC}?fn=${name}`;
+      const payload = args[0] || {}; // 假設第一個參數是 payload
+      
+      // 注意：GAS doPost 需要特定的格式
+      // 這裡使用 JSON.stringify(args) 讓 GAS 端能統一解析
+      fetchOptions = {
+        method: 'POST',
+        credentials: 'omit',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-t', // 避免 CORS preflight (OPTIONS)
+        },
+        body: JSON.stringify(args) // 把所有參數打包成陣列
+      };
+  
+    } else {
+      // GET 請求 (保留給 getConfig, apiGetCustomerByPhone)
+      // 注意：apiGetCustomerByPhone 最好也改 POST
+      const routes = {
+        getConfig: () => `${GAS_EXEC}?fn=getConfig`,
+        apiGetCustomerByPhone: (phone) => `${GAS_EXEC}?fn=apiGetCustomerByPhone&phone=${enc(phone||'')}`,
+        // ... 其他 GET 路由
+      };
+      url = routes[name]?.(...args);
+      if (!url) throw new Error('exec_unsupported:'+name);
+      
+      fetchOptions = { method: 'GET', credentials: 'omit' };
+    }
+  
+    const r = await fetch(url, fetchOptions);
+    if (!r.ok) throw new Error('exec_http_'+r.status);
+    return r.json();
+  }
 
 function createCompatAPI(upstream){
+    // 允許降級到 viaEXEC 的「安全」函式列表
+  const FALLBACK_ALLOWED = ['getConfig', 'previewTotals', 'searchStores'];
   // 嘗試 upstream（/api），失敗再降級到 GAS EXEC
   const call = async (name, ...args)=>{
     try { return await upstream[name](...args); }
-    catch(_e){ try { return await viaEXEC(name, ...args); } catch(e2){ throw _e || e2; } }
-  };
+    catch(_e){
+        // *** 關鍵修改 ***
+        // 檢查此函式是否允許降級
+        if (FALLBACK_ALLOWED.includes(name)) {
+          try {
+            // 執行降級 (GET)
+            return await viaEXEC(name, ...args);
+          } catch(e2) {
+            // 降級也失敗，拋出原始錯誤
+            throw _e || e2;
+          }
+        }
+        // *** 關鍵修改 ***
+        // 如果是不允許降級的函式 (例如 submitOrder)，
+        // 則直接拋出 Worker 的原始錯誤，*絕不*嘗試 viaEXEC。
+        throw _e;
+      }
+    };
   return {
     getConfig:             (...a)=>call('getConfig', ...a),
     previewTotals:         (...a)=>call('previewTotals', ...a),
@@ -690,7 +738,8 @@ function calcDiscountFront(codeRaw, subtotal) {
     // 前端只負責顯示用（0 折扣），實際折扣交給 API.previewTotals
     return { discount: 0, normalizedCode: normalized, message: "" };
 }
-
+// 在 compute() 函式外部宣告一個計數器
+let previewRequestCounter = 0;
 // 計算金額（全動態）
 function compute(){
   const q = getQuantities();
@@ -740,10 +789,16 @@ function compute(){
 
   // 後端覆蓋真正數字（以 /api）
 {
+    previewRequestCounter++;
+    const currentRequestID = previewRequestCounter;
     const shippingMethod = method;
     const promoCode = normalizedCode;
     API.previewTotals(q, shippingMethod, promoCode)
       .then(res => {
+        if (currentRequestID !== previewRequestCounter) {
+            // 這是舊的請求，直接忽略，不要更新 UI
+            return; 
+          }
         const help = document.getElementById('promoMsg');
         if (help) {
           help.textContent = res.appliedCode
