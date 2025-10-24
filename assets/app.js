@@ -739,39 +739,30 @@ function calcDiscountFront(codeRaw, subtotal) {
     return { discount: 0, normalizedCode: normalized, message: "" };
 }
 // 在 compute() 函式外部宣告一個計數器
+// 在 compute() 函式外部宣告一個計數器（你應該已經有）
 let previewRequestCounter = 0;
-// 計算金額（全動態）
-function compute(){
-  const q = getQuantities();
+
+function compute() {
+  const q   = getQuantities();
   const cfg = CONFIG && CONFIG.PRICES ? CONFIG : DEFAULT_CONFIG;
 
-  // --- START DEBUG LOG A (亂跳金額) ---
-  const qsum_debug = Object.values(q).reduce((a,b)=>a+(Number(b)||0),0);
-  console.log(`%c[DEBUG-FRONT-COMPUTE] Total Q: ${qsum_debug}. Stack: ${new Error().stack.split('\n')[2]}`, 'color: #5C4832; font-weight: bold;');
-  // --- END DEBUG LOG A ---
-
-  // 1) 原價小計 sub
+  // 1) 計算前端小計
   let sub = 0;
-  for (const [id, price] of Object.entries(cfg.PRICES)){
+  for (const [id, price] of Object.entries(cfg.PRICES)) {
     sub += (q[id] || 0) * price;
   }
 
-  // 2) 前端只做正規化與占位訊息（折扣以後端為準）
-  const APPLY_DISCOUNT_BEFORE_FREE_SHIP = true;
+  // 2) 前端只做優惠碼正規化，不真正折扣
   const codeRaw = ($('promoCode')?.value || '').trim();
-  const { discount, normalizedCode, message } = calcDiscountFront(codeRaw, sub);
+  const { discount, normalizedCode } = calcDiscountFront(codeRaw, sub);
 
-  // GA / 標記
-  try {
-    window.__appliedCoupon = normalizedCode || '';
-    if (normalizedCode) gtag('event','apply_promo',{ coupon: normalizedCode, discount_value: discount || 0 });
-  } catch(_) {}
-
-  // 先用前端臨時值呈現（折扣=0）
+  // 折扣後的小計
   const subAfter = Math.max(0, sub - discount);
-  const method = (typeof currentShip === 'function') ? currentShip() : 'store';
+  const method   = (typeof currentShip === 'function') ? currentShip() : 'store';
+  const APPLY_DISCOUNT_BEFORE_FREE_SHIP = true;
   const baseForShip = APPLY_DISCOUNT_BEFORE_FREE_SHIP ? subAfter : sub;
 
+  // 計算運費
   let ship = 0;
   if (method === 'cod') {
     const codGoal = Number(cfg.COD_FREE_SHIPPING_THRESHOLD || 0);
@@ -782,65 +773,81 @@ function compute(){
     const storeFee  = Number(cfg.BASE_SHIPPING_FEE || 0);
     ship = (baseForShip === 0 || (storeGoal > 0 && baseForShip >= storeGoal)) ? 0 : storeFee;
   }
+
   const tot = subAfter + ship;
 
- // ====== 先畫出暫時值（避免空白）======
+  // 判斷購物車是否有商品
+  const hasItems = Object.values(q).some(v => (Number(v) || 0) > 0);
+
+  // 若沒有商品，直接用暫值更新畫面，讓畫面顯示 0
+  if (!hasItems) {
+    renderTotals({
+      sub, discount, ship, tot,
+      baseForShip, method, cfg, code: normalizedCode
+    });
+    updateCartSheetTotals({ sub, discount, ship, tot });
+    if (typeof window.validate === 'function') window.validate();
+    return { sub, discount, subAfter, ship, tot, q, normalizedCode };
+  }
+
+  // 有商品：先用前端計算的值更新 UI（避免空白，但不會是全 0）
   renderTotals({
     sub, discount, ship, tot,
     baseForShip, method, cfg, code: normalizedCode
   });
+  updateCartSheetTotals({ sub, discount, ship, tot });
 
-  updateCartSheetTotals({ sub, discount, ship, tot }); // ★ 新增：先用暫時計算更新購物車面板
+  // 非同步向後端請求最終價格，並用計數器防止亂序回覆覆蓋
+  previewRequestCounter++;
+  const currentRequestID = previewRequestCounter;
+  const shippingMethod   = method;
+  const promoCode        = normalizedCode;
 
-  // 後端覆蓋真正數字（以 /api）
-{
-    previewRequestCounter++;
-    const currentRequestID = previewRequestCounter;
-    const shippingMethod = method;
-    const promoCode = normalizedCode;
-    API.previewTotals(q, shippingMethod, promoCode)
-      .then(res => {
-        if (currentRequestID !== previewRequestCounter) {
-            // 這是舊的請求，直接忽略，不要更新 UI
-            return; 
-          }
-        
-        // --- START DEBUG LOG B (亂跳金額) ---
-        if (res.total === 0 && qsum_debug > 0) {
-            console.error(`%c[DEBUG-FRONT-CRITICAL] API返回總額為 0！(Q: ${qsum_debug}). 請檢查 code.gs Logger。`, 'color: red; font-weight: bold;');
-        }
-        // --- END DEBUG LOG B ---
+  API.previewTotals(q, shippingMethod, promoCode)
+    .then(res => {
+      // 若這不是最新的請求結果則忽略
+      if (currentRequestID !== previewRequestCounter) return;
+      // 後端回傳 total 為 0，但前端確認有商品 → 視為異常，不更新畫面
+      if (res.total === 0 && hasItems) return;
 
-        const help = document.getElementById('promoMsg');
-        if (help) {
-          help.textContent = res.appliedCode
-            ? `已套用：${res.appliedCode}（折 NT$${res.discount.toLocaleString('zh-TW')}${res.freeship ? '、免運' : ''}）`
-            : (promoCode ? '此優惠碼不適用或已失效' : '');
-        }
-        renderTotals({
-          sub: res.subtotal,
-          discount: res.discount,
-          ship: res.shippingFee,
-          tot: res.total,
-          baseForShip: (true ? res.subtotal - res.discount : res.subtotal),
-          method, cfg, code: res.appliedCode || promoCode
-        });
-        updateCartSheetTotals({
-          sub: res.subtotal,
-          discount: res.discount,
-          ship: res.shippingFee,
-          tot: res.total
-        });
-      })
-      .catch(err => console.warn('previewTotals failed', err));
-  }
+      const appliedCode = res.appliedCode || promoCode;
+      const baseForServer = APPLY_DISCOUNT_BEFORE_FREE_SHIP
+        ? res.subtotal - res.discount
+        : res.subtotal;
 
+      // 更新提示訊息
+      const help = document.getElementById('promoMsg');
+      if (help) {
+        help.textContent = appliedCode
+          ? `已套用：${appliedCode}（折 NT$${res.discount.toLocaleString('zh-TW')}${res.freeship ? '、免運' : ''}）`
+          : (promoCode ? '此優惠碼不適用或已失效' : '');
+      }
+
+      // 用後端的資料覆蓋顯示
+      renderTotals({
+        sub: res.subtotal,
+        discount: res.discount,
+        ship: res.shippingFee,
+        tot: res.total,
+        baseForShip: baseForServer,
+        method,
+        cfg,
+        code: appliedCode
+      });
+      updateCartSheetTotals({
+        sub: res.subtotal,
+        discount: res.discount,
+        ship: res.shippingFee,
+        tot: res.total
+      });
+    })
+    .catch(err => console.warn('previewTotals failed', err));
 
   if (typeof window.validate === 'function') window.validate();
 
-  // 回傳暫時值（相容既有呼叫）
-  return { sub, discount, subAfter, ship, tot, q, normalizedCode, message };
+  return { sub, discount, subAfter, ship, tot, q, normalizedCode };
 }
+
 
 
 /* ===== Collapsible Cart Logic ===== */
