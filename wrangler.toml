@@ -1,20 +1,41 @@
 name = "hsianghsing-api"
 main = "worker.js"
-compatibility_date = "2024-10-01"
+compatibility_date = "2025-10-25"
 
-# 將 /api/* 這條路徑綁給此 Worker
+# ======================================================
+# 🌍 綁定 Worker 到正式網域
+# ------------------------------------------------------
+# 此 Worker 專責代理 /api/* 請求到 Node.js 後端
+# 例如：
+#   https://hsianghsing.org/api/order
+#   https://www.hsianghsing.org/api/member
+# ======================================================
 routes = [
-  # 涵蓋根網域 hsianghsing.org/api
   { pattern = "hsianghsing.org/api", custom_domain = true },
   { pattern = "hsianghsing.org/api/*", custom_domain = true },
-  
-  # ★ 修正：涵蓋 www.hsianghsing.org/api
   { pattern = "www.hsianghsing.org/api", custom_domain = true },
   { pattern = "www.hsianghsing.org/api/*", custom_domain = true }
 ]
 
+# ======================================================
+# 🏭 正式環境變數
+# ------------------------------------------------------
+# 這些變數會在 Cloudflare Worker 執行時注入。
+# ======================================================
 [vars]
-# 你的 GAS Web App（/exec）網址
-GAS_URL = "https://script.google.com/macros/s/AKfycbwc09A_Sj_kxrZZYn1y0QXgNbTVuQ0159ok6zUrg6u9xOEenrBFUXVwoxVJB_Zs6qANlA/exec"
-# 因為是同源路由，前端不會跨網域；這裡就不需要 ALLOW_ORIGIN 了（留空或不使用）
-ALLOW_ORIGIN = ""
+# Node.js API 網址（Render / Railway / Fly.io / Vercel 等）
+NODE_API = "https://hsianghsing.org/api"
+
+# 若要限制前端網域，可填寫：
+ALLOW_ORIGIN = "https://hsianghsing.org"
+
+# ======================================================
+# 🧪 開發模式設定
+# ------------------------------------------------------
+# 在本機執行 wrangler dev / pages dev 時，
+# Worker 將代理 API 請求至 localhost:3000。
+# ======================================================
+[env.development]
+[env.development.vars]
+NODE_API = "http://localhost:3000/api"
+ALLOW_ORIGIN = "*"

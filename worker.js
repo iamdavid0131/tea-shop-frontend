@@ -1,71 +1,59 @@
+/**
+ * ☁️ 祥興茶行 Worker（新版：代理到 Node.js API）
+ * -------------------------------------------------------
+ * ✅ 開發模式：可以改為 http://localhost:3000/api
+ * ✅ 正式部署：使用 https://hsianghsing.org/api
+ * -------------------------------------------------------
+ */
+
 export default {
   async fetch(req, env, ctx) {
-    // ------- 基本檢查 -------
-    const GAS_URL = env.GAS_URL;
-    if (!GAS_URL) {
-      return json({ ok: false, error: "Missing env.GAS_URL" }, 500);
-    }
+    const NODE_API = env.NODE_API || "http://localhost:3000/api";
 
-    // ------- CORS（若同源可保持 *；若要鎖網域，改成你的前端網域）-------
+    // 基本 CORS 設定
     const CORS_HEADERS = {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Origin": "*", // 若要限制，改成你的正式網域
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type, Authorization",
     };
+
+    // 處理預檢請求（CORS）
     if (req.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: CORS_HEADERS });
     }
-    if (req.method !== "POST") {
-      return json({ ok: false, error: "Only POST" }, 405, CORS_HEADERS);
+
+    // 只允許 GET / POST
+    if (!["GET", "POST"].includes(req.method)) {
+      return json({ ok: false, error: "Method Not Allowed" }, 405, CORS_HEADERS);
     }
 
     try {
-      // ------- 讀 body 並計算簽章（與 GAS 相同規則：ts:rawBody） -------
-      const bodyText = await req.text();
-      const ts = Date.now().toString();
-      const secret = String(env.EDGE_SECRET || ""); // 未設也允許（GAS 端未設定會放行）
-      const sig = await hmacHex(secret, `${ts}:${bodyText}`);
+      const url = new URL(req.url);
 
-      // ------- 轉發到 GAS doPost -------
-      const upstream = await fetch(GAS_URL, {
-        method: "POST",
-        headers: {
-          "content-type": req.headers.get("content-type") || "application/json",
-          "x-edge-ts": ts,
-          "x-edge-sign": sig,
-        },
-        body: bodyText,
-      });
+      // 把 /api/... 的請求轉發給 Node.js 伺服器
+      const upstreamUrl = NODE_API + url.pathname.replace(/^\/api/, "");
+      const init = {
+        method: req.method,
+        headers: req.headers,
+        body: req.method === "POST" ? await req.text() : undefined,
+      };
 
-      // ------- 回傳（維持 content-type；加上 CORS） -------
+      const upstream = await fetch(upstreamUrl, init);
       const headers = new Headers(upstream.headers);
+
+      // 加上 CORS
       headers.set("Access-Control-Allow-Origin", CORS_HEADERS["Access-Control-Allow-Origin"]);
       headers.set("Access-Control-Allow-Methods", CORS_HEADERS["Access-Control-Allow-Methods"]);
       headers.set("Access-Control-Allow-Headers", CORS_HEADERS["Access-Control-Allow-Headers"]);
-      // 確保有 content-type
-      if (!headers.get("content-type")) headers.set("content-type", "application/json");
 
       return new Response(upstream.body, { status: upstream.status, headers });
     } catch (err) {
-      // GAS 掛點或網路錯誤 → 502
-      return json({ ok: false, error: `Upstream failed: ${String(err)}` }, 502, CORS_HEADERS);
+      return json({ ok: false, error: `Proxy failed: ${String(err)}` }, 502, CORS_HEADERS);
     }
   },
 };
 
 // ---- utils ----
-async function hmacHex(secret, msg) {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
-  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(msg));
-  return [...new Uint8Array(sig)].map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
 function json(obj, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(obj), {
     status,

@@ -1,31 +1,24 @@
 // app.api.js
-// 將 BASE 換成你的 Worker 網址（建議用子網域，例如 https://api.hsianghsing.org/ ）
-// 若先用 workers.dev 測試，也可以填 https://<你的 workers 子網域>.workers.dev/
-const BASE = "/api"; // 結尾保留斜線
+// 將 BASE 改為 Node.js API 伺服器的實際網址
+// 若前端與後端同域，可用相對路徑 "/api"
+// 若本地測試在 3000 port，可改成 "http://localhost:3000/api"
+const BASE = "http://localhost:3000/api";
 
 async function post(action, payload) {
-  const r = await fetch(BASE, {
+  const r = await fetch(`${BASE}/${action}`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(
-      payload === undefined ? { action } : { action, payload }
-    ),
-    // credentials: "omit" // 同網域不需要帶 cookie
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload || {}),
   });
   if (!r.ok) throw new Error("http_" + r.status);
   const json = await r.json();
-  // GAS doPost 有兩種回傳型態，這裡統一處理：
-  // 1) { ok:true, data: {...} } → 回傳 data
-  // 2) { ok:true, ...直接是資料... } → 原樣回傳
-  if (json && json.ok && Object.prototype.hasOwnProperty.call(json, "data")) {
-    return json.data;
-  }
+  if (json && json.ok && "data" in json) return json.data;
   return json;
 }
 
 export const api = {
   getConfig() {
-    return post("getConfig");
+    return fetch(`${BASE}/config`).then(r => r.json());
   },
   previewTotals(items, shippingMethod, promoCode) {
     return post("previewTotals", { items, shippingMethod, promoCode });
