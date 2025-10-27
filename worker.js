@@ -1,63 +1,37 @@
 /**
- * ☁️ 祥興茶行 Worker（新版：代理到 Node.js API）
+ * ☁️ 祥興茶行 Worker（修正版：正確代理 Node.js /api 路徑）
  * -------------------------------------------------------
- * ✅ 開發模式：代理 http://localhost:3000
- * ✅ 正式部署：代理你的 Node.js 雲端 API（非 Worker 自己）
+ * ✅ 開發模式：代理 http://localhost:3000/api
+ * ✅ 正式部署：代理你的雲端 Node.js API
  * -------------------------------------------------------
  */
 
 export default {
-  async fetch(req, env) {
-    // 1️⃣ Node API 網址（不要指向自己）
-    // ⚠️ 請確保 NODE_API 指向真正的 Node.js 伺服器，而非 hsianghsing.org/api
-    const NODE_API = env.NODE_API || "http://localhost:3000";
-    const ALLOW_ORIGIN = env.ALLOW_ORIGIN || "*";
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
 
-    // 2️⃣ CORS 設定
-    const CORS_HEADERS = {
-      "Access-Control-Allow-Origin": ALLOW_ORIGIN,
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-    };
-
-    // 3️⃣ 處理預檢請求
-    if (req.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: CORS_HEADERS });
-    }
-
-    // 4️⃣ 只允許 GET / POST
-    if (!["GET", "POST"].includes(req.method)) {
-      return json({ ok: false, error: "Method Not Allowed" }, 405, CORS_HEADERS);
-    }
-
-    try {
-      const url = new URL(req.url);
-
-      // ✅ 轉發給 Node.js（完整 pathname + 查詢參數）
-      const upstreamUrl = NODE_API + url.pathname + url.search;
-
+    // ✅ 代理所有 /api/* 請求到本地 Node.js
+    if (url.pathname.startsWith("/api/")) {
+      const target = "http://127.0.0.1:3000" + url.pathname + url.search;
       const init = {
-        method: req.method,
-        headers: new Headers(req.headers),
-        body: req.method === "POST" ? await req.text() : undefined,
+        method: request.method,
+        headers: request.headers,
       };
+      if (request.method !== "GET" && request.method !== "HEAD") {
+        init.body = request.body;
+      }
 
-      const upstream = await fetch(upstreamUrl, init);
-      const headers = new Headers(upstream.headers);
-
-      // 🔧 加上 CORS 回應頭
-      headers.set("Access-Control-Allow-Origin", CORS_HEADERS["Access-Control-Allow-Origin"]);
-      headers.set("Access-Control-Allow-Methods", CORS_HEADERS["Access-Control-Allow-Methods"]);
-      headers.set("Access-Control-Allow-Headers", CORS_HEADERS["Access-Control-Allow-Headers"]);
-
-      if (!headers.get("content-type")) headers.set("content-type", "application/json");
-
-      return new Response(upstream.body, { status: upstream.status, headers });
-    } catch (err) {
-      return json({ ok: false, error: `Proxy failed: ${String(err)}` }, 502, CORS_HEADERS);
+      const response = await fetch(target, init);
+      const res = new Response(response.body, response);
+      res.headers.set("Access-Control-Allow-Origin", "*");
+      return res;
     }
+
+    // 否則回傳靜態頁（index.html）
+    return env.ASSETS.fetch(request);
   },
 };
+
 
 // ---- utils ----
 function json(obj, status = 200, extraHeaders = {}) {

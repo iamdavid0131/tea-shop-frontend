@@ -52,13 +52,10 @@
     window.dispatchEvent(new CustomEvent('promo:applied', { detail: { promo } }));
   });
   </script>
-
-  <!-- 主 JS（指向 /api/*） -->
-  <script type="module" src="assets/app.js"></script>
 </head>
 
 <body>
-  <div id="loadingMask" role="status" aria-live="polite">送出中…請稍候</div>
+  <div id="loading" role="status" aria-live="polite">送出中…請稍候</div>
   <div class="rotate-hint" id="rotateHint">建議以直式瀏覽，獲得更好的體驗 🙌</div>
 
   <!-- iOS-style Large Title Header -->
@@ -325,5 +322,8 @@
     <span id="undoMsg"></span>
     <button id="undoBtn" type="button" style="margin-left:10px;background:#fff;color:#111;border:0;border-radius:8px;padding:4px 10px;font-weight:700;">復原</button>
   </div>
+
+    <!-- 主 JS（指向 /api/*） -->
+  <script type="module" src="assets/app.js"></script>
 </body>
 </html>
