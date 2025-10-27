@@ -25,7 +25,7 @@
 // ------------------------------
 // 🔧 API 基本設定
 // ------------------------------
-const API_BASE = "https://teaorder-worker.tea-shop-frontend.workers.dev";
+const API_BASE = "https://tea-order-server.onrender.com/api";
 // 包一層通用的 API fetch
 async function post(endpoint, payload) {
   const res = await fetch(`${API_BASE}${endpoint}`, {

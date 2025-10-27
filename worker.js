@@ -1,18 +1,22 @@
 /**
- * ☁️ 祥興茶行 Worker（修正版：正確代理 Node.js /api 路徑）
+ * ☁️ 祥興茶行 Cloudflare 前端 Worker（正式版）
  * -------------------------------------------------------
- * ✅ 開發模式：代理 http://localhost:3000/api
- * ✅ 正式部署：代理你的雲端 Node.js API
+ * ✅ 自動代理 /api/* 到雲端後端 Worker
+ * ✅ 其他請求交給 Pages 靜態資產
  * -------------------------------------------------------
  */
 
 export default {
-  async fetch(request, env, ctx) {
+  async fetch(request, env) {
     const url = new URL(request.url);
 
-    // ✅ 代理所有 /api/* 請求到本地 Node.js
+    // === 後端雲端 API 網址（請改成你實際部署的 Worker 網址） ===
+    const API_BASE = "https://tea-order-server.onrender.com/api";
+
+    // ✅ 攔截 /api/* → 轉發到雲端後端
     if (url.pathname.startsWith("/api/")) {
-      const target = "http://127.0.0.1:3000" + url.pathname + url.search;
+      const target = API_BASE + url.pathname + url.search;
+
       const init = {
         method: request.method,
         headers: request.headers,
@@ -27,16 +31,7 @@ export default {
       return res;
     }
 
-    // 否則回傳靜態頁（index.html）
+    // ✅ 其他請求 → 靜態頁面
     return env.ASSETS.fetch(request);
   },
 };
-
-
-// ---- utils ----
-function json(obj, status = 200, extraHeaders = {}) {
-  return new Response(JSON.stringify(obj), {
-    status,
-    headers: { "content-type": "application/json", ...extraHeaders },
-  });
-}

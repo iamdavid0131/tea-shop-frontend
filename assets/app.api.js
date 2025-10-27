@@ -3,11 +3,11 @@
 // 若前端與後端同域，可用相對路徑 "/api"
 // 若本地測試在 3000 port，可改成 "http://localhost:3000/api"
 // app.api.js
-const BASE = "/api";
+const API_BASE = 'https://tea-order-server.onrender.com/api';
 
 
 async function post(action, payload) {
-  const r = await fetch(`${BASE}/${action}`, {
+  const r = await fetch(`${API_BASE}/${action}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload || {}),
@@ -20,7 +20,7 @@ async function post(action, payload) {
 
 export const api = {
   getConfig() {
-    return fetch(`${BASE}/config`).then(r => r.json());
+    return fetch(`${API_BASE}/config`).then(r => r.json());
   },
   previewTotals(items, shippingMethod, promoCode) {
     return post("previewTotals", { items, shippingMethod, promoCode });
