@@ -42,7 +42,7 @@ async function post(endpoint, payload) {
 }
 
 async function get(endpoint) {
-  const res = await fetch(`${API_BASE}${endpoint}`);
+  const res = await fetch(`${API_BASE}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`);
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`[HTTP ${res.status}] ${text}`);
