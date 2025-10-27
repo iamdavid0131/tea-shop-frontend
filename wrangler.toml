@@ -5,11 +5,6 @@ compatibility_date = "2025-10-25"
 # ======================================================
 # 🌍 綁定 Worker 到正式網域
 # ------------------------------------------------------
-# 此 Worker 專責代理 /api/* 請求到 Node.js 後端
-# 例如：
-#   https://hsianghsing.org/api/order
-#   https://www.hsianghsing.org/api/member
-# ======================================================
 routes = [
   { pattern = "hsianghsing.org/api/*", zone_id = "f23528900e3fe147202e4ee63e884590" },
   { pattern = "www.hsianghsing.org/api/*", zone_id = "f23528900e3fe147202e4ee63e884590" }
@@ -18,11 +13,13 @@ routes = [
 # ======================================================
 # 🏭 正式環境變數
 # ------------------------------------------------------
-# 這些變數會在 Cloudflare Worker 執行時注入。
-# ======================================================
 [vars]
-# Node.js API 網址（Render / Railway / Fly.io / Vercel 等）
-NODE_API = "https://hsianghsing.org/api"
+# 🚨 這裡一定要是「你的 Node.js 伺服器」實際運行位置（不是自己）
+# 如果你的 Node.js 在同一台 Cloudflare Pages 上，就不該再透過 Worker。
+# 如果你目前還在本機開發，可以暫時留空或指向 Render / Railway 的 Node URL。
+NODE_API = "http://localhost:3000"
+# 範例（日後你有部署 Node.js 雲端後改這裡）：
+# NODE_API = "https://teaorder-server.onrender.com"
 
 # 若要限制前端網域，可填寫：
 ALLOW_ORIGIN = "https://hsianghsing.org"
@@ -30,10 +27,7 @@ ALLOW_ORIGIN = "https://hsianghsing.org"
 # ======================================================
 # 🧪 開發模式設定
 # ------------------------------------------------------
-# 在本機執行 wrangler dev / pages dev 時，
-# Worker 將代理 API 請求至 localhost:3000。
-# ======================================================
 [env.development]
 [env.development.vars]
-NODE_API = "http://localhost:3000/api"
+NODE_API = "http://localhost:3000"
 ALLOW_ORIGIN = "*"

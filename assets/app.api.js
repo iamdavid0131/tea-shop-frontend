@@ -2,7 +2,12 @@
 // 將 BASE 改為 Node.js API 伺服器的實際網址
 // 若前端與後端同域，可用相對路徑 "/api"
 // 若本地測試在 3000 port，可改成 "http://localhost:3000/api"
-const BASE = "http://localhost:3000/api";
+// app.api.js
+const BASE =
+  location.hostname === "localhost"
+    ? "http://localhost:3000/api"
+    : "https://hsianghsing.org/api";
+
 
 async function post(action, payload) {
   const r = await fetch(`${BASE}/${action}`, {
