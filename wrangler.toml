@@ -11,10 +11,8 @@ compatibility_date = "2025-10-25"
 #   https://www.hsianghsing.org/api/member
 # ======================================================
 routes = [
-  { pattern = "hsianghsing.org/api", custom_domain = true },
-  { pattern = "hsianghsing.org/api/*", custom_domain = true },
-  { pattern = "www.hsianghsing.org/api", custom_domain = true },
-  { pattern = "www.hsianghsing.org/api/*", custom_domain = true }
+  { pattern = "hsianghsing.org/api/*", zone_id = "f23528900e3fe147202e4ee63e884590" },
+  { pattern = "www.hsianghsing.org/api/*", zone_id = "f23528900e3fe147202e4ee63e884590" }
 ]
 
 # ======================================================
