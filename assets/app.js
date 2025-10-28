@@ -54,51 +54,60 @@ window.addEventListener("beforeunload", () => {
 // ============================================================
 // 🛍️ 商品渲染（含分類、裝罐、標籤、詳情收合、庫存）
 // ============================================================
-function renderProducts(products) {
-  const list = $("categoryList");
-  list.innerHTML = "";
+function renderProducts(items) {
+  const panel = $("categoryList");
+  panel.innerHTML = "";
 
-  // 依分類群組
   const categories = {};
-  products.forEach(p => {
+  items.forEach(p => {
     if (!categories[p.category]) categories[p.category] = [];
     categories[p.category].push(p);
   });
 
-  // 渲染分類
-  Object.entries(categories).forEach(([cat, items], i) => {
-    const group = document.createElement("div");
-    group.className = "cat-group";
-    group.dataset.cat = cat;
+  Object.entries(categories).forEach(([cat, list], i) => {
+    const section = document.createElement("div");
+    section.className = "category-section";
 
-    // 分類 header（第一個預設展開）
-    const isOpen = i === 0 ? "true" : "false";
-    group.innerHTML = `
-      <div class="cat-head">
-        <button class="cat-toggle" aria-expanded="${isOpen}">
-          <span class="title">${cat}</span>
-          <span class="chev">⌃</span>
-        </button>
-      </div>
-      <div class="cat-panel" style="max-height:${i === 0 ? "none" : "0"};">
-      </div>
+    const header = document.createElement("button");
+    header.className = "category-header";
+    header.innerHTML = `
+      <span class="cat-title">${cat}</span>
+      <span class="chev">▼</span>
     `;
-    const panel = group.querySelector(".cat-panel");
+    if (i === 0) header.classList.add("open");
 
-    // === 商品卡 ===
-    items.forEach(p => {
+    const body = document.createElement("div");
+    body.className = "category-body";
+    body.style.maxHeight = i === 0 ? "none" : "0";
+
+    list.forEach(p => {
       const tags = (p.tags || []).filter(t => t.trim()).map(t => `<span class="tag">${t}</span>`).join("");
-      const story = p.story ? `<div class="detailblock" hidden><p class="story">${p.story}</p></div>` : "";
-      const profile = p.profile
-            ? `
-            <div class="profile-blocks">
-              ${renderProfile('甜度', p.profile.sweetness)}
-              ${renderProfile('香氣', p.profile.aroma)}
-              ${renderProfile('焙火', p.profile.roast)}
-              ${renderProfile('厚度', p.profile.body)}
-              ${renderProfile('餘韻', p.profile.finish)}
-            </div>`
-            : "";
+
+      const detailBlock = `
+        <div class="detailblock" hidden id="detail-${p.id}">
+          ${p.story ? `<p class="story fade-in">${p.story}</p>` : ""}
+          ${
+            p.profile
+              ? `<div class="profile-blocks fade-in">
+                  ${renderProfile("甜度", p.profile.sweetness,p.category)}
+                  ${renderProfile("香氣", p.profile.aroma,p.category)}
+                  ${renderProfile("焙火", p.profile.roast,p.category)}
+                  ${renderProfile("厚度", p.profile.body,p.category)}
+                  ${renderProfile("餘韻", p.profile.finish,p.category)}
+                 </div>`
+              : ""
+          }
+          ${
+            p.brew
+              ? `<div class="brew-info fade-in">
+                  <p><b>熱泡：</b>${p.brew.hot.grams}g / ${p.brew.hot.water_ml}ml / ${p.brew.hot.temp_c}°C / ${p.brew.hot.time_s}秒 × ${p.brew.hot.infusions}</p>
+                  <p><b>冷泡：</b>${p.brew.cold.grams}g / ${p.brew.cold.water_ml}ml / ${p.brew.cold.hours}小時（冰箱冷藏）</p>
+                 </div>`
+              : ""
+          }
+        </div>
+      `;
+
       const card = document.createElement("div");
       card.className = "itemcard";
       card.innerHTML = `
@@ -133,98 +142,133 @@ function renderProducts(products) {
                   <button class="step" data-pack="${p.id}" data-dir="plus">＋</button>
                 </div>
               </div>
-              <p class="pack-hint">可選裝罐數量 ≤ 購買數量</p>
-              <p class="pack-err" id="packErr-${p.id}">⚠️ 裝罐數量不可超過購買數量</p>
+              <p class="pack-err" id="packErr-${p.id}">裝罐數量不可超過購買數量</p>
             `
             : ""
         }
 
-        <button class="more-btn" aria-expanded="false">收合詳情</button>
-        ${story}
-        ${profile}
-
+        <button class="more-btn" aria-expanded="false" data-id="${p.id}">
+          <span class="label">收合詳情</span>
+          <span class="arrow">▼</span>
+        </button>
+        ${detailBlock}
       `;
-      panel.appendChild(card);
+      body.appendChild(card);
     });
 
-    list.appendChild(group);
+    section.appendChild(header);
+    section.appendChild(body);
+    panel.appendChild(section);
   });
-  function renderProfile(label, level) {
-    const blocks = Array.from({length: 5}, (_, i) => 
-      `<div class="blk ${i < level ? 'on' : ''}"></div>`
-    ).join("");
-    return `<div class="bar"><b>${label}</b>${blocks}</div>`;
-  }
-  // === 綁定：分類收合 ===
-  list.addEventListener("click", e => {
-    const toggle = e.target.closest(".cat-toggle");
-    if (!toggle) return;
-    const expanded = toggle.getAttribute("aria-expanded") === "true";
-    toggle.setAttribute("aria-expanded", !expanded);
-    const panel = toggle.parentElement.nextElementSibling;
-    panel.style.maxHeight = expanded ? "0" : "none";
-  });
-
-  // === 數量控制 ===
-  list.addEventListener("click", e => {
-    const btn = e.target.closest(".step");
-    if (!btn) return;
-    const id = btn.dataset.id;
-    const dir = btn.dataset.dir;
-    const elQty = $(`qty-${id}`);
-    let qty = parseInt(elQty.textContent) || 0;
-    qty = dir === "plus" ? qty + 1 : Math.max(0, qty - 1);
-    elQty.textContent = qty;
-    saveCart();
-    updateTotals();
-  });
-
-  // === 裝罐控制 ===
-  list.addEventListener("change", e => {
-    if (e.target.id?.startsWith("pack-")) {
-      const pid = e.target.id.replace("pack-", "");
-      $(`packQtyWrap-${pid}`).classList.toggle("hidden", !e.target.checked);
-    }
-  });
-
-  // === 裝罐數量檢查 ===
-  list.addEventListener("click", e => {
-    if (e.target.dataset.pack) {
-      const pid = e.target.dataset.pack;
-      const dir = e.target.dataset.dir;
-      const input = $(`packQty-${pid}`);
-      let val = parseInt(input.value) || 0;
-      val = dir === "plus" ? val + 1 : Math.max(0, val - 1);
-      input.value = val;
-
-      // 驗證裝罐 ≤ 購買數量
-      const buyQty = parseInt($(`qty-${pid}`).textContent || 0);
-      const err = $(`packErr-${pid}`);
-      if (val > buyQty) {
-        err.style.display = "block";
-        input.classList.add("is-invalid");
-      } else {
-        err.style.display = "none";
-        input.classList.remove("is-invalid");
-      }
-    }
-  });
-
-  console.log("✅ 商品渲染完成，共分類：", Object.keys(categories).length);
 }
 
-// 展開／收合詳情
-document.addEventListener("click", e => {
-  const btn = e.target.closest(".more-btn");
-  if (!btn) return;
-  const expanded = btn.getAttribute("aria-expanded") === "true";
-  btn.setAttribute("aria-expanded", !expanded);
-  const detail = btn.nextElementSibling;
-  detail.hidden = expanded;
-  btn.textContent = expanded ? "收合詳情" : "隱藏詳情";
+// === Profile 條動態渲染（自動依茶類決定色調） ===
+function renderProfile(label, level, category = "") {
+  const colorMap = {
+    "窨花": "linear-gradient(90deg, #f8d67e, #f2b33d)",
+    "高山": "linear-gradient(90deg, #7ddca3, #34c759)",
+    "紅茶": "linear-gradient(90deg, #ff9671, #ff5a36)",
+    "白茶": "linear-gradient(90deg, #e6dcc9, #b9a584)",
+    "焙香": "linear-gradient(90deg, #e1a35a, #c97d42)",
+    "蜜香": "linear-gradient(90deg, #ffb45a, #ff8c00)",
+    "文山": "linear-gradient(90deg, #ffb86c, #ff9f0a)",
+    "加購": "linear-gradient(90deg, #82c9ff, #0a84ff)",
+  };
+
+  // 找符合類別的色彩（預設為翠綠）
+  const gradient = Object.entries(colorMap).find(([key]) => category.includes(key))?.[1] || 
+                   "linear-gradient(90deg, #8cd37f, #34c759, #2fb24c)";
+
+  const max = 5;
+  const bars = Array.from({ length: max }, (_, i) => {
+    const active = i < level ? "on" : "";
+    const delay = i * 0.08;
+    return `<div class="blk ${active}" style="--bar-color:'${gradient}';animation-delay:${delay}s"></div>`;
+  }).join("");
+
+  return `
+    <div class="bar fade-in">
+      <b>${label}</b>
+      <div class="profile-bar" data-gradient="${gradient}">${bars}</div>
+    </div>
+  `;
+}
+
+
+
+/* === 分類展開收合 === */
+document.addEventListener("click", (e) => {
+  const header = e.target.closest(".category-header");
+  if (!header) return;
+
+  const body = header.nextElementSibling;
+  const isOpen = header.classList.contains("open");
+
+  document.querySelectorAll(".category-header").forEach(h => {
+    h.classList.remove("open");
+    h.querySelector(".chev").textContent = "▼";
+  });
+  document.querySelectorAll(".category-body").forEach(b => (b.style.maxHeight = "0"));
+
+  if (!isOpen) {
+    header.classList.add("open");
+    header.querySelector(".chev").textContent = "▲";
+    body.style.maxHeight = "none";
+    setTimeout(() => body.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+  }
 });
 
+/* === 商品詳情收合（同分類只開一個） === */
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".more-btn");
+  if (!btn) return;
+  const id = btn.dataset.id;
+  const block = document.getElementById(`detail-${id}`);
+  if (!block) return;
 
+  const allBlocks = btn.closest(".category-body").querySelectorAll(".detailblock");
+  const allBtns = btn.closest(".category-body").querySelectorAll(".more-btn");
+
+  allBlocks.forEach(b => (b.hidden = true));
+  allBtns.forEach(b => {
+    b.querySelector(".label").textContent = "收合詳情";
+    b.querySelector(".arrow").textContent = "▼";
+    b.classList.remove("active");
+  });
+
+  const open = !block.hidden;
+  block.hidden = open;
+
+  if (!open) {
+    btn.querySelector(".label").textContent = "隱藏詳情";
+    btn.querySelector(".arrow").textContent = "▲";
+    btn.classList.add("active");
+    block.querySelectorAll(".fade-in").forEach((el, i) => {
+      el.style.animation = `fadeSlideIn 0.5s ease forwards ${i * 0.1}s`;
+    });
+    const offset = block.getBoundingClientRect().top + window.scrollY - 80;
+    window.scrollTo({ top: offset, behavior: "smooth" });
+  }
+});
+
+/* === 裝罐數量檢查 === */
+document.addEventListener("input", (e) => {
+  if (!e.target.matches("[id^='packQty-']")) return;
+  const id = e.target.id.replace("packQty-", "");
+  const packInput = e.target;
+  const buyQty = parseInt($(`qty-${id}`)?.textContent || 0);
+  const packQty = parseInt(packInput.value || 0);
+  const plusBtn = packInput.parentElement.querySelector("[data-dir='plus'][data-pack]");
+  const hint = $(`packErr-${id}`);
+
+  if (packQty > buyQty) {
+    hint.classList.add("show");
+    plusBtn.classList.add("disabled");
+  } else {
+    hint.classList.remove("show");
+    plusBtn.classList.remove("disabled");
+  }
+});
 
 // ============================================================
 // 💾 localStorage 快取
