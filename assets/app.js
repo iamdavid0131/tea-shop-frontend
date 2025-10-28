@@ -45,6 +45,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
+// 🔄 若使用者重新整理頁面 → 清空購物車快取並重新載入
+window.addEventListener("beforeunload", () => {
+  try {
+    localStorage.removeItem("teaOrderCart"); // 清除購物快取
+  } catch (e) {}
+});
 // ============================================================
 // 🛍️ 商品渲染（含分類、裝罐、標籤、詳情收合、庫存）
 // ============================================================
@@ -383,8 +389,15 @@ $("submitBtnSticky")?.addEventListener("click", async () => {
 /* ============================================================
    🧾 查看明細（整合後端折扣計算版）
    ============================================================ */
-$("viewCartBtn")?.addEventListener("click", showCartSheet);
-$("cartCloseBtn")?.addEventListener("click", hideCartSheet);
+$("viewCartBtn")?.addEventListener("click", () => {
+  $("cartDetailModal").classList.add("active");
+  document.body.classList.add("modal-open");
+});
+
+$("closeCartModal")?.addEventListener("click", () => {
+  $("cartDetailModal").classList.remove("active");
+  document.body.classList.remove("modal-open");
+});
 
 document.getElementById("cartSheetBackdrop")?.addEventListener("click", (e) => {
   if (e.target.id === "cartSheetBackdrop") hideCartSheet();

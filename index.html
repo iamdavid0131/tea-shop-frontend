@@ -196,6 +196,13 @@
     </div>
   </div>
 
+  <!-- 購物清單明細 Modal -->
+  <div id="cartDetailModal">
+    <button id="closeCartModal">&times;</button>
+    <h2>🛒 已選商品</h2>
+    <div id="cartItemsList"></div>
+  </div>
+
   <!-- 成功卡片 -->
   <div id="successBackdrop" class="modal-backdrop" aria-hidden="true">
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="successTitle">
@@ -275,48 +282,6 @@
     </section>
   </div>
 
-  <!-- Cart Sheet -->
-  <div id="cartSheetBackdrop" class="sheet-backdrop" aria-hidden="true">
-    <div id="cartSheet" class="cart-sheet" role="dialog" aria-modal="true" aria-labelledby="cartTitle" data-open="false">
-      <div class="cart-grabber" aria-hidden="true"></div>
-      <div class="cart-peek" id="cartPeek">
-        <div class="peek-left">
-          <span class="peek-title">購物清單</span>
-          <span id="freeBadge" class="muted" style="display:none;font-weight:800;">已免運 🎉</span>
-        </div>
-      </div>
-
-      <div class="cart-body">
-        <div class="cart-head">
-          <div class="cart-title" id="cartTitle">已選商品</div>
-          <button id="cartCloseBtn" class="btn btn-outline" type="button">收起</button>
-        </div>
-
-        <div id="cartItems" class="cart-list"></div>
-
-        <hr class="cart-hr">
-        <div class="cart-line">
-          <span>小計</span><b id="cartSub">—</b>
-        </div>
-
-        <div class="cart-line" id="cartSubOrigRow" style="display:none;">
-          <span class="muted">小計（原價）</span>
-          <b class="muted" style="text-decoration: line-through;" id="cartSubOrig">—</b>
-        </div>
-
-        <div class="cart-line" id="cartDiscRow" style="display:none;">
-          <span>折扣</span><b id="cartDisc">—</b>
-        </div>
-
-        <div class="cart-line">
-          <span>運費</span><b id="cartShip">—</b>
-        </div>
-        <div class="cart-line cart-total">
-          <span>總額</span><b id="cartTotal">—</b>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <div id="undoToast" style="position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#111;color:#fff;padding:10px 14px;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,.25);font-size:14px;display:none;z-index:1003;">
     <span id="undoMsg"></span>
