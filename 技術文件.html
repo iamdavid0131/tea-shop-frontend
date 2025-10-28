@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>祥興茶行購物系統前端結構與樣式對照表</title>
+<style>
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro TC", "Noto Sans TC", sans-serif;
+  background: #fff;
+  color: #222;
+  line-height: 1.6;
+  margin: 0;
+  padding: 40px 24px;
+}
+h1, h2 {
+  font-weight: 800;
+  text-align: left;
+  margin-top: 40px;
+  color: #111;
+}
+h1 { font-size: 32px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+h2 { font-size: 26px; margin-bottom: 8px; }
+p { margin-top: 4px; color: #666; }
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 16px 0 48px;
+  background: #fff;
+}
+th, td {
+  border: 1px solid #e5e7eb;
+  padding: 10px 14px;
+  vertical-align: top;
+}
+th {
+  background: #f9fafb;
+  text-align: left;
+  font-weight: 700;
+}
+td { font-size: 15px; }
+code {
+  background: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: Menlo, monospace;
+  color: #0a84ff;
+}
+.note {
+  color: #777;
+  font-size: 14px;
+}
+.section { margin-top: 64px; }
+</style>
+</head>
+
+<body>
+
+<h1>📘 祥興茶行購物系統前端結構與樣式對照表<br>
+<small style="font-weight:400;color:#666;">Front-End Structure & Style Reference — Chen Jia-Xiang / 2025-10-28</small>
+</h1>
+
+<p>本文件詳細說明 <b>祥興茶行購物系統</b> 前端 HTML 元素、CSS 對應、與 JavaScript 功能互動。<br>
+Each section lists all key DOM elements with their function, CSS reference, notes, and JS linkage.</p>
+
+<!-- =============== Header Section =============== -->
+<div class="section">
+<h2>標題區 / Header Section</h2>
+<table>
+<thead><tr>
+<th>Element 元素</th><th>Function 功能說明</th><th>Style 對應 (CSS)</th><th>Notes 備註</th><th>🧱 JS 連動</th>
+</tr></thead>
+<tbody>
+<tr><td><code>&lt;header class="ios-header"&gt;</code></td>
+<td>顯示標題與副標說明文字</td>
+<td>.ios-header, .ios-title-lg, .ios-subtitle</td>
+<td>固定於頁面頂端，隨滾動淡出背景</td>
+<td>無動態綁定</td></tr>
+
+<tr><td><code>&lt;h1 class="ios-title-lg"&gt;</code></td>
+<td>主標題：「祥興台灣茶系列訂購表單」</td>
+<td>.ios-title-lg</td>
+<td>字重 800，置中顯示</td>
+<td>靜態文本</td></tr>
+
+<tr><td><code>&lt;div class="ios-subtitle"&gt;</code></td>
+<td>副標說明文字（運費條件）</td>
+<td>.ios-subtitle</td>
+<td>灰色小字體</td>
+<td>靜態文本</td></tr>
+</tbody></table>
+</div>
+
+<!-- =============== Item Section =============== -->
+<div class="section">
+<h2>商品區 / Item Section</h2>
+<table>
+<thead><tr>
+<th>Element 元素</th><th>Function 功能說明</th><th>Style 對應 (CSS)</th><th>Notes 備註</th><th>🧱 JS 連動</th>
+</tr></thead>
+<tbody>
+<tr><td><code>#itemsCard</code></td>
+<td>整個商品卡片容器</td>
+<td>.card, .stepcard</td>
+<td>每個分類包一張卡</td>
+<td><code>renderProducts()</code> 生成內容</td></tr>
+
+<tr><td><code>#categoryList</code></td>
+<td>商品清單容器</td>
+<td>.itemlist, .itemcard</td>
+<td>以 Grid 呈現兩欄或單欄</td>
+<td>由 JS 根據 API 商品資料動態生成</td></tr>
+
+<tr><td><code>.product-card</code></td>
+<td>單一商品卡</td>
+<td>.itemcard</td>
+<td>含名稱、價格、＋/− 控制</td>
+<td>綁定 <code>click</code> 更新數量與 localStorage</td></tr>
+
+<tr><td><code>.plus / .minus</code></td>
+<td>數量加減按鈕</td>
+<td>.qty .step</td>
+<td>具輕微按壓效果</td>
+<td>觸發 <code>updateTotals()</code></td></tr>
+</tbody></table>
+</div>
+
+<!-- =============== Receiver Section =============== -->
+<div class="section">
+<h2>收件資料區 / Receiver Section</h2>
+<table>
+<thead><tr>
+<th>Element 元素</th><th>Function 功能說明</th><th>Style 對應 (CSS)</th><th>Notes 備註</th><th>🧱 JS 連動</th>
+</tr></thead>
+<tbody>
+<tr><td><code>#receiverCard</code></td>
+<td>整個收件資料輸入卡片</td>
+<td>#receiverCard input, textarea</td>
+<td>含姓名、電話、備註、優惠碼欄</td>
+<td>無動態生成</td></tr>
+
+<tr><td><code>#phone</code></td>
+<td>電話輸入框</td>
+<td>input[type=tel]</td>
+<td>含錯誤訊息 <code>#phoneErr</code></td>
+<td>驗證於 submitOrder()</td></tr>
+
+<tr><td><code>#promoCode</code></td>
+<td>優惠碼輸入框</td>
+<td>.btn, input</td>
+<td>搭配套用按鈕</td>
+<td>blur 時呼叫 <code>api.previewTotals()</code></td></tr>
+
+<tr><td><code>#note</code></td>
+<td>訂單備註</td>
+<td>textarea</td>
+<td>多行文字輸入</td>
+<td>附加於送單 payload</td></tr>
+</tbody></table>
+</div>
+
+<!-- =============== Shipping Section =============== -->
+<div class="section">
+<h2>運送方式區 / Shipping Section</h2>
+<table>
+<thead><tr>
+<th>Element 元素</th><th>Function 功能說明</th><th>Style 對應 (CSS)</th><th>Notes 備註</th><th>🧱 JS 連動</th>
+</tr></thead>
+<tbody>
+<tr><td><code>#shippingCard</code></td>
+<td>選擇運送方式（超商／宅配）</td>
+<td>#shippingCard input[type=radio]</td>
+<td>以 radio 形式呈現</td>
+<td>更新運費條件</td></tr>
+
+<tr><td><code>#storeFields</code></td>
+<td>超商取貨欄位</td>
+<td>.row, select, .btn-outline</td>
+<td>含品牌、門市名稱輸入</td>
+<td>支援 store picker 彈窗</td></tr>
+
+<tr><td><code>#codFields</code></td>
+<td>貨到付款地址欄位</td>
+<td>#codFields input</td>
+<td>隱藏／顯示切換</td>
+<td>由 JS 根據選項切換</td></tr>
+
+<tr><td><code>#openStoreBtn</code></td>
+<td>開啟地圖選店按鈕</td>
+<td>.btn-outline</td>
+<td>呼叫門市選擇器</td>
+<td>開啟 <code>#store-picker</code></td></tr>
+</tbody></table>
+</div>
+
+<!-- =============== Sticky Bar Section =============== -->
+<div class="section">
+<h2>底部結帳區 / Sticky Checkout Bar</h2>
+<table>
+<thead><tr>
+<th>Element 元素</th><th>Function 功能說明</th><th>Style 對應 (CSS)</th><th>Notes 備註</th><th>🧱 JS 連動</th>
+</tr></thead>
+<tbody>
+<tr><td><code>.stickybar</code></td>
+<td>固定於頁底顯示總金額與按鈕</td>
+<td>.stickybar, .sticky-inner</td>
+<td>白底陰影、三顆按鈕</td>
+<td>更新金額由 <code>updateTotals()</code> 控制</td></tr>
+
+<tr><td><code>#total_s, #sub_s, #ship_s</code></td>
+<td>顯示小計與運費金額</td>
+<td>.grand, .subline</td>
+<td>即時更新</td>
+<td><code>api.previewTotals()</code> 回傳後更新</td></tr>
+
+<tr><td><code>#submitBtnSticky</code></td>
+<td>送出訂單主按鈕</td>
+<td>.btn</td>
+<td>禁用時變灰</td>
+<td>觸發 <code>submitOrder()</code></td></tr>
+</tbody></table>
+</div>
+
+<!-- =============== Modal Section =============== -->
+<div class="section">
+<h2>送出成功與確認彈窗 / Modal Section</h2>
+<table>
+<thead><tr>
+<th>Element 元素</th><th>Function 功能說明</th><th>Style 對應 (CSS)</th><th>Notes 備註</th><th>🧱 JS 連動</th>
+</tr></thead>
+<tbody>
+<tr><td><code>#successBackdrop</code></td>
+<td>送出成功後顯示的確認視窗</td>
+<td>.modal-backdrop, .modal-card</td>
+<td>顯示訂單編號與金額</td>
+<td>由 submitOrder() 控制顯示</td></tr>
+
+<tr><td><code>#sheetBackdrop</code></td>
+<td>送出前的確認 Bottom Sheet</td>
+<td>.sheet-backdrop, .sheet</td>
+<td>列出明細與小計</td>
+<td>未啟用則隱藏</td></tr>
+
+<tr><td><code>#sheetConfirm</code></td>
+<td>最終確認按鈕</td>
+<td>.btn</td>
+<td>送出訂單</td>
+<td>綁定 submitOrder()</td></tr>
+</tbody></table>
+</div>
+
+<!-- =============== Store Picker Section =============== -->
+<div class="section">
+<h2>門市選擇器 / Store Picker Section</h2>
+<table>
+<thead><tr>
+<th>Element 元素</th><th>Function 功能說明</th><th>Style 對應 (CSS)</th><th>Notes 備註</th><th>🧱 JS 連動</th>
+</tr></thead>
+<tbody>
+<tr><td><code>#store-picker</code></td>
+<td>整體門市選擇器覆蓋層</td>
+<td>#store-picker, .sp-sheet</td>
+<td>底部滑出式面板</td>
+<td>由 <code>#openStoreBtn</code> 控制開關</td></tr>
+
+<tr><td><code>#sp-map</code></td>
+<td>Leaflet 地圖容器</td>
+<td>.sp-map</td>
+<td>使用 OSM 地圖顯示門市</td>
+<td>Leaflet 載入後初始化</td></tr>
+
+<tr><td><code>#sp-results</code></td>
+<td>顯示搜尋結果清單</td>
+<td>.sp-results</td>
+<td>動態生成</td>
+<td>JS 根據搜尋結果渲染</td></tr>
+</tbody></table>
+</div>
+
+<!-- =============== CSS Token Section =============== -->
+<div class="section">
+<h2>樣式變數 / CSS Token Reference</h2>
+<table>
+<thead><tr>
+<th>變數 Variable</th><th>用途 Purpose</th><th>預設值 Default</th><th>應用位置 Usage</th><th>備註 Notes</th>
+</tr></thead>
+<tbody>
+<tr><td><code>--radius</code></td><td>圓角半徑</td><td>20px</td><td>所有卡片、按鈕</td><td>維持一致圓潤感</td></tr>
+<tr><td><code>--accent</code></td><td>品牌主色</td><td>#0a84ff</td><td>.btn, focus outline</td><td>iOS 藍</td></tr>
+<tr><td><code>--glass-fill-1 / 2</code></td><td>玻璃材質漸層</td><td>rgba(255,255,255,.78/.92)</td><td>.itemcard 背景</td><td>營造玻璃感</td></tr>
+<tr><td><code>--hairline</code></td><td>邊框線</td><td>1px solid rgba(0,0,0,.06)</td><td>卡片、標題區</td><td>細緻邊框</td></tr>
+<tr><td><code>--content-width</code></td><td>最大內容寬度</td><td>704px</td><td>居中版面</td><td>桌機顯示限定</td></tr>
+</tbody></table>
+</div>
+
+</body>
+</html>

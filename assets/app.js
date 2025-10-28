@@ -57,7 +57,7 @@ function renderProducts(products) {
     const card = document.createElement("div");
     card.className = "product-card";
     card.innerHTML = `
-      <div class="product-title">${p.name}</div>
+      <div class="product-title">${p.name || p.title || '(未命名商品)'}</div>
       <div class="product-price">NT$ ${p.price}</div>
       <div class="product-controls">
         <button class="minus" data-id="${p.id}">−</button>
