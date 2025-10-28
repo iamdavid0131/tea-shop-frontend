@@ -130,17 +130,25 @@ async function updateTotals() {
     const preview = await api.previewTotals(items, "store", "");
     console.log("🧾 previewTotals 回傳", preview);
 
-    // 解構 API 回傳資料（支援 data.* 或直屬屬性）
-    const sub = preview.subtotal ?? preview.data?.subtotal ?? 0;
-    const disc = preview.discount ?? preview.data?.discount ?? 0;
-    const ship = preview.shippingFee ?? preview.data?.shippingFee ?? 0;
-    const total = preview.total ?? preview.data?.total ?? sub - disc + ship;
+    // ✅ 萬用防呆解析（自動抓 data 層 or 直屬層）
+    const data = preview.data ?? preview;
 
-    // 更新 sticky bar 各欄位
-    $("sub_s").textContent = `NT$ ${sub.toLocaleString("zh-TW")}`;
-    $("disc_s").textContent = `NT$ ${disc.toLocaleString("zh-TW")}`;
-    $("ship_s").textContent = `NT$ ${ship.toLocaleString("zh-TW")}`;
-    $("total_s").textContent = `NT$ ${total.toLocaleString("zh-TW")}`;
+    // ✅ 同時支援 shipping / shippingFee / totalAfterDiscount
+    const sub = data.subtotal ?? 0;
+    const disc = data.discount ?? 0;
+    const ship = data.shipping ?? data.shippingFee ?? 0;
+    const total =
+      data.total ??
+      (data.totalAfterDiscount !== undefined
+        ? data.totalAfterDiscount + ship
+        : sub - disc + ship);
+
+    // ✅ 安全數值轉換（防止 null）
+    const fmt = (n) => `NT$ ${Number(n || 0).toLocaleString("zh-TW")}`;
+    $("sub_s").textContent = fmt(sub);
+    $("disc_s").textContent = fmt(disc);
+    $("ship_s").textContent = fmt(ship);
+    $("total_s").textContent = fmt(total);
 
     // 🧾 免運門檻提示
     const freeThreshold = CONFIG.FREE_SHIPPING_THRESHOLD || 1000;
@@ -164,6 +172,7 @@ async function updateTotals() {
     toast("⚠️ 金額試算失敗");
   }
 }
+
 
 // ============================================================
 // 🔔 Toast 提示
