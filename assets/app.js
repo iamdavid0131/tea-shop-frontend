@@ -107,7 +107,7 @@ function restoreCart() {
 }
 
 // ============================================================
-// 💰 金額試算 + sticky bar 更新
+// 💰 金額試算 + sticky bar 更新（含免運提示與進度條）
 // ============================================================
 async function updateTotals() {
   const items = CONFIG.PRODUCTS.map((p) => ({
@@ -115,17 +115,50 @@ async function updateTotals() {
     qty: parseInt($(`qty-${p.id}`)?.textContent || 0),
   })).filter((i) => i.qty > 0);
 
-  const elTotal = $("total_s");
-  if (!elTotal) return;
-
+  // 🪫 若購物車為空 → 重置顯示
   if (items.length === 0) {
-    elTotal.textContent = "NT$ 0";
+    $("total_s").textContent = "NT$ 0";
+    $("sub_s").textContent = "—";
+    $("disc_s").textContent = "—";
+    $("ship_s").textContent = "—";
+    $("free_tip_s").style.display = "none";
+    $("freeProgress").style.display = "none";
     return;
   }
 
   try {
     const preview = await api.previewTotals(items, "store", "");
-    elTotal.textContent = `NT$ ${preview.total.toLocaleString("zh-TW")}`;
+    console.log("🧾 previewTotals 回傳", preview);
+
+    // 解構 API 回傳資料（支援 data.* 或直屬屬性）
+    const sub = preview.subtotal ?? preview.data?.subtotal ?? 0;
+    const disc = preview.discount ?? preview.data?.discount ?? 0;
+    const ship = preview.shippingFee ?? preview.data?.shippingFee ?? 0;
+    const total = preview.total ?? preview.data?.total ?? sub - disc + ship;
+
+    // 更新 sticky bar 各欄位
+    $("sub_s").textContent = `NT$ ${sub.toLocaleString("zh-TW")}`;
+    $("disc_s").textContent = `NT$ ${disc.toLocaleString("zh-TW")}`;
+    $("ship_s").textContent = `NT$ ${ship.toLocaleString("zh-TW")}`;
+    $("total_s").textContent = `NT$ ${total.toLocaleString("zh-TW")}`;
+
+    // 🧾 免運門檻提示
+    const freeThreshold = CONFIG.FREE_SHIPPING_THRESHOLD || 1000;
+    const progressBar = $("freeProgressBar");
+    const progressWrap = $("freeProgress");
+    const freeTip = $("free_tip_s");
+
+    if (sub >= freeThreshold) {
+      freeTip.textContent = "🎉 已達免運門檻！";
+      freeTip.style.display = "inline-block";
+      progressWrap.style.display = "none";
+    } else {
+      const diff = freeThreshold - sub;
+      freeTip.textContent = `再消 NT$${diff.toLocaleString("zh-TW")} 即可免運`;
+      freeTip.style.display = "inline-block";
+      progressWrap.style.display = "block";
+      progressBar.style.width = `${Math.min(100, (sub / freeThreshold) * 100)}%`;
+    }
   } catch (err) {
     console.error("試算錯誤:", err);
     toast("⚠️ 金額試算失敗");
