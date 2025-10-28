@@ -862,3 +862,57 @@ button.plus:active, button.minus:active {
       max-height: min(84vh, 88dvh);
     }
   }
+
+  /* === Mobile 最終修正版 === */
+@media (max-width: 768px){
+  html, body {
+    font-size: clamp(15px, 3.2vw, 18px) !important;
+    -webkit-text-size-adjust: 100% !important;
+  }
+  h1,h2,label,.muted,button,
+  input,select,textarea,.btn,
+  #receiverCard h2,#receiverCard label,#receiverCard input,#receiverCard textarea,
+  #shippingCard h2,#shippingCard label,#shippingCard input,#shippingCard select,#shippingCard button,#shippingCard .muted {
+    font-size: clamp(15px, 3.5vw, 18px) !important;
+    line-height: 1.45 !important;
+  }
+
+  body {
+    padding-bottom: calc(var(--stickybar-h, 80px) + 12px);
+  }
+
+  .card, .itemcard {
+    margin: 0 0 12px;
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .qty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .qty button {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid rgba(0,0,0,0.15);
+    background: #fff;
+    font-size: 24px;
+    font-weight: 700;
+    color: #0a84ff;
+    line-height: 1;
+  }
+  .qty input {
+    width: 50px;
+    text-align: center;
+    font-size: 18px;
+    border: none;
+    background: transparent;
+  }
+
+  .stickybar {
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  }
+}
