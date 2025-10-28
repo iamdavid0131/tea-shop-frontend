@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 // ============================================================
-// 🛍️ 商品渲染（分類 + 標語 + 標籤 + 故事 + 沖泡建議 + 風味條）
+// 🛍️ 商品渲染（分類 + 商品 + 庫存 + 詳情收合）
 // ============================================================
 function renderProducts(products) {
   const list = $("categoryList");
@@ -65,7 +65,7 @@ function renderProducts(products) {
     groups[cat].push(p);
   }
 
-  // 生成每個分類手風琴
+  let first = true; // ✅ 只展開第一個分類
   Object.entries(groups).forEach(([cat, items]) => {
     const groupEl = document.createElement("div");
     groupEl.className = "cat-group";
@@ -73,9 +73,8 @@ function renderProducts(products) {
 
     const catHead = document.createElement("div");
     catHead.className = "cat-head";
-
     catHead.innerHTML = `
-      <button class="cat-toggle" aria-expanded="false">
+      <button class="cat-toggle" aria-expanded="${first ? "true" : "false"}">
         <span class="title">${cat}</span>
         <span class="chev">⌄</span>
       </button>
@@ -83,9 +82,9 @@ function renderProducts(products) {
 
     const catPanel = document.createElement("div");
     catPanel.className = "cat-panel";
-    catPanel.style.maxHeight = "0";
+    catPanel.style.maxHeight = first ? "none" : "0"; // ✅ 只第一分類展開
 
-    // 每個商品卡
+    // 商品卡
     items.forEach((p) => {
       const card = document.createElement("div");
       card.className = "itemcard";
@@ -95,50 +94,60 @@ function renderProducts(products) {
         .map((t) => `<span class="tag">${t}</span>`)
         .join("");
 
-      const profileHTML = `
-        <div class="profile-blocks">
-          <div class="bar"><b>甜度</b> ${renderBar(p.profile?.sweetness)}</div>
-          <div class="bar"><b>香氣</b> ${renderBar(p.profile?.aroma)}</div>
-          <div class="bar"><b>焙火</b> ${renderBar(p.profile?.roast)}</div>
-          <div class="bar"><b>厚度</b> ${renderBar(p.profile?.body)}</div>
-          <div class="bar"><b>回韻</b> ${renderBar(p.profile?.finish)}</div>
-        </div>`;
+      const stockInfo = p.stock ? `<span class="stock">（剩餘 ${p.stock}）</span>` : "";
 
-      const brewHTML = `
-        <div class="brew">
-          <div class="line"><b>熱泡：</b> ${p.brew?.hot?.grams}g｜${p.brew?.hot?.water_ml}ml｜${p.brew?.hot?.temp_c}｜${p.brew?.hot?.time_s}s｜${p.brew?.hot?.infusions}泡</div>
-          <div class="line"><b>冷泡：</b> ${p.brew?.cold?.grams}g｜${p.brew?.cold?.water_ml}ml｜${p.brew?.cold?.hours}hr</div>
-        </div>`;
+      const storyHTML = p.story
+        ? `
+        <div class="detailblock more" hidden>
+          <div class="story">${p.story}</div>
+          <div class="brew">
+            <div><b>熱泡：</b>${p.brew?.hot?.grams}g／${p.brew?.hot?.water_ml}ml／${p.brew?.hot?.temp_c}／${p.brew?.hot?.time_s}s × ${p.brew?.hot?.infusions}</div>
+            <div><b>冷泡：</b>${p.brew?.cold?.grams}g／${p.brew?.cold?.water_ml}ml／${p.brew?.cold?.hours}小時</div>
+          </div>
+          <div class="profile-blocks">
+            <div class="bar"><b>甜度</b>${renderBar(p.profile?.sweetness)}</div>
+            <div class="bar"><b>香氣</b>${renderBar(p.profile?.aroma)}</div>
+            <div class="bar"><b>焙火</b>${renderBar(p.profile?.roast)}</div>
+            <div class="bar"><b>厚度</b>${renderBar(p.profile?.body)}</div>
+            <div class="bar"><b>餘韻</b>${renderBar(p.profile?.finish)}</div>
+          </div>
+        </div>
+        <button class="more-btn" type="button" aria-expanded="false">收合詳情</button>
+      `
+        : "";
 
       card.innerHTML = `
         <div class="title">${p.title}</div>
-        <div class="meta">NT$ ${p.price.toLocaleString("zh-TW")}／${p.unit || "單位"}</div>
         ${
           p.tagline
             ? `<div class="quickblock"><span class="tagline">${p.tagline}</span></div>`
             : ""
         }
-        ${
-          tagHTML
-            ? `<div class="quickblock tags">${tagHTML}</div>`
-            : ""
-        }
-        ${
-          p.story
-            ? `<div class="detailblock"><div class="story">${p.story}</div></div>`
-            : ""
-        }
-        ${brewHTML}
-        ${profileHTML}
+        ${tagHTML ? `<div class="quickblock tags">${tagHTML}</div>` : ""}
         <div class="variant">
-          <div class="v-meta">數量：</div>
+          <div class="v-label">散茶</div>
+          <div class="v-meta">NT$ ${p.price.toLocaleString("zh-TW")}／${p.unit || "包"} ${stockInfo}</div>
           <div class="qty">
             <button class="step minus" data-id="${p.id}">−</button>
             <input type="number" id="qty-${p.id}" value="0" min="0" />
             <button class="step plus" data-id="${p.id}">＋</button>
           </div>
         </div>
+        ${
+          p.packable
+            ? `
+          <div class="pack-row">
+            <label class="pack-toggle">
+              <input type="checkbox" id="pack-${p.id}" />
+              裝罐
+            </label>
+          </div>
+        `
+            : ""
+        }
+        ${storyHTML}
       `;
+
       catPanel.appendChild(card);
     });
 
@@ -146,20 +155,21 @@ function renderProducts(products) {
     groupEl.appendChild(catPanel);
     list.appendChild(groupEl);
 
-    // 綁定手風琴開合事件
-    catHead.querySelector(".cat-toggle").addEventListener("click", (e) => {
-      const expanded = e.currentTarget.getAttribute("aria-expanded") === "true";
-      e.currentTarget.setAttribute("aria-expanded", !expanded);
+    // 綁定分類展開/收合
+    const toggle = catHead.querySelector(".cat-toggle");
+    toggle.addEventListener("click", () => {
+      const expanded = toggle.getAttribute("aria-expanded") === "true";
+      toggle.setAttribute("aria-expanded", !expanded);
       groupEl.classList.toggle("is-open", !expanded);
-      catPanel.style.maxHeight = expanded
-        ? "0"
-        : catPanel.scrollHeight + "px";
+      catPanel.style.maxHeight = expanded ? "0" : catPanel.scrollHeight + "px";
     });
+
+    first = false; // 只有第一組打開
   });
 
-  // 數量加減事件
+  // 數量加減
   list.addEventListener("click", (e) => {
-    const btn = e.target.closest("button.step");
+    const btn = e.target.closest(".step");
     if (!btn) return;
     const id = btn.dataset.id;
     const input = $(`qty-${id}`);
@@ -170,14 +180,25 @@ function renderProducts(products) {
     saveCart();
     updateTotals();
   });
+
+  // 詳情展開/收合
+  list.addEventListener("click", (e) => {
+    const btn = e.target.closest(".more-btn");
+    if (!btn) return;
+    const card = btn.closest(".itemcard");
+    const detail = card.querySelector(".more");
+    const expanded = btn.getAttribute("aria-expanded") === "true";
+    btn.setAttribute("aria-expanded", !expanded);
+    btn.textContent = expanded ? "收合詳情" : "收起詳情";
+    detail.hidden = expanded;
+  });
 }
 
-// ===== 工具：風味條（profile）=====
+// 風味條顯示（五格填充）
 function renderBar(level = 0) {
-  const blocks = Array.from({ length: 5 }, (_, i) =>
+  return Array.from({ length: 5 }, (_, i) =>
     `<span class="blk ${i < level ? "on" : ""}"></span>`
   ).join("");
-  return `<span class="bar">${blocks}</span>`;
 }
 
 
