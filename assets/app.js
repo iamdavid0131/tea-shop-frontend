@@ -55,7 +55,7 @@ function renderProducts(products) {
 
   products.forEach((p) => {
     const card = document.createElement("div");
-    card.className = "product-card";
+    card.className = "itemcard";
     card.innerHTML = `
       <div class="product-title">${p.name || p.title || '(未命名商品)'}</div>
       <div class="product-price">NT$ ${p.price}</div>
