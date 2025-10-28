@@ -22,57 +22,18 @@
  * ======================================================
  */
 
-// ------------------------------
-// 🔧 API 基本設定（自動環境偵測）
-// ------------------------------
-const API_BASE = (() => {
-  const host = location.hostname;
-  if (host.includes("localhost")) {
-    // 本地開發測試
-    return "http://localhost:3000/api";
-  }
-  if (host.includes("hsianghsing.org")) {
-    // 正式自有網域（如之後導向到同網域後端）
-    return "https://hsianghsing.org/api";
-  }
-  // 預設（Cloudflare Pages → Render 後端）
-  return "https://tea-order-server.onrender.com/api";
-})();
+
+import { api } from "./app.api.js"; // ✅ 匯入 api 模組
 
 // ------------------------------
-// 📦 API 模組
+// 🧩 DOM helper
 // ------------------------------
-const api = {
-  /** 取得伺服器設定與商品清單 */
-  getConfig() {
-    return get("/config");
-  },
-
-  /** 試算金額（含折扣與運費） */
-  previewTotals(items, shippingMethod, promoCode) {
-    return post("/preview", { items, shippingMethod, promoCode });
-  },
-
-  /** 提交訂單 */
-  submitOrder(payload) {
-    return post("/order", payload);
-  },
-
-  /** 查詢 Google 門市資料 */
-  searchStores(keyword) {
-    return post("/stores", { keyword });
-  },
-};
-
-// ============================================================
-// 🧭 主購物頁邏輯
-// ============================================================
-
-// DOM helper
 window.$ = (id) => document.getElementById(id);
 window.$$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-// 全域設定（會在載入後覆蓋）
+// ------------------------------
+// 💾 全域設定（後端載入後覆蓋）
+// ------------------------------
 let CONFIG = {
   PRODUCTS: [],
   PRICES: {},
@@ -83,19 +44,19 @@ let CONFIG = {
 };
 
 // ------------------------------
-// 🧩 初始化流程
+// 🚀 初始化流程
 // ------------------------------
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     $("loading").style.display = "block";
-    const cfg = await api.getConfig();
+    const cfg = await api.getConfig(); // ✅ 呼叫後端 /api/config
     CONFIG = { ...CONFIG, ...cfg };
     renderProducts(CONFIG.PRODUCTS);
     restoreCart();
     updateTotals();
   } catch (err) {
     console.error("載入設定失敗:", err);
-    toast("⚠️ 無法載入商品，請稍後重試");
+    toast("⚠️ 無法載入商品設定，請稍後重試");
   } finally {
     $("loading").style.display = "none";
   }

@@ -49,20 +49,6 @@ export const api = {
   getPlaceDetail(place_id) {
     return post('/place-detail', { place_id });
   },
-};
-
-// -------------------------------
-// 🌍 掛到全域（方便 Console 測試）
-// -------------------------------
-window.api = api;
-
-window.get = (endpoint) =>
-  fetch(`${API_BASE}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`)
-    .then(r => {
-      if (!r.ok) throw new Error(`[HTTP ${r.status}]`);
-      return r.json();
-    });
-
-window.post = post;
+}; 
 
 console.log("✅ app.api.js 已載入，API_BASE =", API_BASE);
