@@ -137,6 +137,7 @@ label{display:block;font-weight:600;margin:20px 0 8px;font-size:20px}
   align-items: center;
   padding: 10px 6px;
   border-top: 1px solid rgba(0,0,0,.05);
+  margin-bottom: 8px;
 }
 .pack-toggle {
   display: flex;
@@ -150,9 +151,9 @@ label{display:block;font-weight:600;margin:20px 0 8px;font-size:20px}
   gap: 8px;
 }
 .pack-hint {
-  font-size: 18px;
-  color: #6b7280;
-  margin-top: 4px;
+ font-size: 16px; 
+ color: #6b7280; 
+ margin-bottom: 6px;
 }
 .pack-err {
   display: none;
@@ -186,6 +187,31 @@ label{display:block;font-weight:600;margin:20px 0 8px;font-size:20px}
   font-size: 20px;
   line-height: 1.6;
 }
+
+.profile-blocks {
+  margin-top: 8px;
+  border-top: 1px solid rgba(0,0,0,.06);
+  padding-top: 8px;
+}
+.profile-blocks .bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 20px;
+  line-height: 1.6;
+}
+.profile-blocks .blk {
+  width: 8px;
+  height: 8px;
+  border-radius: 3px;
+  background: #e9efe9;
+  border: 1px solid rgba(0,0,0,.12);
+}
+.profile-blocks .blk.on {
+  background: #34c759;
+  border-color: #2aa84b;
+}
+.hidden { display: none !important; }
 
 
 /* === Buttons === */

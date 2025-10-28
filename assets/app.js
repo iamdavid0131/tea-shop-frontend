@@ -83,7 +83,16 @@ function renderProducts(products) {
     items.forEach(p => {
       const tags = (p.tags || []).filter(t => t.trim()).map(t => `<span class="tag">${t}</span>`).join("");
       const story = p.story ? `<div class="detailblock" hidden><p class="story">${p.story}</p></div>` : "";
-
+      const profile = p.profile
+            ? `
+            <div class="profile-blocks">
+              ${renderProfile('甜度', p.profile.sweetness)}
+              ${renderProfile('香氣', p.profile.aroma)}
+              ${renderProfile('焙火', p.profile.roast)}
+              ${renderProfile('厚度', p.profile.body)}
+              ${renderProfile('餘韻', p.profile.finish)}
+            </div>`
+            : "";
       const card = document.createElement("div");
       card.className = "itemcard";
       card.innerHTML = `
@@ -112,7 +121,7 @@ function renderProducts(products) {
                   <input type="checkbox" id="pack-${p.id}">
                   裝罐
                 </label>
-                <div class="pack-qty" id="packQtyWrap-${p.id}" hidden>
+                <div class="pack-qty hidden" id="packQtyWrap-${p.id}">
                   <button class="step" data-pack="${p.id}" data-dir="minus">−</button>
                   <input type="number" id="packQty-${p.id}" min="0" value="0">
                   <button class="step" data-pack="${p.id}" data-dir="plus">＋</button>
@@ -126,13 +135,20 @@ function renderProducts(products) {
 
         <button class="more-btn" aria-expanded="false">收合詳情</button>
         ${story}
+        ${profile}
+
       `;
       panel.appendChild(card);
     });
 
     list.appendChild(group);
   });
-
+  function renderProfile(label, level) {
+    const blocks = Array.from({length: 5}, (_, i) => 
+      `<div class="blk ${i < level ? 'on' : ''}"></div>`
+    ).join("");
+    return `<div class="bar"><b>${label}</b>${blocks}</div>`;
+  }
   // === 綁定：分類收合 ===
   list.addEventListener("click", e => {
     const toggle = e.target.closest(".cat-toggle");
@@ -161,7 +177,7 @@ function renderProducts(products) {
   list.addEventListener("change", e => {
     if (e.target.id?.startsWith("pack-")) {
       const pid = e.target.id.replace("pack-", "");
-      $(`packQtyWrap-${pid}`).hidden = !e.target.checked;
+      $(`packQtyWrap-${pid}`).classList.toggle("hidden", !e.target.checked);
     }
   });
 
@@ -284,7 +300,7 @@ async function updateTotals() {
       progressWrap.style.display = "none";
     } else {
       const diff = freeThreshold - sub;
-      freeTip.textContent = `再消 NT$${diff.toLocaleString("zh-TW")} 即可免運`;
+      freeTip.textContent = `再消費 NT$${diff.toLocaleString("zh-TW")} 即可免運`;
       freeTip.style.display = "inline-block";
       progressWrap.style.display = "block";
       progressBar.style.width = `${Math.min(100, (sub / freeThreshold) * 100)}%`;
