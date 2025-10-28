@@ -229,20 +229,49 @@ label{display:block;font-weight:600;margin:20px 0 8px;font-size:20px}
   border:1px solid color-mix(in srgb,var(--accent) 35%, transparent);
 }
 
-/* === Sticky bar === */
-.stickybar{
-  position:fixed;left:0;right:0;bottom:0;z-index:998;
-  background:#fff;border-top:var(--hairline);
-  box-shadow:0 -6px 18px rgba(0,0,0,.06);
-  padding:16px var(--gutter-r) calc(16px + env(safe-area-inset-bottom)) var(--gutter);
+/* === Sticky Bar 修正（iOS Safe Area）=== */
+.stickybar {
+  position: sticky;
+  bottom: 0;
+  z-index: 999;
+  background: #fff;
+  border-top: 1px solid rgba(0,0,0,0.1);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); /* 👈 加這段 */
+  box-shadow: 0 -2px 6px rgba(0,0,0,0.05);
 }
-.sticky-inner{
-  max-width:var(--content-width);margin:0 auto;
-  display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;
+
+/* 按鈕間距調整 */
+.stickybar .sticky-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
 }
-.stack{display:flex;flex-direction:column;gap:6px}
-.grand{font-weight:800;font-size:22px}
-.subline{font-size:16px;color:#333}
+
+.stickybar .btn {
+  flex: 1;
+  text-align: center;
+  padding: 10px;
+  font-size: 18px;
+  border-radius: 10px;
+}
+
+/* 查看明細彈出層修正 */
+#cartDetailModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(255,255,255,0.98);
+  z-index: 1000;
+  padding-bottom: env(safe-area-inset-bottom); /* 👈 預留底部安全區 */
+  overflow-y: auto;
+}
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .stickybar {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+}
+
 #free_tip_s{
   display:none;background:color-mix(in srgb,#34c759 16%, transparent);
   border:1px solid color-mix(in srgb,#34c759 32%, transparent);
