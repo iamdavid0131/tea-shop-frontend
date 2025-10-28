@@ -23,32 +23,21 @@
  */
 
 // ------------------------------
-// 🔧 API 基本設定
+// 🔧 API 基本設定（自動環境偵測）
 // ------------------------------
-const API_BASE = "https://tea-order-server.onrender.com/api";
-// 包一層通用的 API fetch
-async function post(endpoint, payload) {
-  const res = await fetch(`${API_BASE}${endpoint}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload || {}),
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`[HTTP ${res.status}] ${text}`);
+const API_BASE = (() => {
+  const host = location.hostname;
+  if (host.includes("localhost")) {
+    // 本地開發測試
+    return "http://localhost:3000/api";
   }
-  return res.json();
-}
-
-async function get(endpoint) {
-  const res = await fetch(`${API_BASE}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`);
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`[HTTP ${res.status}] ${text}`);
+  if (host.includes("hsianghsing.org")) {
+    // 正式自有網域（如之後導向到同網域後端）
+    return "https://hsianghsing.org/api";
   }
-  return res.json();
-}
+  // 預設（Cloudflare Pages → Render 後端）
+  return "https://tea-order-server.onrender.com/api";
+})();
 
 // ------------------------------
 // 📦 API 模組

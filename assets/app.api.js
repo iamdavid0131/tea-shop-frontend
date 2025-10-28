@@ -1,10 +1,5 @@
 // app.api.js
-// 將 BASE 改為 Node.js API 伺服器的實際網址
-// 若前端與後端同域，可用相對路徑 "/api"
-// 若本地測試在 3000 port，可改成 "http://localhost:3000/api"
-// app.api.js
 const API_BASE = 'https://tea-order-server.onrender.com/api';
-
 
 async function post(action, payload) {
   const r = await fetch(`${API_BASE}/${action}`, {
@@ -35,3 +30,11 @@ export const api = {
     return post("getPlaceDetail", { place_id });
   },
 };
+
+// ✅ 掛到全域，方便 Console 測試與其他檔案共用
+window.api = api;
+
+// ✅ 附贈簡短測試指令
+window.get = (endpoint) =>
+  fetch(`${API_BASE}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`)
+    .then(r => r.json());
