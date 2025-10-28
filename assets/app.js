@@ -45,42 +45,141 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-// ------------------------------
-// 🛍️ 商品渲染
-// ------------------------------
+// ============================================================
+// 🛍️ 商品渲染（分類 + 標語 + 標籤 + 故事 + 沖泡建議 + 風味條）
+// ============================================================
 function renderProducts(products) {
-  const list = $("categoryList"); // ✅ HTML 裡是這個 ID
-  if (!list) return console.warn("⚠️ 找不到 categoryList 容器");
+  const list = $("categoryList");
   list.innerHTML = "";
 
-  products.forEach((p) => {
-    const card = document.createElement("div");
-    card.className = "itemcard";
-    card.innerHTML = `
-      <div class="product-title">${p.name || p.title || '(未命名商品)'}</div>
-      <div class="product-price">NT$ ${p.price}</div>
-      <div class="product-controls">
-        <button class="minus" data-id="${p.id}">−</button>
-        <span class="qty" id="qty-${p.id}">0</span>
-        <button class="plus" data-id="${p.id}">＋</button>
-      </div>
+  if (!products?.length) {
+    list.innerHTML = "<p>目前沒有可販售商品。</p>";
+    return;
+  }
+
+  // 依 category 分組
+  const groups = {};
+  for (const p of products) {
+    const cat = p.category || "未分類";
+    if (!groups[cat]) groups[cat] = [];
+    groups[cat].push(p);
+  }
+
+  // 生成每個分類手風琴
+  Object.entries(groups).forEach(([cat, items]) => {
+    const groupEl = document.createElement("div");
+    groupEl.className = "cat-group";
+    groupEl.dataset.cat = cat;
+
+    const catHead = document.createElement("div");
+    catHead.className = "cat-head";
+
+    catHead.innerHTML = `
+      <button class="cat-toggle" aria-expanded="false">
+        <span class="title">${cat}</span>
+        <span class="chev">⌄</span>
+      </button>
     `;
-    list.appendChild(card);
+
+    const catPanel = document.createElement("div");
+    catPanel.className = "cat-panel";
+    catPanel.style.maxHeight = "0";
+
+    // 每個商品卡
+    items.forEach((p) => {
+      const card = document.createElement("div");
+      card.className = "itemcard";
+
+      const tagHTML = (p.tags || [])
+        .filter(Boolean)
+        .map((t) => `<span class="tag">${t}</span>`)
+        .join("");
+
+      const profileHTML = `
+        <div class="profile-blocks">
+          <div class="bar"><b>甜度</b> ${renderBar(p.profile?.sweetness)}</div>
+          <div class="bar"><b>香氣</b> ${renderBar(p.profile?.aroma)}</div>
+          <div class="bar"><b>焙火</b> ${renderBar(p.profile?.roast)}</div>
+          <div class="bar"><b>厚度</b> ${renderBar(p.profile?.body)}</div>
+          <div class="bar"><b>回韻</b> ${renderBar(p.profile?.finish)}</div>
+        </div>`;
+
+      const brewHTML = `
+        <div class="brew">
+          <div class="line"><b>熱泡：</b> ${p.brew?.hot?.grams}g｜${p.brew?.hot?.water_ml}ml｜${p.brew?.hot?.temp_c}｜${p.brew?.hot?.time_s}s｜${p.brew?.hot?.infusions}泡</div>
+          <div class="line"><b>冷泡：</b> ${p.brew?.cold?.grams}g｜${p.brew?.cold?.water_ml}ml｜${p.brew?.cold?.hours}hr</div>
+        </div>`;
+
+      card.innerHTML = `
+        <div class="title">${p.title}</div>
+        <div class="meta">NT$ ${p.price.toLocaleString("zh-TW")}／${p.unit || "單位"}</div>
+        ${
+          p.tagline
+            ? `<div class="quickblock"><span class="tagline">${p.tagline}</span></div>`
+            : ""
+        }
+        ${
+          tagHTML
+            ? `<div class="quickblock tags">${tagHTML}</div>`
+            : ""
+        }
+        ${
+          p.story
+            ? `<div class="detailblock"><div class="story">${p.story}</div></div>`
+            : ""
+        }
+        ${brewHTML}
+        ${profileHTML}
+        <div class="variant">
+          <div class="v-meta">數量：</div>
+          <div class="qty">
+            <button class="step minus" data-id="${p.id}">−</button>
+            <input type="number" id="qty-${p.id}" value="0" min="0" />
+            <button class="step plus" data-id="${p.id}">＋</button>
+          </div>
+        </div>
+      `;
+      catPanel.appendChild(card);
+    });
+
+    groupEl.appendChild(catHead);
+    groupEl.appendChild(catPanel);
+    list.appendChild(groupEl);
+
+    // 綁定手風琴開合事件
+    catHead.querySelector(".cat-toggle").addEventListener("click", (e) => {
+      const expanded = e.currentTarget.getAttribute("aria-expanded") === "true";
+      e.currentTarget.setAttribute("aria-expanded", !expanded);
+      groupEl.classList.toggle("is-open", !expanded);
+      catPanel.style.maxHeight = expanded
+        ? "0"
+        : catPanel.scrollHeight + "px";
+    });
   });
 
+  // 數量加減事件
   list.addEventListener("click", (e) => {
-    const btn = e.target.closest("button");
+    const btn = e.target.closest("button.step");
     if (!btn) return;
     const id = btn.dataset.id;
-    const elQty = $(`qty-${id}`);
-    let qty = parseInt(elQty.textContent) || 0;
+    const input = $(`qty-${id}`);
+    let qty = parseInt(input.value) || 0;
     if (btn.classList.contains("plus")) qty++;
     if (btn.classList.contains("minus")) qty = Math.max(0, qty - 1);
-    elQty.textContent = qty;
+    input.value = qty;
     saveCart();
     updateTotals();
   });
 }
+
+// ===== 工具：風味條（profile）=====
+function renderBar(level = 0) {
+  const blocks = Array.from({ length: 5 }, (_, i) =>
+    `<span class="blk ${i < level ? "on" : ""}"></span>`
+  ).join("");
+  return `<span class="bar">${blocks}</span>`;
+}
+
 
 // ============================================================
 // 💾 localStorage 快取
