@@ -297,6 +297,18 @@ label {
   opacity: 1;
 }
 
+
+/* === 商品詳情展開動畫 === */
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in {
+  opacity: 0;
+  animation: fadeSlideIn 0.5s ease forwards;
+}
+
+
 /* === 分類收合 === */
 .category-header {
   width: 100%;
@@ -406,3 +418,4 @@ label {
   .sticky-inner { flex-direction: column; align-items: stretch; }
   #viewCartBtn, .btn { width: 100%; }
 }
+
