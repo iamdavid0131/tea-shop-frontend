@@ -46,160 +46,162 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 // ============================================================
-// 🛍️ 商品渲染（分類 + 商品 + 庫存 + 詳情收合）
+// 🛍️ 商品渲染（含分類、裝罐、標籤、詳情收合、庫存）
 // ============================================================
 function renderProducts(products) {
   const list = $("categoryList");
   list.innerHTML = "";
 
-  if (!products?.length) {
-    list.innerHTML = "<p>目前沒有可販售商品。</p>";
-    return;
-  }
+  // 依分類群組
+  const categories = {};
+  products.forEach(p => {
+    if (!categories[p.category]) categories[p.category] = [];
+    categories[p.category].push(p);
+  });
 
-  // 依 category 分組
-  const groups = {};
-  for (const p of products) {
-    const cat = p.category || "未分類";
-    if (!groups[cat]) groups[cat] = [];
-    groups[cat].push(p);
-  }
+  // 渲染分類
+  Object.entries(categories).forEach(([cat, items], i) => {
+    const group = document.createElement("div");
+    group.className = "cat-group";
+    group.dataset.cat = cat;
 
-  let first = true; // ✅ 只展開第一個分類
-  Object.entries(groups).forEach(([cat, items]) => {
-    const groupEl = document.createElement("div");
-    groupEl.className = "cat-group";
-    groupEl.dataset.cat = cat;
-
-    const catHead = document.createElement("div");
-    catHead.className = "cat-head";
-    catHead.innerHTML = `
-      <button class="cat-toggle" aria-expanded="${first ? "true" : "false"}">
-        <span class="title">${cat}</span>
-        <span class="chev">⌄</span>
-      </button>
+    // 分類 header（第一個預設展開）
+    const isOpen = i === 0 ? "true" : "false";
+    group.innerHTML = `
+      <div class="cat-head">
+        <button class="cat-toggle" aria-expanded="${isOpen}">
+          <span class="title">${cat}</span>
+          <span class="chev">⌃</span>
+        </button>
+      </div>
+      <div class="cat-panel" style="max-height:${i === 0 ? "none" : "0"};">
+      </div>
     `;
+    const panel = group.querySelector(".cat-panel");
 
-    const catPanel = document.createElement("div");
-    catPanel.className = "cat-panel";
-    catPanel.style.maxHeight = first ? "none" : "0"; // ✅ 只第一分類展開
+    // === 商品卡 ===
+    items.forEach(p => {
+      const tags = (p.tags || []).filter(t => t.trim()).map(t => `<span class="tag">${t}</span>`).join("");
+      const story = p.story ? `<div class="detailblock" hidden><p class="story">${p.story}</p></div>` : "";
 
-    // 商品卡
-    items.forEach((p) => {
       const card = document.createElement("div");
       card.className = "itemcard";
-
-      const tagHTML = (p.tags || [])
-        .filter(Boolean)
-        .map((t) => `<span class="tag">${t}</span>`)
-        .join("");
-
-      const stockInfo = p.stock ? `<span class="stock">（剩餘 ${p.stock}）</span>` : "";
-
-      const storyHTML = p.story
-        ? `
-        <div class="detailblock more" hidden>
-          <div class="story">${p.story}</div>
-          <div class="brew">
-            <div><b>熱泡：</b>${p.brew?.hot?.grams}g／${p.brew?.hot?.water_ml}ml／${p.brew?.hot?.temp_c}／${p.brew?.hot?.time_s}s × ${p.brew?.hot?.infusions}</div>
-            <div><b>冷泡：</b>${p.brew?.cold?.grams}g／${p.brew?.cold?.water_ml}ml／${p.brew?.cold?.hours}小時</div>
-          </div>
-          <div class="profile-blocks">
-            <div class="bar"><b>甜度</b>${renderBar(p.profile?.sweetness)}</div>
-            <div class="bar"><b>香氣</b>${renderBar(p.profile?.aroma)}</div>
-            <div class="bar"><b>焙火</b>${renderBar(p.profile?.roast)}</div>
-            <div class="bar"><b>厚度</b>${renderBar(p.profile?.body)}</div>
-            <div class="bar"><b>餘韻</b>${renderBar(p.profile?.finish)}</div>
-          </div>
-        </div>
-        <button class="more-btn" type="button" aria-expanded="false">收合詳情</button>
-      `
-        : "";
-
       card.innerHTML = `
         <div class="title">${p.title}</div>
-        ${
-          p.tagline
-            ? `<div class="quickblock"><span class="tagline">${p.tagline}</span></div>`
-            : ""
-        }
-        ${tagHTML ? `<div class="quickblock tags">${tagHTML}</div>` : ""}
+        <div class="quickblock">
+          <span class="tagline">${p.tagline || ""}</span>
+          <div class="tags">${tags}</div>
+        </div>
         <div class="variant">
-          <div class="v-label">散茶</div>
-          <div class="v-meta">NT$ ${p.price.toLocaleString("zh-TW")}／${p.unit || "包"} ${stockInfo}</div>
+          <div class="v-meta">
+            單價 <b>NT$ ${p.price}</b> / ${p.unit || "—"}
+            <small class="muted">（剩餘 ${p.stock ?? 0}）</small>
+          </div>
           <div class="qty">
-            <button class="step minus" data-id="${p.id}">−</button>
-            <input type="number" id="qty-${p.id}" value="0" min="0" />
-            <button class="step plus" data-id="${p.id}">＋</button>
+            <button class="step" data-id="${p.id}" data-dir="minus">−</button>
+            <span id="qty-${p.id}">0</span>
+            <button class="step" data-id="${p.id}" data-dir="plus">＋</button>
           </div>
         </div>
+
         ${
           p.packable
             ? `
-          <div class="pack-row">
-            <label class="pack-toggle">
-              <input type="checkbox" id="pack-${p.id}" />
-              裝罐
-            </label>
-          </div>
-        `
+              <div class="pack-row">
+                <label class="pack-toggle">
+                  <input type="checkbox" id="pack-${p.id}">
+                  裝罐
+                </label>
+                <div class="pack-qty" id="packQtyWrap-${p.id}" hidden>
+                  <button class="step" data-pack="${p.id}" data-dir="minus">−</button>
+                  <input type="number" id="packQty-${p.id}" min="0" value="0">
+                  <button class="step" data-pack="${p.id}" data-dir="plus">＋</button>
+                </div>
+              </div>
+              <p class="pack-hint">可選裝罐數量 ≤ 購買數量</p>
+              <p class="pack-err" id="packErr-${p.id}">⚠️ 裝罐數量不可超過購買數量</p>
+            `
             : ""
         }
-        ${storyHTML}
+
+        <button class="more-btn" aria-expanded="false">收合詳情</button>
+        ${story}
       `;
-
-      catPanel.appendChild(card);
+      panel.appendChild(card);
     });
 
-    groupEl.appendChild(catHead);
-    groupEl.appendChild(catPanel);
-    list.appendChild(groupEl);
-
-    // 綁定分類展開/收合
-    const toggle = catHead.querySelector(".cat-toggle");
-    toggle.addEventListener("click", () => {
-      const expanded = toggle.getAttribute("aria-expanded") === "true";
-      toggle.setAttribute("aria-expanded", !expanded);
-      groupEl.classList.toggle("is-open", !expanded);
-      catPanel.style.maxHeight = expanded ? "0" : catPanel.scrollHeight + "px";
-    });
-
-    first = false; // 只有第一組打開
+    list.appendChild(group);
   });
 
-  // 數量加減
-  list.addEventListener("click", (e) => {
+  // === 綁定：分類收合 ===
+  list.addEventListener("click", e => {
+    const toggle = e.target.closest(".cat-toggle");
+    if (!toggle) return;
+    const expanded = toggle.getAttribute("aria-expanded") === "true";
+    toggle.setAttribute("aria-expanded", !expanded);
+    const panel = toggle.parentElement.nextElementSibling;
+    panel.style.maxHeight = expanded ? "0" : "none";
+  });
+
+  // === 數量控制 ===
+  list.addEventListener("click", e => {
     const btn = e.target.closest(".step");
     if (!btn) return;
     const id = btn.dataset.id;
-    const input = $(`qty-${id}`);
-    let qty = parseInt(input.value) || 0;
-    if (btn.classList.contains("plus")) qty++;
-    if (btn.classList.contains("minus")) qty = Math.max(0, qty - 1);
-    input.value = qty;
+    const dir = btn.dataset.dir;
+    const elQty = $(`qty-${id}`);
+    let qty = parseInt(elQty.textContent) || 0;
+    qty = dir === "plus" ? qty + 1 : Math.max(0, qty - 1);
+    elQty.textContent = qty;
     saveCart();
     updateTotals();
   });
 
-  // 詳情展開/收合
-  list.addEventListener("click", (e) => {
-    const btn = e.target.closest(".more-btn");
-    if (!btn) return;
-    const card = btn.closest(".itemcard");
-    const detail = card.querySelector(".more");
-    const expanded = btn.getAttribute("aria-expanded") === "true";
-    btn.setAttribute("aria-expanded", !expanded);
-    btn.textContent = expanded ? "收合詳情" : "收起詳情";
-    detail.hidden = expanded;
+  // === 裝罐控制 ===
+  list.addEventListener("change", e => {
+    if (e.target.id?.startsWith("pack-")) {
+      const pid = e.target.id.replace("pack-", "");
+      $(`packQtyWrap-${pid}`).hidden = !e.target.checked;
+    }
   });
+
+  // === 裝罐數量檢查 ===
+  list.addEventListener("click", e => {
+    if (e.target.dataset.pack) {
+      const pid = e.target.dataset.pack;
+      const dir = e.target.dataset.dir;
+      const input = $(`packQty-${pid}`);
+      let val = parseInt(input.value) || 0;
+      val = dir === "plus" ? val + 1 : Math.max(0, val - 1);
+      input.value = val;
+
+      // 驗證裝罐 ≤ 購買數量
+      const buyQty = parseInt($(`qty-${pid}`).textContent || 0);
+      const err = $(`packErr-${pid}`);
+      if (val > buyQty) {
+        err.style.display = "block";
+        input.classList.add("is-invalid");
+      } else {
+        err.style.display = "none";
+        input.classList.remove("is-invalid");
+      }
+    }
+  });
+
+  console.log("✅ 商品渲染完成，共分類：", Object.keys(categories).length);
 }
 
-// 風味條顯示（五格填充）
-function renderBar(level = 0) {
-  return Array.from({ length: 5 }, (_, i) =>
-    `<span class="blk ${i < level ? "on" : ""}"></span>`
-  ).join("");
-}
+// 展開／收合詳情
+document.addEventListener("click", e => {
+  const btn = e.target.closest(".more-btn");
+  if (!btn) return;
+  const expanded = btn.getAttribute("aria-expanded") === "true";
+  btn.setAttribute("aria-expanded", !expanded);
+  const detail = btn.nextElementSibling;
+  detail.hidden = expanded;
+  btn.textContent = expanded ? "收合詳情" : "隱藏詳情";
+});
+
 
 
 // ============================================================
