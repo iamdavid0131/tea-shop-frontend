@@ -1,918 +1,337 @@
+/* ============================================================
+   ☁️ 祥興茶行 Pure White Glass Theme — 完整整合行動優化版
+   Version: 2025-10-28
+   ============================================================ */
+
 /* ================= iOS Clean Glass on Pure White ================= */
 :root{
-    --radius:20px;
-    --content-width:704px;
-    --accent:#0a84ff;
-    --text:#111;
-    --muted:#6b7280;
-    /* glass tokens（不依賴頁面背景也有層次） */
-    --glass-fill-1: rgba(255,255,255,.78); /* 內層 */
-    --glass-fill-2: rgba(255,255,255,.92); /* 外層 */
-    --glass-border-1: rgba(10,132,255,.18);
-    --glass-border-2: rgba(10,132,255,.06);
-    --glass-shadow: 0 10px 30px rgba(0,0,0,.08), 0 2px 10px rgba(0,0,0,.04);
-    --hairline: 1px solid rgba(0,0,0,.06);
-  
-    --elev: 0 8px 24px rgba(0,0,0,.08);
-  
-    /* 行動裝置安全邊距（預設） */
-    --gutter: max(12px, env(safe-area-inset-left));
+  --radius:20px;
+  --content-width:704px;
+  --accent:#0a84ff;
+  --text:#111;
+  --muted:#6b7280;
+  /* glass tokens（不依賴頁面背景也有層次） */
+  --glass-fill-1: rgba(255,255,255,.78); /* 內層 */
+  --glass-fill-2: rgba(255,255,255,.92); /* 外層 */
+  --glass-border-1: rgba(10,132,255,.18);
+  --glass-border-2: rgba(10,132,255,.06);
+  --glass-shadow: 0 10px 30px rgba(0,0,0,.08), 0 2px 10px rgba(0,0,0,.04);
+  --hairline: 1px solid rgba(0,0,0,.06);
+  --elev: 0 8px 24px rgba(0,0,0,.08);
+  --gutter: max(12px, env(safe-area-inset-left));
+  --gutter-r: max(12px, env(safe-area-inset-right));
+}
+
+/* 全域盒模型＋禁水平捲動 */
+html{ overflow-x:hidden; }
+*, *::before, *::after{ box-sizing:border-box; }
+html,body{-webkit-text-size-adjust:100%;background:#fff;}
+html{
+  scroll-padding-top: calc(var(--ios-header-h, 88px) + 8px);
+  scroll-padding-bottom: calc(var(--stickybar-h, 120px) + 12px);
+}
+body{
+  margin:0;
+  color:var(--text);
+  min-height:100vh;
+  font:20px/1.6 -apple-system,BlinkMacSystemFont,"SF Pro TC","Noto Sans TC",system-ui,Arial,sans-serif;
+  letter-spacing:.2px;
+  padding-bottom: calc(var(--stickybar-h, 120px) + 24px);
+}
+@supports(min-height:100svh){body{min-height:100svh}}
+@supports(min-height:100dvh){body{min-height:100dvh}}
+
+/* === Containers === */
+.wrap{padding:24px var(--gutter) calc(var(--stickybar-h,120px) + 24px) var(--gutter-r);}
+.noscroll{overflow:hidden}
+.stepcard{scroll-margin-top:88px}
+
+/* === Typo === */
+h1{font-size:34px;font-weight:800;text-align:center;margin:0 0 12px}
+h2{font-size:26px;font-weight:800;margin:0 0 16px}
+label{display:block;font-weight:600;margin:20px 0 8px;font-size:20px}
+.muted{color:var(--muted);font-size:18px;line-height:1.6}
+
+/* === Cards === */
+.card{
+  background:#fff;border-radius:var(--radius);
+  padding:28px;margin-bottom:20px;
+  border:var(--hairline); box-shadow:var(--elev);
+}
+
+/* === 收件資料 & 運送方式 === */
+#receiverCard h2,
+#receiverCard label,
+#receiverCard input,
+#receiverCard textarea,
+#shippingCard h2,
+#shippingCard label,
+#shippingCard input,
+#shippingCard select,
+#shippingCard button,
+#shippingCard .muted {
+  font-size:18px;
+  line-height:1.4;
+}
+#receiverCard input,
+#receiverCard textarea,
+#shippingCard input,
+#shippingCard select {
+  min-height: 44px;
+  padding: 6px 10px;
+}
+#receiverCard textarea { min-height: 64px; }
+#receiverCard .row,
+#shippingCard .row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 768px) {
+  #receiverCard .row, #shippingCard .row { grid-template-columns: 1fr; }
+}
+
+/* === 商品區 === */
+.itemlist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (max-width:900px){.itemlist{grid-template-columns:1fr}}
+.itemcard{
+  position:relative;padding:26px;border-radius:var(--radius);
+  background:linear-gradient(180deg,var(--glass-fill-2),var(--glass-fill-1)) padding-box,
+             linear-gradient(180deg,var(--glass-border-1),var(--glass-border-2)) border-box;
+  border:1px solid transparent;box-shadow: var(--glass-shadow);
+}
+.itemcard::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:radial-gradient(120% 70% at 0% -20%, rgba(255,255,255,.65) 0%, rgba(255,255,255,0) 60%),
+             linear-gradient(180deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,.10) 100%);
+  mix-blend-mode:screen;
+}
+.itemcard::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background-image:radial-gradient(rgba(255,255,255,.38) .55px, transparent .7px);
+  background-size:3px 3px;opacity:.14;mix-blend-mode:overlay;
+}
+.itemcard .title{font-weight:800;font-size:22px;}
+.itemcard .meta{color:var(--muted);font-size:16px}
+.itemcard .price{font-weight:700;font-size:20px}
+
+/* === 數量控制 === */
+.qty{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.qty button{
+  width:40px;height:40px;border-radius:10px;
+  border:1px solid rgba(0,0,0,.15);background:#fff;
+  font-size:22px;font-weight:700;color:var(--accent);
+  cursor:pointer;transition:transform .06s ease;
+}
+.qty button:active{transform:scale(.95)}
+.qty input{
+  width:50px;text-align:center;border:none;background:transparent;
+  font-size:18px;
+}
+
+/* === Buttons === */
+.btn{
+  background:linear-gradient(180deg, color-mix(in srgb,var(--accent) 88%,#fff 12%), var(--accent));
+  color:#fff;border:none;padding:0 22px;height:54px;line-height:54px;border-radius:14px;
+  font-size:18px;font-weight:700;cursor:pointer;
+  box-shadow:0 6px 16px color-mix(in srgb,var(--accent) 30%, transparent);
+  transition:transform .06s ease, filter .15s ease;
+}
+.btn:active{transform:scale(.985)}
+.btn:disabled{background:#bfc7cf;color:#fff;cursor:not-allowed;box-shadow:none}
+.btn-outline{
+  background:#fff;color:var(--accent);
+  border:1px solid color-mix(in srgb,var(--accent) 35%, transparent);
+}
+
+/* === Sticky bar === */
+.stickybar{
+  position:fixed;left:0;right:0;bottom:0;z-index:998;
+  background:#fff;border-top:var(--hairline);
+  box-shadow:0 -6px 18px rgba(0,0,0,.06);
+  padding:16px var(--gutter-r) calc(16px + env(safe-area-inset-bottom)) var(--gutter);
+}
+.sticky-inner{
+  max-width:var(--content-width);margin:0 auto;
+  display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;
+}
+.stack{display:flex;flex-direction:column;gap:6px}
+.grand{font-weight:800;font-size:22px}
+.subline{font-size:16px;color:#333}
+#free_tip_s{
+  display:none;background:color-mix(in srgb,#34c759 16%, transparent);
+  border:1px solid color-mix(in srgb,#34c759 32%, transparent);
+  color:#0f5e3a;padding:2px 10px;border-radius:999px;
+  font-size:14px;font-weight:700;margin-left:6px
+}
+#freeProgress{
+  height:6px;border-radius:999px;background:#eee;
+  overflow:hidden;display:none;
+}
+#freeProgressBar{height:100%;width:0%;background:#34c759;transition:width .25s ease}
+
+/* ============================================================
+   📱 Mobile Optimization & Responsive Refinement
+   ============================================================ */
+
+/* ===== 手機安全區設定 ===== */
+@media screen and (max-device-width: 480px), (max-width: 768px){
+  :root{
+    --gutter:   max(12px, env(safe-area-inset-left));
     --gutter-r: max(12px, env(safe-area-inset-right));
   }
-  
-  /* 全域盒模型＋禁水平捲動（防微量溢出） */
-  html{ overflow-x:hidden; }
-  *, *::before, *::after{ box-sizing:border-box; }
-  
-  html,body{-webkit-text-size-adjust:100%;background:#fff;}
-  /* 讓瀏覽時，瀏覽器自動替固定元素預留空間 */
-  html{
-    /* 上方 sticky header 的安全距離（用 JS 設的變數）*/
-    scroll-padding-top: calc(var(--ios-header-h, 88px) + 8px);
-    /* 下方 sticky bar 的安全距離（用 JS 設的變數）*/
-    scroll-padding-bottom: calc(var(--stickybar-h, 120px) + 12px);
-  }
-  
-  /* 真的在版面底部留空一塊，讓卡片能完全捲出 sticky bar 上方 */
-  body{
-    padding-bottom: calc(var(--stickybar-h, 120px) + 24px);
-  }
-  
-  body{
-    margin:0;color:var(--text);
-    min-height:100vh;font:22px/1.65 -apple-system,BlinkMacSystemFont,"SF Pro TC","Noto Sans TC",system-ui,Arial,sans-serif;
-    letter-spacing:.2px;
-  }
-  @supports(min-height:100svh){body{min-height:100svh}}
-  @supports(min-height:100dvh){body{min-height:100dvh}}
-  
-  /* 內容容器：使用安全區間距 */
-  .wrap{padding:24px var(--gutter) calc(var(--stickybar-h,120px) + 24px) var(--gutter-r);}
-  
-  .noscroll{overflow:hidden}
-  .stepcard{scroll-margin-top:88px}
-  
-  /* ===== Typo ===== */
-  h1{font-size:38px;font-weight:800;text-align:center;margin:0 0 12px}
-  h2{font-size:28px;font-weight:800;margin:0 0 16px}
-  label{display:block;font-weight:600;margin:20px 0 8px;font-size:26px}
-  .muted{color:var(--muted);font-size:24px;line-height:1.6}
-  
-  /* ===== Basic Cards ===== */
-  .card{
-    background:#fff;border-radius:var(--radius);padding:28px;margin-bottom:20px;
-    border:var(--hairline); box-shadow:var(--elev);
-  }
-  
-  /* === 收件資料 & 運送方式：統一字級 (行動端將被覆蓋到 28px) === */
-  #receiverCard h2,
-  #receiverCard label,
-  #receiverCard input,
-  #receiverCard textarea,
-  #shippingCard h2,
-  #shippingCard label,
-  #shippingCard input,
-  #shippingCard select,
-  #shippingCard button,
-  #shippingCard .muted {
-    font-size: 20px;
-    line-height: 1.4;
-  }
-  
-  #receiverCard input,
-  #receiverCard textarea,
-  #shippingCard input,
-  #shippingCard select {
-    min-height: 44px;
-    padding: 6px 10px;
-  }
-  #receiverCard textarea {
-    min-height: 64px;
-  }
-  
-  /* 行內兩欄 layout */
-  #receiverCard .row,
-  #shippingCard .row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-  }
-  @media (max-width: 768px) {
-    #receiverCard .row,
-    #shippingCard .row {
-      grid-template-columns: 1fr;
-    }
-  }
-  
-  /* ===== Item list (Glass card) ===== */
-  .itemlist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-  @media (max-width:900px){.itemlist{grid-template-columns:1fr}}
-  .itemcard{position:relative;padding:26px;border-radius:var(--radius);overflow:hidden}
-  
-  /* iOS-style Glass card（純白底也漂亮）*/
-  .itemcard{
-    /* 兩層背景：填色層 + 漸層描邊層（用透明邊框技巧繪製） */
-    background:
-      linear-gradient(180deg,var(--glass-fill-2),var(--glass-fill-1)) padding-box,
-      linear-gradient(180deg,var(--glass-border-1),var(--glass-border-2)) border-box;
-    border:1px solid transparent;
-    box-shadow: var(--glass-shadow);
-  }
-  .itemcard::before{
-    /* 柔光高光 + 極淡方向性，避免死白 */
-    content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
-    background:
-      radial-gradient(120% 70% at 0% -20%, rgba(255,255,255,.65) 0%, rgba(255,255,255,0) 60%),
-      linear-gradient(180deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,.10) 100%);
-    mix-blend-mode:screen;
-  }
-  .itemcard::after{
-    /* 超淡顆粒讓材質更像玻璃 */
-    content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
-    background-image:radial-gradient(rgba(255,255,255,.38) .55px, transparent .7px);
-    background-size:3px 3px;opacity:.14;mix-blend-mode:overlay;
-  }
-  /* hover/觸控提氣 */
-  @media (hover:hover){
-    .itemcard{transition:transform .18s ease, box-shadow .18s ease}
-    .itemcard:hover{transform:translateY(-1px);box-shadow:0 16px 40px rgba(0,0,0,.10),0 4px 16px rgba(0,0,0,.06)}
-  }
-  
-  /* 內容字級（桌機基準；行動由下方覆蓋） */
-  .itemcard .title{font-weight:800;font-size:26px;letter-spacing:.2px}
-  .itemcard .meta{color:var(--muted);font-size:18px}
-  .itemcard .price{font-weight:700;font-size:24px}
-  .itemcard .desc{margin-top:8px}
-  
-  
-  
-  /* ===== Quantity ===== */
-  .qty{display:flex;align-items:center;gap:10px}
-  .qty .step{
-    width:64px;height:64px;border-radius:14px;font-size:32px;line-height:64px;
-    border:1px solid rgba(0,0,0,.10);background:#fff;cursor:pointer;
-    transition:transform .06s ease, box-shadow .15s ease;
-    box-shadow:0 1px 0 rgba(255,255,255,.7) inset, 0 1px 6px rgba(0,0,0,.06);
-  }
-  .qty .step:active{transform:scale(.985)}
-  .qty input[type=number]{width:120px;text-align:center;font-size:28px;height:64px}
-  
-  /* 修正商品加減按鈕樣式 */
-button.plus, button.minus {
-  width: 56px;
-  height: 56px;
-  font-size: 32px;
-  font-weight: 700;
-  border-radius: 14px;
-  border: 1px solid rgba(0,0,0,.1);
-  background: #fff;
-  cursor: pointer;
-  line-height: 1;
-  transition: transform .06s ease, box-shadow .15s ease;
-  box-shadow: 0 1px 0 rgba(255,255,255,.7) inset, 0 1px 6px rgba(0,0,0,.06);
-}
-button.plus:active, button.minus:active {
-  transform: scale(.95);
-}
-
-  /* ===== Inputs (行動版將被 28px 覆蓋) ===== */
-  input[type=number],input[type=text],input[type=tel],select,textarea{
-    width:100%;height:64px;padding:10px 16px;box-sizing:border-box;border-radius:14px;
-    border:1px solid rgba(0,0,0,.12);background:#fff;color:var(--text);
-    font-size:28px;transition:border-color .15s, box-shadow .15s;
-    box-shadow:0 1px 0 rgba(255,255,255,.6) inset; line-height:1.4;
-  }
-  textarea{min-height:120px;padding:12px 16px;height:auto}
-  input:focus,select:focus,textarea:focus{
-    outline:none;border-color:var(--accent);
-    box-shadow:0 0 0 6px color-mix(in srgb, var(--accent) 18%, transparent);
-  }
-  input[type=radio],input[type=checkbox]{width:20px;height:20px;transform:translateY(2px);margin-right:8px}
-  
-  /* ===== Buttons ===== */
-  .btn{
-    background:linear-gradient(180deg, color-mix(in srgb,var(--accent) 88%,#fff 12%), var(--accent));
-    color:#fff;border:none;padding:0 22px;height:64px;line-height:64px;border-radius:14px;
-    font-size:28px;font-weight:700;cursor:pointer;
-    box-shadow:0 6px 16px color-mix(in srgb,var(--accent) 30%, transparent);
-    transition:transform .06s ease, filter .15s ease, box-shadow .15s ease;
-  }
-  .btn:active{transform:scale(.985)}
-  .btn:disabled{background:#bfc7cf;color:#fff;cursor:not-allowed;box-shadow:none}
-  .btn-outline{
-    background:#fff;color:var(--accent);
-    border:1px solid color-mix(in srgb,var(--accent) 35%, transparent);
-  }
-  
-  /* ===== Sticky checkout bar ===== */
-  .stickybar{
-    position:fixed;left:0;right:0;bottom:0;z-index:998;
-    background:#fff;border-top:var(--hairline);
-    box-shadow:0 -6px 18px rgba(0,0,0,.06);
-    /* 使用安全區間距 */
-    padding:20px var(--gutter-r) calc(20px + env(safe-area-inset-bottom)) var(--gutter);
-    transform:translateY(0);
-  }
-  .sticky-inner{max-width:var(--content-width);margin:0 auto;display:flex;align-items:center;gap:16px;justify-content:space-between;flex-wrap:wrap}
-  .stack{display:flex;flex-direction:column;gap:8px}
-  .grand{font-weight:800;font-size:32px}
-  .subline{font-size:24px;color:#333}
-  #free_tip_s{display:none;background:color-mix(in srgb,#34c759 16%, transparent);border:1px solid color-mix(in srgb,#34c759 32%, transparent);color:#0f5e3a;padding:2px 10px;border-radius:999px;font-size:18px;font-weight:700;margin-left:6px}
-  
-  /* ===== iOS header + segmented ===== */
-  .ios-header{
-    position:sticky;top:0;z-index:997;
-    background:linear-gradient(180deg, rgba(255,255,255,.96) 60%, rgba(255,255,255,0));
-    border-bottom:var(--hairline);padding:6px 16px 8px;
-  }
-  .ios-nav{max-width:var(--content-width);margin:0 auto}
-  .ios-status{height:4px}
-  .ios-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
-  .ios-title-lg{font-size:34px;font-weight:800;letter-spacing:.2px;margin:4px 0 2px}
-  .ios-subtitle{color:var(--muted);font-size:20px;margin-bottom:8px;text-align:center}
-  
-  .ios-segment{
-    display:inline-flex;background:#f2f2f7;border-radius:12px;padding:2px;border:1px solid rgba(0,0,0,.06)
-  }
-  .seg-btn{
-    appearance:none;border:0;background:transparent;color:var(--text);
-    padding:10px 14px;font-size:16px;border-radius:10px;cursor:pointer;
-    transition:transform .06s ease, box-shadow .15s ease;
-  }
-  .seg-btn.is-active{background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.04),0 1px 6px rgba(0,0,0,.05)}
-  .seg-btn:active{transform:scale(.985)}
-  
-  /* ===== Overlay/Modal/Sheet（沿用，但更乾淨） ===== */
-  #loadingMask{display:none;position:fixed;inset:0;z-index:1000;background:rgba(255,255,255,.85);backdrop-filter:blur(2px);font-weight:800;font-size:22px;color:#111;align-items:center;justify-content:center;text-align:center;padding:24px}
-  #rotateHint{display:none;position:fixed;top:12px;right:12px;z-index:1001;background:rgba(17,17,17,.86);color:#fff;padding:10px 12px;border-radius:12px;font-size:18px;box-shadow:var(--elev)}
-  @media (orientation:landscape) and (max-height:540px){#rotateHint{display:block}}
-  
-  .modal-backdrop,.sheet-backdrop{display:none;position:fixed;inset:0;z-index:1002;background:rgba(0,0,0,.4);padding:20px}
-  .modal-backdrop[aria-hidden="true"] {
-    display: none !important;
-  }
-  .sheet-backdrop[aria-hidden="true"] {
-    display: none !important;
-  }
-  .modal-backdrop[aria-hidden="false"] { display:flex;
-  }
-  .modal-card{width:min(520px,calc(100% - 32px));background:#fff;border-radius:16px;padding:24px;text-align:center;box-shadow:var(--elev)}
-  .success-icon{width:64px;height:64px;margin:0 auto 10px;border-radius:999px;background:#eaf7ef;color:#0f5e3a;display:grid;place-items:center;font-size:36px;font-weight:900}
-  .modal-card .big{font-size:28px;font-weight:800;margin-top:8px}
-  .modal-card .ok{margin-top:14px}
-  .sheet-backdrop{display:none;align-items:flex-end}
-  .sheet{width:min(720px,100%);background:#fff;border-top-left-radius:16px;border-top-right-radius:16px;padding:16px;box-shadow:0 -8px 24px rgba(0,0,0,.12);max-height:85vh;overflow:auto}
-  .sheet h3{margin:0 0 8px;font-size:28px;font-weight:800}
-  .sheet .line{display:flex;justify-content:space-between;margin:8px 0;font-size:24px}
-  .sheet .total{font-weight:800}
-  .sheet .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
-  
-  /* ===== Social card ===== */
-  .social-card.card{margin-top:24px}
-  .social-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:10px}
-  .social-btn{
-    display:flex;align-items:center;justify-content:center;gap:10px;height:56px;border-radius:12px;background:#fff;border:1px solid rgba(0,0,0,.12);
-    text-decoration:none;color:#111;font-weight:700;font-size:22px;transition:transform .06s ease, box-shadow .15s ease, border-color .15s ease
-  }
-  .social-btn:hover{box-shadow:0 2px 10px rgba(0,0,0,.08);border-color:rgba(0,0,0,.18)}
-  .social-btn:active{transform:scale(.985)}
-  .social-btn svg{width:22px;height:22px;display:block}
-  
-  /* ===== Micro animation ===== */
-  @keyframes pulseOnce{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
-  .pulse-once{animation:pulseOnce .8s ease-in-out}
-  
-  /* ===== Mobile Wizard ===== */
-  @media (max-width:1024px){
-    .stepcard:first-of-type { display:block !important; }
-    .sticky-inner{gap:8px}
-    #stepPrev{display:inline-flex}
-  }
-  @media (min-width:1025px){
-    .stepcard{display:block}
-    #stepPrev{display:none}
-  }
-  /* ======= Category Accordion (iOS 風) ======= */
-  /* itemlist 改成能堆疊手風琴 */
-  #itemsCard .itemlist{ display:block;
-  }
-  
-  /* 分類標題按鈕 */
-  .cat-head{ padding:0; }
-  .cat-toggle{
-    display:flex; align-items:center; justify-content:space-between;
-    width:100%; padding:18px 20px; border:0; background:transparent; cursor:pointer;
-    border-radius: inherit; font: inherit;
-  }
-  .cat-toggle .title{ font-size:28px; font-weight:800; }
-  .cat-toggle .chev{ transition: transform .25s ease; }
-  .cat-toggle[aria-expanded="true"] .chev{ transform: rotate(180deg); }
-  
-  /* 分類面板 */
-  .cat-panel{
-    overflow:hidden;
-    transition: max-height .28s ease;
-    will-change: max-height;
-    border-top: 1px solid rgba(0,0,0,.06);
-    border-radius: 0 0 var(--radius) var(--radius);
-    margin-top: -8px; /* 標題與內容視覺靠近 */
-    padding: 0 0 8px 0;               /* 內容下緣留空氣 */
-  }
-  .cat-panel .itemcard{ margin: 12px 12px 0;
-  } /* 內部商品卡留白 */
-  
-  /* === Category 樣式覆蓋：28px + 茶字著色 === */
-  :root{
-    --cat-title-size: 28px;
-    --cat-block-gap: 24px;
-  }
-  
-  /* 標題列字級與間距 */
-  .cat-toggle{ padding: 20px 22px; }
-  .cat-toggle .title{
-    font-size: var(--cat-title-size);
-    font-weight: 800;
-    letter-spacing: .2px;
-  }
-  
-  /* 分類之間拉開距離 */
-  .cat-panel{ margin-bottom: var(--cat-block-gap);
-  }
-  
-  /* 「茶」字統一樣式 */
-  .tea-mark{ font-weight: 900; }
-  /* Category 顏色映射  */
-  .cat-group[data-cat*="窨花"]   { --cat-accent: #E59D2C;
-  } /* 窨花（茉莉黃） */
-  .cat-group[data-cat*="高山"] { --cat-accent: #206864; } /* 高山（石綠） */
-  .cat-group[data-cat*="文山"] { --cat-accent: #ff9f0a;
-  } /* 文山（橙） */
-  .cat-group[data-cat*="焙香"] { --cat-accent: #C97D42; } /* 焙香（橘子） */
-  .cat-group[data-cat*="紅茶"]   { --cat-accent: #BD4F48;
-  } /* 紅茶（磚紅） */
-  .cat-group[data-cat*="白茶"] { --cat-accent: #BEA78B; } /* 白茶（白茶色） */
-  .cat-group[data-cat*="蜜香"] { --cat-accent: #D96000;
-  } /* 蜜香（橙） */
-  .cat-group[data-cat*="加購"] { --cat-accent: #105779; } /* 加購（天青） */
-  /* 把整個分類標題上色（含箭頭） */
-  .cat-head .title{
-    color: var(--cat-accent);
-    font-size: 28px;
-    font-weight: 800;
-    letter-spacing: .2px;
-  }
-  .cat-toggle .chev{ color: var(--cat-accent); opacity: .9;
-  }
-  
-  /* 展開時給一點邊框/陰影的色調呼應（高質感） */
-  .cat-group.is-open .cat-head{
-    border-color: color-mix(in srgb, var(--cat-accent) 28%, transparent);
-    box-shadow: 0 2px 14px color-mix(in srgb, var(--cat-accent) 18%, transparent);
-  }
-  
-  /* 變體/價格/數量列（行動版優化） */
-  .variant{
-    display: grid;
-    grid-template-columns: 1fr max-content;   /* 左資訊、右數量 */
-    align-items: center;
-    gap: 14px;
-    padding: 14px 16px;
-    border-radius: 14px;
-    border: 1px solid rgba(0,0,0,.06);
-    background: linear-gradient(180deg, #fff, rgba(255,255,255,.72));
-  }
-  
-  .variant .v-label{
-    font-weight:800; font-size:18px;
-    padding:2px 8px; border-radius:999px;
-    background:#eef3ff; border:1px solid #d7e2ff; color:#0a84ff;
-  }
-  .variant .v-meta{ font-size:22px; color:#555;
-  }
-  .variant .qty{ justify-self: end; gap: 10px; }
-  .variant .qty .step{ width: 56px; height: 56px; }
-  .variant .qty input[type=number]{ width: 110px; text-align:center; }
-  
-  
-  /* ===== Pack (裝罐) row ===== */
-  .pack-row{
-    display: grid;
-    grid-template-columns: 1fr max-content;
-    align-items: center;
-    gap: 14px;
-    padding: 12px 4px; /* 稍微輕一點，避免過重 */
-  }
-  .pack-toggle{ display:inline-flex; align-items:center; gap:8px; font-weight:700; }
-  .pack-qty{ justify-self: end; gap: 10px; }
-  .pack-qty[hidden]{ display:none !important; }
-  .pack-qty input[type=number]{ width: 110px; text-align:center; }
-  .pack-hint{ font-size:18px; color:#6b7280;
-  }
-  .pack-err{ margin-top:6px; font-size:18px; color:#b00020; display:none; }
-  
-  /* 統一垂直間距 */
-  /* 每張卡片的第一個 .variant（通常是散茶那列）加大上邊距 */
-  .itemcard .variant:first-of-type{
-    margin-top: 18px; /* 原本太貼，上緣多 18px */
-  }
-  .itemcard .quickblock + .variant,
-  .itemcard .desc + .variant{
-    margin-top: 20px;
-  }
-  .itemcard .variant + .variant,
-  .itemcard .variant + .pack-row,
-  .itemcard .pack-row + .variant,
-  .itemcard .pack-row + .more-btn{ margin-top: 14px;
-  }
-  .itemcard .more-btn{ margin-top: 14px; }
-  .itemcard .detailblock{ margin-top: 14px; padding-top: 12px;
-  }
-  
-  
-  /* ===== Collapsible Cart Sheet (行動版專用優化) ===== */
-  #cartSheetBackdrop {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.25);
-  backdrop-filter: blur(2px);
-  opacity: 0;
-  transition: opacity .3s ease;
-  z-index: 900;
-}
-#cartSheetBackdrop[aria-hidden="false"] {
-  opacity: 1;
-}
-#cartSheet {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #fff;
-  border-radius: 16px 16px 0 0;
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-  transform: translateY(100%);
-  transition: transform .35s cubic-bezier(0.25, 1, 0.5, 1);
-}
-#cartSheet[data-open="true"] {
-  transform: translateY(0);
-}
-.cart-line {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 0;
-}
-.cart-total {
-  font-weight: bold;
-  font-size: 1.1em;
-}
-
-  
-  /* 條列式美化項目 */
-  .line-item{
-    display:grid; grid-template-columns: 1fr auto; gap:8px 10px;
-    padding:10px 0; border-bottom:1px solid rgba(0,0,0,.06);
-  }
-  .li-title{ font-weight:800; }
-  .li-meta{ font-size:20px; color:#6b7280; }
-  .li-sub{ text-align:right; font-weight:700; }
-  .li-qty{ display:flex; gap:8px; align-items:center; justify-content:flex-end; }
-  .li-qty input{ width:72px; text-align:center;
-  }
-  
-  /* Mobile sheet 專用：<= 768px */
-  @media (max-width: 768px){
-    #cartSheetBackdrop{
-      align-items: flex-end;
-      justify-content: stretch;
-      overscroll-behavior: contain;
-      touch-action: manipulation;
-    }
-    .cart-sheet{
-      width: 100% !important; max-width: none !important; margin: 0;
-      border-radius: 16px 16px 0 0;
-      transform: translate3d(0,100%,0);
-      opacity: 1;
-      transition: transform .28s cubic-bezier(.2,.8,.2,1);
-      will-change: transform;
-      backface-visibility: hidden;
-      contain: layout paint;
-      max-height: min(88vh, calc(var(--vvh, 100dvh) - env(safe-area-inset-bottom) - 12px));
-    }
-    .cart-sheet[data-open="true"]{ transform: translate3d(0,0,0);
-    }
-    .cart-list{
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
-      max-height: calc(60vh - 80px);
-    }
-    .cart-body{ padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
-    #cartCloseBtn, .btn{ min-height: 56px; }
-    .cart-title{ font-size: clamp(30px, 5.2vw, 38px);
-    }
-    .cart-total{ font-size: clamp(28px, 4.8vw, 34px); }
-  }
-  
-  /* 使用者偏好減少動畫時 */
-  @media (prefers-reduced-motion: reduce){
-    .cart-sheet{ transition: none !important;
-    }
-    #cartSheetBackdrop{ transition: none !important; }
-  }
-  
-  /* 手機滾動阻尼＆安全區 */
-  .cart-list{
-    overscroll-behavior: contain;
-    padding-bottom: calc(12px + env(safe-area-inset-bottom));
-  }
-  
-  /* 進度條 */
-  #freeProgress{ transition: opacity .18s ease; }
-  #freeProgressBar{ transition: width .25s ease; }
-  
-  /* 免運徽章 */
-  #freeBadge{ padding:2px 8px;border-radius:999px;background:#eaf7ef;border:1px solid #bfe9d0;color:#0f5e3a;
-  }
-  
-  /* 抽屜拖曳時阻尼 */
-  .cart-sheet.dragging{
-    transition: none !important;
-    will-change: transform;
-  }
-  
-  
-  /* ===== 商品文案區塊（輕量樣式） ===== */
-  .quickblock{ margin-top:10px; display:flex; flex-wrap:wrap; gap:8px 10px; align-items:center; }
-  .quickblock .tagline{ font-weight:700; }
-  .quickblock .tags{ display:flex; flex-wrap:wrap; gap:6px;
-  }
-  .quickblock .tag{ font-size:22px; padding:3px 8px; border-radius:999px; background:#eef3ff; border:1px solid #d7e2ff; color:#0a84ff; }
-  
-  .detailblock{ margin-top:8px; border-top:1px solid rgba(0,0,0,.06); padding-top:10px; }
-  .detailblock .story{ color:#555;
-    font-size:24px; }
-  .detailblock .brew{
-    display:grid; grid-template-columns:1fr; gap:6px; font-size:22px; color:#333;
-  }
-  .detailblock .brew .line{ display:flex; align-items:center; gap:6px; }
-  .detailblock .brew b{ font-weight:800;
-  }
-  .detailblock .brew small{ color:#777; }
-  
-  /* ===== 商品詳情：量化條（在「更多詳情」內才會看到） ===== */
-  .profile-blocks .bar{
-    display:flex;
-    align-items:center;
-    gap:6px;
-    font-family: inherit;
-    letter-spacing: 0;
-  }
-  .profile-blocks .blk{
-    width:8px; height:8px; border-radius:3px;
-    background:#e9efe9;
-    border:1px solid rgba(0,0,0,.12);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.6);
-  }
-  .profile-blocks .blk.on{
-    background:#34c759;
-    border-color: color-mix(in srgb, #34c759 55%, #000 0%);
-  }
-  .more[hidden]{ display:none !important; }
-  
-  .more-btn{
-    margin-top:8px; border:1px solid rgba(0,0,0,.08); background:#fff; border-radius:10px; padding:8px 10px;
-    font-size:22px; cursor:pointer;
-  }
-  .more-btn[aria-expanded="true"]{ background:#f7faff; border-color:#d7e2ff; }
-  
-  /* ====== Inline Store Picker ====== */
-  .sp-map{
-    height: 260px;
-    border-top: 1px solid #eee;
-    border-bottom: 1px solid #eee;
-    margin: 0;
-  }
-  @media (max-width: 768px){
-    .sp-map{ height: 220px;
-    }
-  }
-  
-  /* success modal 相關 */
-  .order-summary {
-    margin: 12px auto 16px;
-    font-size: 22px;
-    line-height: 1.6;
-    color: #4a4a4a;
-    text-align: left;
-  }
-  .line-bind-box {
-    background: #f9f6f3;
-    border: 1px solid #e2d6c6;
-    border-radius: 10px;
-    padding: 12px 14px;
-    margin: 12px auto 16px;
-    text-align: center;
-    animation: fadeIn 0.5s ease;
-  }
-  .line-bind-title { font-weight: 600; color: #5c4832; margin-bottom: 4px; font-size: 26px; }
-  .line-bind-text { color: #7a6b58; font-size: 24px;
-    line-height: 1.4; margin-bottom: 10px; }
-  .line-bind-btn {
-    display: inline-block; background: #5c4832; color: #fff; padding: 8px 18px; border-radius: 8px;
-    text-decoration: none;
-    font-weight: bold; transition: background 0.2s; font-size: 26px;
-  }
-  .line-bind-btn:hover { background: #7a5c3e; }
-  .line-bind-note { font-size: 20px; color: #999; margin-top: 6px;
-  }
-  
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: translateY(0);
-    }
-  }
-  
-  /* ========= Store Picker（整合版） ========= */
-  #store-picker{ position:fixed; inset:0; display:none; z-index:9999; }
-  #store-picker[aria-hidden="false"]{ display:block; }
-  #store-picker .sp-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,.35); backdrop-filter:blur(2px);
-  }
-  #store-picker .sp-sheet{
-    position:absolute; left:0 !important; right:0 !important; bottom:0;
-    /* 修正 iOS 寬度溢出 */
-    width:100% !important; max-width:none !important; max-height:80vh;
-    background:#fff; border-radius:16px 16px 0 0;
-    box-shadow:0 -8px 30px rgba(0,0,0,.18);
-    transform:translateY(100%); transition:transform .25s ease;
-    display:flex; flex-direction:column;
-  }
-  #store-picker[aria-hidden="false"] .sp-sheet{ transform: translateY(0); }
-  #store-picker .sp-header{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:12px 16px; border-bottom:1px solid #eee;
-  }
-  #store-picker .sp-toolbar{
-    display:flex; gap:10px; justify-content:center;
-    padding:8px 16px; border-bottom:1px solid #f1f1f1;
-  }
-  #store-picker .sp-toolbar #sp-radius{ display:none !important; }
-  #store-picker #sp-brand{
-    flex: 0 1 520px;
-    height: 56px;
-    font-size: 24px;
-    padding: 0 14px;
-    border:1px solid #e5e7eb; border-radius:12px; background:#fff;
-  }
-  #store-picker #sp-nearby{
-    height: 56px; font-size: 24px; font-weight: 700; padding: 0 16px; border-radius: 12px;
-    border: 0; color: #fff; background: #5c4832; cursor: pointer; transition: background .15s ease;
-  }
-  #store-picker #sp-nearby:hover{ background:#7a5c3e; }
-  #store-picker .sp-search{ display:flex; gap:10px; justify-content:center;
-    padding:12px 16px; }
-  #store-picker .sp-search input{
-    flex: 0 1 520px; height: 56px; font-size: 24px; padding: 0 14px; border:1px solid #e5e7eb;
-    border-radius:12px;
-  }
-  #store-picker .sp-search input::placeholder{ font-size:24px; }
-  #store-picker #sp-search-btn{
-    height: 56px; font-size: 24px; font-weight: 700; padding: 0 16px; border-radius: 12px;
-    border: 0; color: #fff; background: #5c4832; cursor: pointer; transition: background .15s ease;
-  }
-  #store-picker #sp-search-btn:hover{ background:#7a5c3e; }
-  #store-picker .sp-results{ overflow:auto;
-    padding:8px 8px 14px; }
-  #store-picker .sp-item{ border:1px solid #eef0f2; border-radius:12px; padding:12px; margin:8px; cursor:pointer; }
-  #store-picker .sp-item:hover{ background:#fafafa; }
-  #store-picker .sp-name{ font-weight:600; font-size: 26px;
-  }
-  #store-picker .sp-meta{ font-size:20px; color:#6b7280; }
-  #store-picker .sp-footer{ padding:10px 16px; border-top:1px solid #eee; }
-  #store-picker .sp-cancel{
-    width:100%; padding:12px; border-radius:10px; border:1px solid #e5e7eb;
-    background:#fff; font-size: 26px;
-  }
-  #store-picker .sp-busy{ pointer-events:none; opacity:.72; }
-  #openStoreBtn[aria-busy="true"]{ pointer-events:none; opacity:.7; }
-  #openStoreBtn .btn-spin{ display:inline-block; animation: spin 1s linear infinite;
-  }
-  @keyframes spin{ from{transform:rotate(0)} to{transform:rotate(360deg)} }
-  
-  /* 手機優化：品牌選單與搜尋欄滿版 */
-  @media (max-width: 768px){
-    #store-picker #sp-brand,
-    #store-picker .sp-search input{
-      flex: 1 1 100%;
-      max-width: 100%;
-    }
-    #store-picker .sp-toolbar{ gap: 8px; }
-  }
-  
-  /* 共用內容容器：讓內容居中 */
-  .container, .page, .wrap {
-    max-width: var(--content-width);
-    margin-inline: auto;
-  }
-  
-  /* 避免窄螢幕需要橫向捲動或縮放 */
-  @media (max-width: 390px){
-    .qty input[type=number]{ width: 96px; }
-    .variant .qty input[type=number]{ width: 80px;
-    }
-  }
-  
-  /* === Mobile：最終安全區與邊距收斂 (避免右側被吃掉) === */
-  @media screen and (max-device-width: 480px), (max-width: 768px){
-    :root{
-      /* 修正 iOS 安全區與邊距重疊 */
-      --gutter:   max(12px, env(safe-area-inset-left));
-      --gutter-r: max(12px, env(safe-area-inset-right));
-    }
-    .container, .page, .wrap{
-      padding-left: var(--gutter);
-      padding-right: var(--gutter-r);
-      box-sizing: border-box;
-    }
-  
-    /* 移除卡片層的左右外距，避免與容器 padding 疊加 */
-    .card,
-    .itemcard,
-    .stepcard.is-step-active{
-      margin-left: 0;
-      margin-right: 0;
-      width: auto; 
-      max-width: 100%;
-      /* 使用 clamp 讓內邊距隨視埠微調 */
-      padding-left: clamp(14px, 3.6vw, 18px);
-      padding-right: clamp(14px, 3.6vw, 18px);
-    }
-    .cat-panel .itemcard{ margin: 12px 0 0; } /* 只保留上方間距 */
-  
-    /* Sticky bar：使用安全區間距 */
-    .stickybar{
-      left: 0; right: 0;
-      padding-left: var(--gutter);
-      padding-right: var(--gutter-r);
-      padding-top: 14px;
-      padding-bottom: calc(14px + env(safe-area-inset-bottom));
-    }
-    .sticky-inner{
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .sticky-inner .stack{ flex:1 1 100%; min-width: 0; }  /* 金額佔第一列 */
-    .sticky-inner .btn{ flex:1 1 calc(33.33% - 6px); min-width: 0;
-    } /* 三顆等分 */
-  }
-  
-  /* 窄螢幕：按鈕分兩排 */
-  @media (max-width: 640px){
-    .sticky-inner .btn{ flex:1 1 calc(50% - 4px);
-    }     /* 兩顆一列 */
-    #submitBtnSticky{ flex-basis: 100%;
-    }               /* 送出佔滿一列 */
-  }
-  /* 更窄時：三顆各佔一列 */
-  @media (max-width: 380px){
-    .sticky-inner .btn{ flex-basis: 100%;
-    }             /* 超小機：一顆一列 */
-  }
-  
-  
-  /* ======= 行動版：全站字級 28px（鎖定防放大） ======= */
-  @media (max-width: 768px){
-  html, body {
-    font-size: clamp(16px, 3.5vw, 20px) !important;
-    -webkit-text-size-adjust: 100% !important;
-  }
-
-  h1, h2, label, .muted, button,
-  input, select, textarea, .btn {
-    font-size: clamp(16px, 3.5vw, 20px) !important;
-  }
-
-  .btn, input, select, textarea {
-    min-height: 48px !important;
-    border-radius: 10px;
-  }
-
-  button.plus, button.minus {
-    width: 48px;
-    height: 48px;
-    font-size: 24px;
-  }
-    
-    /* 彈窗內文字鎖定 */
-    .modal-card,
-    .modal-card .big,
-    .order-summary,
-    .line-bind-box,
-    .line-bind-btn,
-    .modal-card .ok .btn {
-      font-size: 28px;
-      line-height: 1.45;
-    }
-  }
-  
-  /* 數量控制群組：手機上更緊湊 */
-  @media (max-device-width: 480px){
-    .variant{
-      display:grid; grid-template-columns:auto 1fr max-content; column-gap:10px; align-items:center;
-    }
-    .variant .qty{ grid-column:3; justify-self:start; margin-right:8px; }
-  }
-  
-  /* 錯誤訊息：預設隱藏，僅在 JS 判斷為 invalid 時顯示 */
-  #phoneErr{ display:none !important;
-  }
-  #phone.is-invalid + #phoneErr,
-  #phone[aria-invalid="true"] + #phoneErr{ display:block !important; }
-  
-  /* ========= Success Modal：最終防爆優化 ========= */
-  
-  /* 背板用 flex 置中 + 留安全邊距 */
-  .modal-backdrop[aria-hidden="false"]{
-    display:flex !important;
-    align-items:center;
-    justify-content:center;
-    padding: 16px max(12px, env(safe-area-inset-left)) 16px max(12px, env(safe-area-inset-right));
-    background: rgba(0,0,0,.45);
-    z-index: 1005;
-  }
-  
-  /* 卡片本體：可滾、寬度自適應 */
-  .modal-card{
+  .container, .page, .wrap{
+    padding-left: var(--gutter);
+    padding-right: var(--gutter-r);
     box-sizing: border-box;
-    width: min(560px, calc(100% - 24px));
-    max-height: min(82vh, 86dvh);
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-    border-radius: 16px;
-  }
-  
-  /* 行動裝置：從上方展開 */
-  @media (max-width: 768px){
-    .modal-backdrop[aria-hidden="false"]{
-      align-items: flex-start;
-      padding-top: max(16px, env(safe-area-inset-top) + 8px);
-      padding-bottom: max(16px, env(safe-area-inset-bottom) + 8px);
-    }
-    .modal-card{
-      width: calc(100% - 24px); 
-      max-height: min(84vh, 88dvh);
-    }
   }
 
-  /* === Mobile 最終修正版 === */
-@media (max-width: 768px){
-  html, body {
-    font-size: clamp(15px, 3.2vw, 18px) !important;
+  /* 卡片與容器一致 */
+  .card, .itemcard, .stepcard.is-step-active{
+    margin-left:0; margin-right:0; width:auto; max-width:100%;
+    padding-left: clamp(14px, 3.6vw, 18px);
+    padding-right: clamp(14px, 3.6vw, 18px);
+  }
+
+  /* Sticky bar spacing */
+  .stickybar{
+    padding-top: 14px;
+    padding-bottom: calc(14px + env(safe-area-inset-bottom));
+  }
+  .sticky-inner{
+    gap:8px; flex-wrap:wrap;
+  }
+  .sticky-inner .stack{
+    flex:1 1 100%; min-width:0;
+  }
+  .sticky-inner .btn{
+    flex:1 1 calc(33.33% - 6px); min-width:0;
+  }
+}
+
+/* 窄螢幕兩排按鈕 */
+@media (max-width:640px){
+  .sticky-inner .btn{ flex:1 1 calc(50% - 4px); }
+  #submitBtnSticky{ flex-basis:100%; }
+}
+/* 超小螢幕：三顆分開一列 */
+@media (max-width:380px){
+  .sticky-inner .btn{ flex-basis:100%; }
+}
+
+/* ===== 全站字級（防爆） ===== */
+@media (max-width:768px){
+  html,body{
+    font-size: clamp(18px, 4vw, 24px) !important;
     -webkit-text-size-adjust: 100% !important;
   }
-  h1,h2,label,.muted,button,
-  input,select,textarea,.btn,
-  #receiverCard h2,#receiverCard label,#receiverCard input,#receiverCard textarea,
-  #shippingCard h2,#shippingCard label,#shippingCard input,#shippingCard select,#shippingCard button,#shippingCard .muted {
-    font-size: clamp(15px, 3.5vw, 18px) !important;
+  h1,h2,label,.muted,button,input,select,textarea,.btn{
+    font-size: clamp(18px, 4vw, 24px) !important;
     line-height: 1.45 !important;
   }
-
-  body {
-    padding-bottom: calc(var(--stickybar-h, 80px) + 12px);
+  input,select,textarea,button{
+    min-height:52px !important;
   }
-
-  .card, .itemcard {
-    margin: 0 0 12px;
-    padding: 16px;
-    border-radius: 14px;
+  .qty button{
+    width:52px; height:52px; font-size:26px;
   }
-
-  .qty {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-  }
-  .qty button {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    border: 1px solid rgba(0,0,0,0.15);
-    background: #fff;
-    font-size: 24px;
-    font-weight: 700;
-    color: #0a84ff;
-    line-height: 1;
-  }
-  .qty input {
-    width: 50px;
-    text-align: center;
-    font-size: 18px;
-    border: none;
-    background: transparent;
-  }
-
-  .stickybar {
-    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
-  }
+  .qty input{ width:72px; font-size:22px; }
+  .grand{font-size:22px;}
+  .subline{font-size:18px;}
 }
+
+/* ===== 商品卡片微調 ===== */
+.itemcard{
+  display:flex;flex-direction:column;justify-content:space-between;
+  gap:10px;
+}
+.itemcard .title{font-size:22px;word-break:keep-all;}
+.itemcard .price{font-size:20px;color:#222;}
+.itemcard .qty{justify-content:flex-start;}
+
+/* ===== 彈出式購物明細 Sheet ===== */
+#cartSheetBackdrop {
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.25);backdrop-filter:blur(2px);
+  opacity:0;transition:opacity .3s ease;z-index:900;
+}
+#cartSheetBackdrop[aria-hidden="false"]{opacity:1;}
+#cartSheet {
+  position:fixed;bottom:0;left:0;right:0;background:#fff;
+  border-radius:16px 16px 0 0;
+  box-shadow:0 -4px 20px rgba(0,0,0,.1);
+  transform:translateY(100%);
+  transition:transform .35s cubic-bezier(0.25,1,0.5,1);
+  z-index:901;
+}
+#cartSheet[data-open="true"]{transform:translateY(0);}
+.cart-line{display:flex;justify-content:space-between;padding:8px 0;}
+.cart-total{font-weight:800;font-size:1.1em;}
+#cartCloseBtn{font-size:20px;cursor:pointer;border:none;background:transparent;color:var(--accent);}
+.cart-title{font-weight:800;font-size:1.4em;text-align:center;margin:8px 0;}
+
+/* ===== Mobile Sheet行動優化 ===== */
+@media (max-width:768px){
+  #cartSheet{max-height:88vh;overflow:auto;}
+  .cart-line{font-size:clamp(16px,4vw,22px);}
+  .cart-total{font-size:clamp(18px,4.5vw,24px);}
+}
+
+/* ===== 商品分類手風琴 ===== */
+.cat-toggle{
+  display:flex;align-items:center;justify-content:space-between;
+  width:100%;padding:16px 18px;background:transparent;border:0;
+  cursor:pointer;font:inherit;
+}
+.cat-toggle .title{font-size:22px;font-weight:800;}
+.cat-toggle .chev{transition:transform .25s ease;color:var(--accent);}
+.cat-toggle[aria-expanded="true"] .chev{transform:rotate(180deg);}
+.cat-panel{
+  overflow:hidden;transition:max-height .28s ease;will-change:max-height;
+  border-top:1px solid rgba(0,0,0,.06);border-radius:0 0 var(--radius) var(--radius);
+  margin-top:-4px;padding-bottom:8px;
+}
+.cat-panel .itemcard{margin:12px 12px 0;}
+.cat-group.is-open .cat-head{
+  border-color:rgba(10,132,255,.15);
+  box-shadow:0 2px 10px rgba(10,132,255,.12);
+}
+
+/* ===== 免運提示動畫 ===== */
+#free_tip_s{
+  animation:fadeIn .25s ease;
+}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+
+/* ===== Store Picker微調 ===== */
+#store-picker .sp-name{font-size:22px;}
+#store-picker .sp-meta{font-size:18px;color:#6b7280;}
+#store-picker .sp-cancel{font-size:22px;}
+
+/* ===== 成功訊息彈窗修正 ===== */
+.modal-card{
+  width:min(560px,calc(100% - 24px));
+  max-height:min(82vh,86dvh);
+  overflow:auto;-webkit-overflow-scrolling:touch;
+  border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.1);
+}
+.modal-card .big{font-size:22px;font-weight:800;}
+.modal-card .ok .btn{font-size:20px;}
+
+/* ===== 超小螢幕防爆間距 ===== */
+@media (max-width:390px){
+  .qty input[type=number]{width:64px;}
+  .variant .qty input[type=number]{width:72px;}
+  .btn{font-size:16px;}
+}
+
+/* ===== 數量區塊垂直對齊 ===== */
+.variant{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.variant .v-meta{font-size:18px;color:#555;}
+.variant .qty{display:flex;align-items:center;gap:8px;}
+.variant .qty .step{width:48px;height:48px;border-radius:12px;font-size:26px;}
+.variant .qty input{width:72px;text-align:center;font-size:20px;border:none;background:transparent;}
+
+/* === End of Mobile Optimization === */
