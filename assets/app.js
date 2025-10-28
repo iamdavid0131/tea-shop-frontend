@@ -1,30 +1,13 @@
 /**
  * ☕ 祥興茶行購物頁 app.js
  * ======================================================
- * 前端主程式（Cloudflare Pages + Node.js 雙環境相容）
- *
- * 🌍 環境自動偵測：
- *   - 開發模式（localhost）→ 使用 http://localhost:3000/api
- *   - 正式部署（hsianghsing.org）→ 使用 https://hsianghsing.org/api
- *
- * 📦 後端 API 對應：
- *   - GET  /api/config          → 後端組態（產品、運費等）
- *   - POST /api/previewTotals   → 試算金額（含折扣與免運）
- *   - POST /api/order           → 送出訂單
- *   - POST /api/stores          → 門市查詢（Google Places）
- *
- * 🧭 功能模組：
- *   - 商品渲染與數量調整
- *   - sticky bar 顯示總金額
- *   - localStorage 快取購物狀態
- *   - 優惠碼與運費動態試算
- *   - LINE / Cloudflare Pages 相容設計
+ * 前端主程式（Cloudflare Pages + Render 後端相容）
  * ======================================================
  */
 
+import { api } from "./app.api.js";
+window.api = api;
 
-import { api } from "./app.api.js"; // ✅ 匯入 api 模組
-window.api = api; // ✅ 讓瀏覽器 Console 可用
 // ------------------------------
 // 🧩 DOM helper
 // ------------------------------
@@ -49,8 +32,8 @@ let CONFIG = {
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     $("loading").style.display = "block";
-    const cfg = await api.getConfig(); // ✅ 呼叫後端 /api/config
-    CONFIG = { ...CONFIG, ...cfg };
+    const cfg = await api.getConfig();
+    CONFIG = { ...CONFIG, PRODUCTS: cfg.data || [] };
     renderProducts(CONFIG.PRODUCTS);
     restoreCart();
     updateTotals();
@@ -66,7 +49,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 // 🛍️ 商品渲染
 // ------------------------------
 function renderProducts(products) {
-  const list = $("product-list");
+  const list = $("categoryList"); // ✅ HTML 裡是這個 ID
+  if (!list) return console.warn("⚠️ 找不到 categoryList 容器");
   list.innerHTML = "";
 
   products.forEach((p) => {
@@ -84,7 +68,6 @@ function renderProducts(products) {
     list.appendChild(card);
   });
 
-  // 綁定按鈕事件
   list.addEventListener("click", (e) => {
     const btn = e.target.closest("button");
     if (!btn) return;
@@ -132,14 +115,17 @@ async function updateTotals() {
     qty: parseInt($(`qty-${p.id}`)?.textContent || 0),
   })).filter((i) => i.qty > 0);
 
+  const elTotal = $("total_s");
+  if (!elTotal) return;
+
   if (items.length === 0) {
-    $("sticky-total").textContent = "NT$ 0";
+    elTotal.textContent = "NT$ 0";
     return;
   }
 
   try {
     const preview = await api.previewTotals(items, "store", "");
-    $("sticky-total").textContent = `NT$ ${preview.total.toLocaleString("zh-TW")}`;
+    elTotal.textContent = `NT$ ${preview.total.toLocaleString("zh-TW")}`;
   } catch (err) {
     console.error("試算錯誤:", err);
     toast("⚠️ 金額試算失敗");
@@ -158,24 +144,23 @@ function toast(msg) {
   setTimeout(() => (bar.style.opacity = 0), 3000);
   setTimeout(() => bar.remove(), 3500);
 }
-// ============================================================
-// 🧾 送單流程 submitOrder()
-// ============================================================
-$("submit-btn")?.addEventListener("click", async () => {
-  try {
-    const name = $("buyer-name")?.value.trim();
-    const phone = $("buyer-phone")?.value.trim();
-    const method = $("shipping-method")?.value || "store";
-    const promoCode = $("promo-code")?.value.trim();
-    const note = $("buyer-note")?.value.trim();
 
-    // 驗證基本欄位
+// ============================================================
+// 🧾 送單流程
+// ============================================================
+$("submitBtnSticky")?.addEventListener("click", async () => {
+  try {
+    const name = $("name")?.value.trim();
+    const phone = $("phone")?.value.trim();
+    const method = document.querySelector('input[name="ship"]:checked')?.value || "store";
+    const promoCode = $("promoCode")?.value.trim();
+    const note = $("note")?.value.trim();
+
     if (!name || !phone) {
       toast("請填寫姓名與電話");
       return;
     }
 
-    // 收集購物項目
     const items = CONFIG.PRODUCTS.map((p) => ({
       id: p.id,
       qty: parseInt($(`qty-${p.id}`)?.textContent || 0),
@@ -186,12 +171,10 @@ $("submit-btn")?.addEventListener("click", async () => {
       return;
     }
 
-    // 顯示載入中狀態
-    const btn = $("submit-btn");
+    const btn = $("submitBtnSticky");
     btn.disabled = true;
     btn.textContent = "送出中...";
 
-    // 傳送到後端
     const res = await api.submitOrder({
       buyerName: name,
       buyerPhone: phone,
@@ -212,22 +195,24 @@ $("submit-btn")?.addEventListener("click", async () => {
     console.error("送單錯誤:", err);
     toast("⚠️ 系統錯誤，請稍後再試");
   } finally {
-    $("submit-btn").disabled = false;
-    $("submit-btn").textContent = "送出訂單";
+    $("submitBtnSticky").disabled = false;
+    $("submitBtnSticky").textContent = "送出訂單";
   }
 });
 
 // ============================================================
 // 🎁 優惠碼檢查
 // ============================================================
-$("promo-code")?.addEventListener("blur", async (e) => {
-  const code = e.target.value.trim();
+$("applyPromoBtn")?.addEventListener("click", async () => {
+  const code = $("promoCode")?.value.trim();
   if (!code) return;
   try {
     const result = await api.previewTotals([], "store", code);
     if (result.valid) {
-      toast("🎉 優惠碼已套用：" + code);
+      $("promoMsg").textContent = `🎉 已套用優惠碼：${code}`;
+      toast("🎉 優惠碼已套用");
     } else {
+      $("promoMsg").textContent = "❌ 無效的優惠碼";
       toast("❌ 無效的優惠碼");
     }
   } catch (err) {
@@ -236,32 +221,7 @@ $("promo-code")?.addEventListener("blur", async (e) => {
 });
 
 // ============================================================
-// 🎯 Google Analytics 追蹤（可選）
-// ============================================================
-function trackEvent(category, action, label) {
-  if (typeof gtag === "function") {
-    gtag("event", action, {
-      event_category: category,
-      event_label: label,
-    });
-  }
-}
-
-// ============================================================
-// 🧱 Sticky bar 與 UI 更新
-// ============================================================
-window.addEventListener("scroll", () => {
-  const sticky = $("sticky-bar");
-  if (!sticky) return;
-  if (window.scrollY > 200) {
-    sticky.classList.add("visible");
-  } else {
-    sticky.classList.remove("visible");
-  }
-});
-
-// ============================================================
-// 🔄 全域事件監聽（偵測數量變化 → 即時試算）
+// 🧩 數量變化即時更新
 // ============================================================
 document.addEventListener("click", (e) => {
   if (e.target.matches(".plus, .minus")) {
@@ -269,14 +229,4 @@ document.addEventListener("click", (e) => {
   }
 });
 
-// ============================================================
-// 🧩 工具函式
-// ============================================================
-function money(n) {
-  return "NT$ " + Number(n || 0).toLocaleString("zh-TW");
-}
-
-// ============================================================
-// 🏁 初始化完成
-// ============================================================
 console.log("祥興茶行 app.js 已載入 ✅");
