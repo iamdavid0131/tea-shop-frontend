@@ -242,6 +242,98 @@ $("submitBtnSticky")?.addEventListener("click", async () => {
   }
 });
 
+/* ============================================================
+   🧾 查看明細（整合後端折扣計算版）
+   ============================================================ */
+$("viewCartBtn")?.addEventListener("click", showCartSheet);
+$("cartCloseBtn")?.addEventListener("click", hideCartSheet);
+
+document.getElementById("cartSheetBackdrop")?.addEventListener("click", (e) => {
+  if (e.target.id === "cartSheetBackdrop") hideCartSheet();
+});
+
+async function showCartSheet() {
+  const backdrop = $("cartSheetBackdrop");
+  const sheet = $("cartSheet");
+  const list = $("cartItems");
+  const promoCode = ($("promoCode")?.value || "").trim();
+
+  // 收集購物車內容
+  const items = (CONFIG.PRODUCTS || [])
+    .map((p) => {
+      const qty = Number($(`qty-${p.id}`)?.textContent || 0);
+      return { id: p.id, name: p.title || p.name, price: p.price, qty };
+    })
+    .filter((i) => i.qty > 0);
+
+  // 清空舊內容
+  list.innerHTML = "";
+
+  if (!items.length) {
+    list.innerHTML = `<div class="muted" style="padding:12px;">尚未選購商品</div>`;
+  } else {
+    items.forEach((it) => {
+      const row = document.createElement("div");
+      row.className = "line-item";
+      row.innerHTML = `
+        <div class="li-title">${it.name}</div>
+        <div class="li-qty">× ${it.qty}</div>
+        <div class="li-sub">NT$ ${(it.price * it.qty).toLocaleString("zh-TW")}</div>
+      `;
+      list.appendChild(row);
+    });
+  }
+
+  // ✅ 呼叫後端進行金額試算（含折扣與運費）
+  try {
+    const preview = await api.previewTotals(items, "store", promoCode);
+    console.log("🧾 後端 previewTotals:", preview);
+
+    const data = preview.data || preview;
+
+    $("cartSub").textContent = `NT$ ${(data.subtotal || 0).toLocaleString("zh-TW")}`;
+    $("cartDiscRow").style.display = data.discount > 0 ? "flex" : "none";
+    $("cartDisc").textContent = data.discount > 0
+      ? `- NT$ ${data.discount.toLocaleString("zh-TW")}`
+      : "";
+    $("cartShip").textContent = `NT$ ${(data.shipping || data.shippingFee || 0).toLocaleString("zh-TW")}`;
+    $("cartTotal").textContent = `NT$ ${(data.total || 0).toLocaleString("zh-TW")}`;
+
+    $("promoMsg").textContent =
+      promoCode && data.discount > 0
+        ? `🎉 已套用優惠碼：${promoCode}`
+        : promoCode
+        ? "❌ 無效的優惠碼"
+        : "";
+
+  } catch (err) {
+    console.error("查看明細計算錯誤:", err);
+    $("promoMsg").textContent = "⚠️ 無法取得折扣資料";
+  }
+
+  // 顯示 sheet（動畫）
+  backdrop.style.display = "block";
+  requestAnimationFrame(() => {
+    backdrop.setAttribute("aria-hidden", "false");
+    sheet.dataset.open = "true";
+  });
+}
+
+function hideCartSheet() {
+  const backdrop = $("cartSheetBackdrop");
+  const sheet = $("cartSheet");
+  sheet.dataset.open = "false";
+  sheet.addEventListener(
+    "transitionend",
+    () => {
+      backdrop.setAttribute("aria-hidden", "true");
+      backdrop.style.display = "none";
+    },
+    { once: true }
+  );
+}
+
+
 // ============================================================
 // 🎁 優惠碼檢查
 // ============================================================
