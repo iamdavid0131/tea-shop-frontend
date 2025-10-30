@@ -471,6 +471,7 @@ async function showCartSheet() {
   const sheet = $("cartSheet");
   const list = $("cartItems");
   const promoCode = ($("promoCode")?.value || "").trim();
+  document.body.classList.add("modal-open");
 
   // 收集購物車內容
   const items = (CONFIG.PRODUCTS || [])
@@ -561,6 +562,7 @@ function hideCartSheet() {
     () => {
       backdrop.setAttribute("aria-hidden", "true");
       backdrop.style.display = "none";
+      document.body.classList.remove("modal-open");
       document.body.style.overflow = "";
       document.body.style.position = "";
       document.body.style.width = "";
@@ -601,8 +603,8 @@ function hideCartSheet() {
     sheet.style.transition = "transform 0.3s ease";
     const deltaY = currentY - startY;
 
-    if (deltaY > 100) {
-      // 👉 超過 100px 視為關閉
+    if (deltaY > 50) {
+      // 👉 超過 50px 視為關閉
       hideCartSheet();
     } else {
       // 👉 否則彈回原位
@@ -654,3 +656,4 @@ document.addEventListener("click", (e) => {
 });
 
 console.log("祥興茶行 app.js 已載入 ✅");
+

@@ -511,6 +511,8 @@ label {
   margin-bottom: 16px;
 }
 
+
+
 .line-item {
   display: flex;
   justify-content: space-between;
@@ -543,15 +545,20 @@ label {
   justify-content: space-between;
   align-items: center;
   margin: 6px 0;
-  font-size: 15px;
+  font-size: 0.95rem;
 }
 
 .sheet .line.total {
   font-weight: 700;
-  font-size: 16px;
+  font-size: 1.05rem;
   border-top: 1px solid #eee;
   padding-top: 8px;
   margin-top: 8px;
+}
+
+.sheet .btn-outline {
+  margin-top: 16px;
+  width: 100%;
 }
 
 #promoMsg {
@@ -559,6 +566,12 @@ label {
   font-size: 14px;
   color: #777;
   margin-top: 12px;
+}
+
+.sheet .muted {
+  color: #777;
+  font-size: 0.9rem;
+  text-align: center;
 }
 
 /* === 關閉按鈕 === */
@@ -600,4 +613,20 @@ label {
   .line-item .li-sub {
     font-size: 14px;
   }
+}
+
+/* === 🍎 iOS 慣性滾動與體驗優化 === */
+.sheet {
+  -webkit-overflow-scrolling: touch; /* 開啟慣性滑動 */
+  overflow-y: auto;
+  overscroll-behavior: contain; /* 防止滾動穿透到底層頁面 */
+  touch-action: pan-y; /* 限制滑動方向 */
+}
+
+/* 防止背景頁面在開啟時被滾動 */
+body.modal-open {
+  overflow: hidden;
+  touch-action: none;
+  position: fixed;
+  width: 100%;
 }
