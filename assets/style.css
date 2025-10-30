@@ -496,16 +496,7 @@ label {
   transform: translateY(110%);
 }
 
-/* === 上方拖曳手把 === */
-.sheet::before {
-  content: "";
-  display: block;
-  width: 36px;
-  height: 4px;
-  background: #ccc;
-  border-radius: 2px;
-  margin: 0 auto 12px;
-}
+
 
 /* === 標題 === */
 .sheet h3 {
@@ -628,12 +619,7 @@ label {
 }
 
 /* === 🍎 iOS 慣性滾動與體驗優化 === */
-.sheet {
-  -webkit-overflow-scrolling: touch; /* 開啟慣性滑動 */
-  overflow-y: auto;
-  overscroll-behavior: contain; /* 防止滾動穿透到底層頁面 */
-  touch-action: pan-y; /* 限制滑動方向 */
-}
+
 
 /* 防止背景頁面在開啟時被滾動 */
 body.modal-open {

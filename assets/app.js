@@ -471,7 +471,21 @@ async function showCartSheet() {
   const sheet = $("cartSheet");
   const list = $("cartItems");
   const promoCode = ($("promoCode")?.value || "").trim();
-  document.body.classList.add("modal-open");
+
+  // ✅ 打開前先重置 transform & transition
+  sheet.style.transition = "none";
+  sheet.style.transform = "translateY(100%)";
+  backdrop.style.opacity = "0";
+  backdrop.style.display = "block";
+
+  // ✅ 下一個動畫幀再開啟
+  requestAnimationFrame(() => {
+    backdrop.setAttribute("aria-hidden", "false");
+    backdrop.style.opacity = "1";
+    sheet.style.transition = "transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)";
+    sheet.style.transform = "translateY(0)";
+    sheet.dataset.open = "true";
+  });
 
   // 收集購物車內容
   const items = (CONFIG.PRODUCTS || [])
