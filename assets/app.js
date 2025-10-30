@@ -456,10 +456,11 @@ $("submitBtnSticky")?.addEventListener("click", async () => {
    ============================================================ */
 $("viewCartBtn")?.addEventListener("click", showCartSheet);
 
-$("closeCartModal")?.addEventListener("click", () => {
-  $("cartDetailModal").classList.remove("active");
-  document.body.classList.remove("modal-open");
+/* === 🧾 Bottom Sheet 關閉按鈕 === */
+document.getElementById("closeCartModal")?.addEventListener("click", () => {
+  hideCartSheet();
 });
+
 
 document.getElementById("cartSheetBackdrop")?.addEventListener("click", (e) => {
   if (e.target.id === "cartSheetBackdrop") hideCartSheet();
@@ -567,6 +568,49 @@ function hideCartSheet() {
     { once: true }
   );
 }
+/* ============================================================
+   📱 手勢拖曳關閉購物明細（Bottom Sheet）
+   ============================================================ */
+(function enableSheetDragClose() {
+  const sheet = document.getElementById("cartSheet");
+  const backdrop = document.getElementById("cartSheetBackdrop");
+  if (!sheet || !backdrop) return;
+
+  let startY = 0;
+  let currentY = 0;
+  let isDragging = false;
+
+  sheet.addEventListener("touchstart", (e) => {
+    startY = e.touches[0].clientY;
+    isDragging = true;
+    sheet.style.transition = "none";
+  });
+
+  sheet.addEventListener("touchmove", (e) => {
+    if (!isDragging) return;
+    currentY = e.touches[0].clientY;
+    const deltaY = currentY - startY;
+    if (deltaY > 0) {
+      sheet.style.transform = `translateY(${deltaY}px)`;
+    }
+  });
+
+  sheet.addEventListener("touchend", () => {
+    if (!isDragging) return;
+    isDragging = false;
+    sheet.style.transition = "transform 0.3s ease";
+    const deltaY = currentY - startY;
+
+    if (deltaY > 100) {
+      // 👉 超過 100px 視為關閉
+      hideCartSheet();
+    } else {
+      // 👉 否則彈回原位
+      sheet.style.transform = "translateY(0)";
+    }
+  });
+})();
+
 
 // ============================================================
 // 🎁 優惠碼檢查

@@ -470,6 +470,7 @@ label {
   transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
   padding: 24px 20px calc(32px + env(safe-area-inset-bottom));
   box-sizing: border-box;
+  touch-action: none;
 }
 
 /* === 打開／關閉動畫 === */
@@ -481,14 +482,14 @@ label {
   transform: translateY(100%);
 }
 
-/* === 上方拉條 === */
+/* === 上方拖曳手把 === */
 .sheet::before {
   content: "";
   display: block;
-  width: 48px;
-  height: 5px;
+  width: 36px;
+  height: 4px;
   background: #ccc;
-  border-radius: 999px;
+  border-radius: 2px;
   margin: 0 auto 12px;
 }
 
