@@ -572,9 +572,23 @@ $("applyPromoBtn")?.addEventListener("click", async () => {
 // 🧩 數量變化即時更新
 // ============================================================
 document.addEventListener("click", (e) => {
-  if (e.target.matches(".plus, .minus")) {
-    setTimeout(updateTotals, 100);
-  }
+  const btn = e.target.closest(".step");
+  if (!btn) return;
+
+  const id = btn.dataset.id;
+  const dir = btn.dataset.dir;
+  const qtyEl = $(`qty-${id}`);
+  if (!qtyEl) return;
+
+  let qty = parseInt(qtyEl.textContent || 0);
+  if (dir === "plus") qty++;
+  if (dir === "minus" && qty > 0) qty--;
+
+  qtyEl.textContent = qty;
+  saveCart();
+  updateTotals();
 });
+
+
 
 console.log("祥興茶行 app.js 已載入 ✅");
