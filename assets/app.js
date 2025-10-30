@@ -579,56 +579,69 @@ function hideCartSheet() {
   );
 }
 /* ============================================================
-   📱 手勢拖曳關閉購物明細（平滑 iOS 版）
+   📱 手勢拖曳關閉購物明細（修正版：回彈不卡）
    ============================================================ */
-(function enableSheetDragClose() {
+(function enableSmoothSheetDrag() {
   const sheet = document.getElementById("cartSheet");
   const backdrop = document.getElementById("cartSheetBackdrop");
   if (!sheet || !backdrop) return;
 
   let startY = 0;
   let currentY = 0;
+  let startTime = 0;
   let isDragging = false;
   let isScrollable = false;
 
-  // ✅ 防止滾動穿透（當內容頂端才能觸發關閉）
+  const CLOSE_THRESHOLD = 100; // 拖曳距離超過此值關閉
+  const VELOCITY_THRESHOLD = 0.6; // 拖曳速度閾值（px/ms）
+
   sheet.addEventListener("touchstart", (e) => {
-    const scrollTop = sheet.scrollTop;
-    const touchY = e.touches[0].clientY;
-    startY = touchY;
-    currentY = touchY;
+    startY = e.touches[0].clientY;
+    currentY = startY;
+    startTime = Date.now();
     isDragging = false;
-    isScrollable = scrollTop > 0; // 若內容滾動中，就不要拖曳關閉
+    isScrollable = sheet.scrollTop > 0;
+    sheet.style.transition = "none";
   });
 
-  sheet.addEventListener("touchmove", (e) => {
-    const touchY = e.touches[0].clientY;
-    const deltaY = touchY - startY;
+  sheet.addEventListener(
+    "touchmove",
+    (e) => {
+      const touchY = e.touches[0].clientY;
+      const deltaY = touchY - startY;
 
-    // ✅ 只有在頂部往下拉才觸發關閉手勢
-    if (deltaY > 0 && !isScrollable) {
-      e.preventDefault(); // 阻止背景滾動
-      isDragging = true;
-      currentY = touchY;
-      sheet.style.transition = "none";
-      sheet.style.transform = `translateY(${deltaY * 0.6}px)`; // 減速係數 0.6
-      backdrop.style.opacity = `${Math.max(0, 1 - deltaY / 400)}`; // 同步背景淡出
-    }
-  }, { passive: false });
+      if (deltaY > 0 && !isScrollable) {
+        e.preventDefault();
+        isDragging = true;
+        currentY = touchY;
+        sheet.style.transform = `translateY(${deltaY * 0.6}px)`;
+        backdrop.style.opacity = `${Math.max(0, 1 - deltaY / 400)}`;
+      }
+    },
+    { passive: false }
+  );
 
   sheet.addEventListener("touchend", () => {
     if (!isDragging) return;
 
     const deltaY = currentY - startY;
+    const elapsed = Date.now() - startTime;
+    const velocity = deltaY / elapsed; // px/ms
+
     sheet.style.transition = "transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)";
-    sheet.style.transform = "translateY(0)";
     backdrop.style.transition = "opacity 0.35s ease";
 
-    // ✅ 超過一定距離才關閉（80px）
-    if (deltaY > 80) {
+    const shouldClose =
+      deltaY > CLOSE_THRESHOLD || velocity > VELOCITY_THRESHOLD;
+
+    if (shouldClose) {
       sheet.style.transform = "translateY(100%)";
       backdrop.style.opacity = "0";
       setTimeout(() => hideCartSheet(), 350);
+    } else {
+      // ✅ 未達關閉條件 → 回彈回頂部
+      sheet.style.transform = "translateY(0)";
+      backdrop.style.opacity = "1";
     }
   });
 })();
