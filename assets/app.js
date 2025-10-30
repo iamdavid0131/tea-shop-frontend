@@ -226,7 +226,6 @@ document.addEventListener("click", (e) => {
 
 /* === 商品詳情收合（同分類只開一個） === */
 document.addEventListener("click", (e) => {
-  document.addEventListener("click", (e) => {
   const btn = e.target.closest(".more-btn");
   if (!btn) return;
   const id = btn.dataset.id;
