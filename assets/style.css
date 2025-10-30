@@ -1,6 +1,6 @@
 /* ============================================================
-   ☁️ 祥興茶行 Pure White Glass Theme — Final Clean Build
-   Version: 2025-10-28
+   ☁️ 祥興茶行 Pure White Glass Theme — Final Animated Build
+   Version: 2025-10-30
    ============================================================ */
 
 /* ================= iOS Clean Glass on Pure White ================= */
@@ -67,16 +67,6 @@ label {
   line-height: 1.6;
 }
 
-/* === Cards === */
-.card {
-  background: #fff;
-  border-radius: var(--radius);
-  padding: 28px;
-  margin-bottom: 20px;
-  border: var(--hairline);
-  box-shadow: var(--elev);
-}
-
 /* === 商品區 === */
 .itemlist {
   display: grid;
@@ -110,6 +100,14 @@ label {
   color: var(--muted);
   font-size: 16px;
 }
+
+/* === 商品卡片進場動畫 === */
+@keyframes cardFadeIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); filter: blur(2px); }
+  60% { opacity: 1; transform: translateY(0) scale(1.02); filter: blur(0); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
 
 /* === 數量控制 === */
 .qty {
@@ -202,8 +200,6 @@ label {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
-  color: #444;
 }
 .profile-blocks .bar b {
   width: 60px;
@@ -231,19 +227,12 @@ label {
   border-color: color-mix(in srgb, #34c759 60%, #000 0%);
   animation: lightPulse 0.65s ease forwards;
 }
+
+/* === Profile 條光流動畫 === */
 @keyframes lightPulse {
-  0% {
-    opacity: 0;
-    transform: scale(0.6);
-  }
-  40% {
-    opacity: 1;
-    transform: scale(1.15);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
+  0% { opacity: 0; transform: scale(0.6); filter: brightness(1.4); }
+  40% { opacity: 1; transform: scale(1.15); filter: brightness(1.2); }
+  100% { opacity: 1; transform: scale(1); filter: brightness(1); }
 }
 
 /* === 商品詳情收合 === */
@@ -297,8 +286,7 @@ label {
   opacity: 1;
 }
 
-
-/* === 商品詳情展開動畫 === */
+/* === fadeSlideIn 動畫 === */
 @keyframes fadeSlideIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
@@ -307,7 +295,6 @@ label {
   opacity: 0;
   animation: fadeSlideIn 0.5s ease forwards;
 }
-
 
 /* === 分類收合 === */
 .category-header {
@@ -324,7 +311,6 @@ label {
   font-weight: 700;
   cursor: pointer;
   transition: all 0.25s ease;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 .category-header.open {
   background: #e9f7ef;
@@ -334,7 +320,6 @@ label {
 .category-body {
   overflow: hidden;
   transition: max-height 0.28s ease;
-  will-change: max-height;
 }
 .category-header .chev {
   transition: transform 0.25s ease;
@@ -372,23 +357,6 @@ label {
   font-size: 16px;
 }
 
-/* === 彈出層購物清單 === */
-#cartDetailModal {
-  position: fixed;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.98);
-  z-index: 1000;
-  padding: 24px 16px calc(80px + env(safe-area-inset-bottom));
-  overflow-y: auto;
-  display: none;
-  transition: opacity 0.3s ease;
-  opacity: 0;
-}
-#cartDetailModal.active {
-  display: block;
-  opacity: 1;
-}
-
 /* === 免運提示 === */
 #free_tip_s {
   display: none;
@@ -418,4 +386,3 @@ label {
   .sticky-inner { flex-direction: column; align-items: stretch; }
   #viewCartBtn, .btn { width: 100%; }
 }
-

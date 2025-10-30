@@ -45,12 +45,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-// 🔄 若使用者重新整理頁面 → 清空購物車快取並重新載入
-window.addEventListener("beforeunload", () => {
-  try {
-    localStorage.removeItem("teaOrderCart"); // 清除購物快取
-  } catch (e) {}
-});
 // ============================================================
 // 🛍️ 商品渲染（含分類、裝罐、標籤、詳情收合、庫存）
 // ============================================================
@@ -59,7 +53,7 @@ function renderProducts(items) {
   panel.innerHTML = "";
 
   const categories = {};
-  items.forEach(p => {
+  items.forEach((p) => {
     if (!categories[p.category]) categories[p.category] = [];
     categories[p.category].push(p);
   });
@@ -80,8 +74,11 @@ function renderProducts(items) {
     body.className = "category-body";
     body.style.maxHeight = i === 0 ? "none" : "0";
 
-    list.forEach(p => {
-      const tags = (p.tags || []).filter(t => t.trim()).map(t => `<span class="tag">${t}</span>`).join("");
+    list.forEach((p) => {
+      const tags = (p.tags || [])
+        .filter((t) => t.trim())
+        .map((t) => `<span class="tag">${t}</span>`)
+        .join("");
 
       const detailBlock = `
         <div class="detailblock" hidden id="detail-${p.id}">
@@ -89,11 +86,11 @@ function renderProducts(items) {
           ${
             p.profile
               ? `<div class="profile-blocks fade-in">
-                  ${renderProfile("甜度", p.profile.sweetness,p.category)}
-                  ${renderProfile("香氣", p.profile.aroma,p.category)}
-                  ${renderProfile("焙火", p.profile.roast,p.category)}
-                  ${renderProfile("厚度", p.profile.body,p.category)}
-                  ${renderProfile("餘韻", p.profile.finish,p.category)}
+                  ${renderProfile("甜度", p.profile.sweetness, p.category)}
+                  ${renderProfile("香氣", p.profile.aroma, p.category)}
+                  ${renderProfile("焙火", p.profile.roast, p.category)}
+                  ${renderProfile("厚度", p.profile.body, p.category)}
+                  ${renderProfile("餘韻", p.profile.finish, p.category)}
                  </div>`
               : ""
           }
@@ -160,24 +157,30 @@ function renderProducts(items) {
     section.appendChild(body);
     panel.appendChild(section);
   });
+
+  // === 為每個商品卡設定動畫延遲（依序浮現） ===
+  document.querySelectorAll(".itemcard").forEach((el, i) => {
+    el.style.setProperty("--delay", `${i * 0.1}s`);
+  });
 }
 
 // === Profile 條動態渲染（自動依茶類決定色調） ===
 function renderProfile(label, level, category = "") {
   const colorMap = {
-    "窨花": "linear-gradient(90deg, #f8d67e, #f2b33d)",
-    "高山": "linear-gradient(90deg, #7ddca3, #34c759)",
-    "紅茶": "linear-gradient(90deg, #ff9671, #ff5a36)",
-    "白茶": "linear-gradient(90deg, #e6dcc9, #b9a584)",
-    "焙香": "linear-gradient(90deg, #e1a35a, #c97d42)",
-    "蜜香": "linear-gradient(90deg, #ffb45a, #ff8c00)",
-    "文山": "linear-gradient(90deg, #ffb86c, #ff9f0a)",
-    "加購": "linear-gradient(90deg, #82c9ff, #0a84ff)",
+    窨花: "linear-gradient(90deg, #f8d67e, #f2b33d)",
+    高山: "linear-gradient(90deg, #7ddca3, #34c759)",
+    紅茶: "linear-gradient(90deg, #ff9671, #ff5a36)",
+    白茶: "linear-gradient(90deg, #e6dcc9, #b9a584)",
+    焙香: "linear-gradient(90deg, #e1a35a, #c97d42)",
+    蜜香: "linear-gradient(90deg, #ffb45a, #ff8c00)",
+    文山: "linear-gradient(90deg, #ffb86c, #ff9f0a)",
+    加購: "linear-gradient(90deg, #82c9ff, #0a84ff)",
   };
 
   // 找符合類別的色彩（預設為翠綠）
-  const gradient = Object.entries(colorMap).find(([key]) => category.includes(key))?.[1] || 
-                   "linear-gradient(90deg, #8cd37f, #34c759, #2fb24c)";
+  const gradient =
+    Object.entries(colorMap).find(([key]) => category.includes(key))?.[1] ||
+    "linear-gradient(90deg, #8cd37f, #34c759, #2fb24c)";
 
   const max = 5;
   const bars = Array.from({ length: max }, (_, i) => {
@@ -194,8 +197,6 @@ function renderProfile(label, level, category = "") {
   `;
 }
 
-
-
 /* === 分類展開收合 === */
 document.addEventListener("click", (e) => {
   const header = e.target.closest(".category-header");
@@ -204,17 +205,22 @@ document.addEventListener("click", (e) => {
   const body = header.nextElementSibling;
   const isOpen = header.classList.contains("open");
 
-  document.querySelectorAll(".category-header").forEach(h => {
+  document.querySelectorAll(".category-header").forEach((h) => {
     h.classList.remove("open");
     h.querySelector(".chev").textContent = "▼";
   });
-  document.querySelectorAll(".category-body").forEach(b => (b.style.maxHeight = "0"));
+  document
+    .querySelectorAll(".category-body")
+    .forEach((b) => (b.style.maxHeight = "0"));
 
   if (!isOpen) {
     header.classList.add("open");
     header.querySelector(".chev").textContent = "▲";
     body.style.maxHeight = "none";
-    setTimeout(() => body.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+    setTimeout(
+      () => body.scrollIntoView({ behavior: "smooth", block: "start" }),
+      100
+    );
   }
 });
 
@@ -226,11 +232,13 @@ document.addEventListener("click", (e) => {
   const block = document.getElementById(`detail-${id}`);
   if (!block) return;
 
-  const allBlocks = btn.closest(".category-body").querySelectorAll(".detailblock");
+  const allBlocks = btn
+    .closest(".category-body")
+    .querySelectorAll(".detailblock");
   const allBtns = btn.closest(".category-body").querySelectorAll(".more-btn");
 
-  allBlocks.forEach(b => (b.hidden = true));
-  allBtns.forEach(b => {
+  allBlocks.forEach((b) => (b.hidden = true));
+  allBtns.forEach((b) => {
     b.querySelector(".label").textContent = "收合詳情";
     b.querySelector(".arrow").textContent = "▼";
     b.classList.remove("active");
@@ -258,7 +266,9 @@ document.addEventListener("input", (e) => {
   const packInput = e.target;
   const buyQty = parseInt($(`qty-${id}`)?.textContent || 0);
   const packQty = parseInt(packInput.value || 0);
-  const plusBtn = packInput.parentElement.querySelector("[data-dir='plus'][data-pack]");
+  const plusBtn = packInput.parentElement.querySelector(
+    "[data-dir='plus'][data-pack]"
+  );
   const hint = $(`packErr-${id}`);
 
   if (packQty > buyQty) {
@@ -319,7 +329,7 @@ async function updateTotals() {
     console.log("🧾 previewTotals 回傳", preview);
 
     // ✅ 萬用防呆解析（自動抓 data 層 or 直屬層）
-    const data = preview.data ?? preview;
+    const data = preview?.data ?? preview ?? {};
 
     // ✅ 同時支援 shipping / shippingFee / totalAfterDiscount
     const sub = data.subtotal ?? 0;
@@ -350,17 +360,21 @@ async function updateTotals() {
       progressWrap.style.display = "none";
     } else {
       const diff = freeThreshold - sub;
-      freeTip.textContent = `再消費 NT$${diff.toLocaleString("zh-TW")} 即可免運`;
+      freeTip.textContent = `再消費 NT$${diff.toLocaleString(
+        "zh-TW"
+      )} 即可免運`;
       freeTip.style.display = "inline-block";
       progressWrap.style.display = "block";
-      progressBar.style.width = `${Math.min(100, (sub / freeThreshold) * 100)}%`;
+      progressBar.style.width = `${Math.min(
+        100,
+        (sub / freeThreshold) * 100
+      )}%`;
     }
   } catch (err) {
     console.error("試算錯誤:", err);
     toast("⚠️ 金額試算失敗");
   }
 }
-
 
 // ============================================================
 // 🔔 Toast 提示
@@ -382,7 +396,8 @@ $("submitBtnSticky")?.addEventListener("click", async () => {
   try {
     const name = $("name")?.value.trim();
     const phone = $("phone")?.value.trim();
-    const method = document.querySelector('input[name="ship"]:checked')?.value || "store";
+    const method =
+      document.querySelector('input[name="ship"]:checked')?.value || "store";
     const promoCode = $("promoCode")?.value.trim();
     const note = $("note")?.value.trim();
 
@@ -433,10 +448,7 @@ $("submitBtnSticky")?.addEventListener("click", async () => {
 /* ============================================================
    🧾 查看明細（整合後端折扣計算版）
    ============================================================ */
-$("viewCartBtn")?.addEventListener("click", () => {
-  $("cartDetailModal").classList.add("active");
-  document.body.classList.add("modal-open");
-});
+$("viewCartBtn")?.addEventListener("click", showCartSheet);
 
 $("closeCartModal")?.addEventListener("click", () => {
   $("cartDetailModal").classList.remove("active");
@@ -473,7 +485,9 @@ async function showCartSheet() {
       row.innerHTML = `
         <div class="li-title">${it.name}</div>
         <div class="li-qty">× ${it.qty}</div>
-        <div class="li-sub">NT$ ${(it.price * it.qty).toLocaleString("zh-TW")}</div>
+        <div class="li-sub">NT$ ${(it.price * it.qty).toLocaleString(
+          "zh-TW"
+        )}</div>
       `;
       list.appendChild(row);
     });
@@ -486,13 +500,20 @@ async function showCartSheet() {
 
     const data = preview.data || preview;
 
-    $("cartSub").textContent = `NT$ ${(data.subtotal || 0).toLocaleString("zh-TW")}`;
+    $("cartSub").textContent = `NT$ ${(data.subtotal || 0).toLocaleString(
+      "zh-TW"
+    )}`;
     $("cartDiscRow").style.display = data.discount > 0 ? "flex" : "none";
-    $("cartDisc").textContent = data.discount > 0
-      ? `- NT$ ${data.discount.toLocaleString("zh-TW")}`
-      : "";
-    $("cartShip").textContent = `NT$ ${(data.shipping || data.shippingFee || 0).toLocaleString("zh-TW")}`;
-    $("cartTotal").textContent = `NT$ ${(data.total || 0).toLocaleString("zh-TW")}`;
+    $("cartDisc").textContent =
+      data.discount > 0 ? `- NT$ ${data.discount.toLocaleString("zh-TW")}` : "";
+    $("cartShip").textContent = `NT$ ${(
+      data.shipping ||
+      data.shippingFee ||
+      0
+    ).toLocaleString("zh-TW")}`;
+    $("cartTotal").textContent = `NT$ ${(data.total || 0).toLocaleString(
+      "zh-TW"
+    )}`;
 
     $("promoMsg").textContent =
       promoCode && data.discount > 0
@@ -500,7 +521,6 @@ async function showCartSheet() {
         : promoCode
         ? "❌ 無效的優惠碼"
         : "";
-
   } catch (err) {
     console.error("查看明細計算錯誤:", err);
     $("promoMsg").textContent = "⚠️ 無法取得折扣資料";
@@ -527,7 +547,6 @@ function hideCartSheet() {
     { once: true }
   );
 }
-
 
 // ============================================================
 // 🎁 優惠碼檢查
