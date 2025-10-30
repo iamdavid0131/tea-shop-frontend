@@ -443,14 +443,14 @@ label {
 .sheet-backdrop {
   position: fixed;
   inset: 0;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
   background: rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(4px);
-  display: none;
-  justify-content: center;
-  align-items: flex-end;
-  z-index: 1000;
+  z-index: 999;
   opacity: 0;
-  transition: opacity 0.25s ease;
+  transition: opacity 0.4s ease;
 }
 
 .sheet-backdrop[aria-hidden="false"] {
@@ -460,26 +460,28 @@ label {
 
 /* === Bottom Sheet 容器 === */
 .sheet {
-  position: relative;
+  background: #fff;
   width: 100%;
   max-width: 520px;
-  background: #fff;
-  border-radius: 24px 24px 0 0;
-  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.15);
+  border-radius: 18px 18px 0 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  padding: 20px 16px 32px;
   transform: translateY(100%);
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-  padding: 24px 20px calc(32px + env(safe-area-inset-bottom));
-  box-sizing: border-box;
+  transition: transform 0.45s cubic-bezier(0.25, 1, 0.4, 1);
+  will-change: transform;
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   touch-action: none;
 }
 
 /* === 打開／關閉動畫 === */
 .sheet[data-open="true"] {
-  transform: translateY(0%);
+  transform: translateY(0);
 }
 
 .sheet[data-open="false"] {
-  transform: translateY(100%);
+  transform: translateY(110%);
 }
 
 /* === 上方拖曳手把 === */
@@ -495,11 +497,9 @@ label {
 
 /* === 標題 === */
 .sheet h3 {
-  margin: 0 0 12px;
+  font-size: 1.2rem;
+  margin-bottom: 12px;
   text-align: center;
-  font-size: 17px;
-  font-weight: 600;
-  color: #222;
 }
 
 /* === 商品列 === */

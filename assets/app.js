@@ -556,6 +556,14 @@ function hideCartSheet() {
   const backdrop = $("cartSheetBackdrop");
   const sheet = $("cartSheet");
   sheet.dataset.open = "false";
+
+  // 延遲一點點再移除，避免動畫被截斷
+  setTimeout(() => {
+    backdrop.setAttribute("aria-hidden", "true");
+    backdrop.style.display = "none";
+    document.body.classList.remove("modal-open");
+  }, 400); // 跟 CSS transition 一致（0.4s）
+
   // 🧩 回復滾動狀態
   sheet.addEventListener(
     "transitionend",
@@ -571,7 +579,7 @@ function hideCartSheet() {
   );
 }
 /* ============================================================
-   📱 手勢拖曳關閉購物明細（Bottom Sheet）
+   📱 手勢拖曳關閉購物明細（平滑 iOS 版）
    ============================================================ */
 (function enableSheetDragClose() {
   const sheet = document.getElementById("cartSheet");
@@ -581,37 +589,50 @@ function hideCartSheet() {
   let startY = 0;
   let currentY = 0;
   let isDragging = false;
+  let isScrollable = false;
 
+  // ✅ 防止滾動穿透（當內容頂端才能觸發關閉）
   sheet.addEventListener("touchstart", (e) => {
-    startY = e.touches[0].clientY;
-    isDragging = true;
-    sheet.style.transition = "none";
+    const scrollTop = sheet.scrollTop;
+    const touchY = e.touches[0].clientY;
+    startY = touchY;
+    currentY = touchY;
+    isDragging = false;
+    isScrollable = scrollTop > 0; // 若內容滾動中，就不要拖曳關閉
   });
 
   sheet.addEventListener("touchmove", (e) => {
-    if (!isDragging) return;
-    currentY = e.touches[0].clientY;
-    const deltaY = currentY - startY;
-    if (deltaY > 0) {
-      sheet.style.transform = `translateY(${deltaY}px)`;
+    const touchY = e.touches[0].clientY;
+    const deltaY = touchY - startY;
+
+    // ✅ 只有在頂部往下拉才觸發關閉手勢
+    if (deltaY > 0 && !isScrollable) {
+      e.preventDefault(); // 阻止背景滾動
+      isDragging = true;
+      currentY = touchY;
+      sheet.style.transition = "none";
+      sheet.style.transform = `translateY(${deltaY * 0.6}px)`; // 減速係數 0.6
+      backdrop.style.opacity = `${Math.max(0, 1 - deltaY / 400)}`; // 同步背景淡出
     }
-  });
+  }, { passive: false });
 
   sheet.addEventListener("touchend", () => {
     if (!isDragging) return;
-    isDragging = false;
-    sheet.style.transition = "transform 0.3s ease";
-    const deltaY = currentY - startY;
 
-    if (deltaY > 50) {
-      // 👉 超過 50px 視為關閉
-      hideCartSheet();
-    } else {
-      // 👉 否則彈回原位
-      sheet.style.transform = "translateY(0)";
+    const deltaY = currentY - startY;
+    sheet.style.transition = "transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)";
+    sheet.style.transform = "translateY(0)";
+    backdrop.style.transition = "opacity 0.35s ease";
+
+    // ✅ 超過一定距離才關閉（80px）
+    if (deltaY > 80) {
+      sheet.style.transform = "translateY(100%)";
+      backdrop.style.opacity = "0";
+      setTimeout(() => hideCartSheet(), 350);
     }
   });
 })();
+
 
 
 // ============================================================
