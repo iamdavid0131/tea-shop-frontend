@@ -538,17 +538,31 @@ async function showCartSheet() {
     backdrop.setAttribute("aria-hidden", "false");
     sheet.dataset.open = "true";
   });
+  // 🧩 鎖定背景滾動
+  document.body.style.overflow = "hidden";
+  document.body.style.position = "fixed";
+  document.body.style.width = "100%";
+
+  backdrop.style.display = "flex";
+  requestAnimationFrame(() => {
+    backdrop.setAttribute("aria-hidden", "false");
+    sheet.dataset.open = "true";
+  });
 }
 
 function hideCartSheet() {
   const backdrop = $("cartSheetBackdrop");
   const sheet = $("cartSheet");
   sheet.dataset.open = "false";
+  // 🧩 回復滾動狀態
   sheet.addEventListener(
     "transitionend",
     () => {
       backdrop.setAttribute("aria-hidden", "true");
       backdrop.style.display = "none";
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.width = "";
     },
     { once: true }
   );

@@ -32,6 +32,7 @@ body {
     system-ui, Arial, sans-serif;
   letter-spacing: 0.2px;
   padding-bottom: calc(var(--stickybar-h, 120px) + 24px);
+  overscroll-behavior: contain;
 }
 html {
   overflow-x: hidden;
