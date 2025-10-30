@@ -595,6 +595,4 @@ document.addEventListener("click", (e) => {
   updateTotals();
 });
 
-
-
 console.log("祥興茶行 app.js 已載入 ✅");
