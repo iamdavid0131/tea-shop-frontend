@@ -28,8 +28,8 @@ body {
   color: var(--text);
   background: #fff;
   min-height: 100vh;
-  font: 20px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro TC",
-    "Noto Sans TC", system-ui, Arial, sans-serif;
+  font: 20px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro TC", "Noto Sans TC",
+    system-ui, Arial, sans-serif;
   letter-spacing: 0.2px;
   padding-bottom: calc(var(--stickybar-h, 120px) + 24px);
 }
@@ -39,8 +39,8 @@ html {
   scroll-padding-bottom: calc(var(--stickybar-h, 120px) + 12px);
 }
 .wrap {
-  padding: 24px var(--gutter)
-    calc(var(--stickybar-h, 120px) + 24px) var(--gutter-r);
+  padding: 24px var(--gutter) calc(var(--stickybar-h, 120px) + 24px)
+    var(--gutter-r);
 }
 
 /* === Typo === */
@@ -103,11 +103,22 @@ label {
 
 /* === 商品卡片進場動畫 === */
 @keyframes cardFadeIn {
-  from { opacity: 0; transform: translateY(16px) scale(0.98); filter: blur(2px); }
-  60% { opacity: 1; transform: translateY(0) scale(1.02); filter: blur(0); }
-  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+    filter: blur(2px);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(0) scale(1.02);
+    filter: blur(0);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
 }
-
 
 /* === 數量控制 === */
 .qty {
@@ -230,9 +241,21 @@ label {
 
 /* === Profile 條光流動畫 === */
 @keyframes lightPulse {
-  0% { opacity: 0; transform: scale(0.6); filter: brightness(1.4); }
-  40% { opacity: 1; transform: scale(1.15); filter: brightness(1.2); }
-  100% { opacity: 1; transform: scale(1); filter: brightness(1); }
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+    filter: brightness(1.4);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1.15);
+    filter: brightness(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: brightness(1);
+  }
 }
 
 /* === 商品詳情收合 === */
@@ -286,12 +309,16 @@ label {
   opacity: 1;
 }
 
-
-
 /* === fadeSlideIn 動畫 === */
 @keyframes fadeSlideIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .fade-in {
   opacity: 0;
@@ -373,22 +400,107 @@ label {
   animation: fadeIn 0.25s ease;
 }
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* === 手機優化 === */
 @media (max-width: 768px) {
-  html, body {
+  html,
+  body {
     font-size: clamp(18px, 4vw, 24px) !important;
   }
-  .category-header { font-size: 18px; padding: 12px; }
-  .more-btn { font-size: 15px; }
-  .detailblock { font-size: 13px; }
-  .sticky-inner { flex-direction: column; align-items: stretch; }
-  #viewCartBtn, .btn { width: 100%; }
+  .category-header {
+    font-size: 18px;
+    padding: 12px;
+  }
+  .more-btn {
+    font-size: 15px;
+  }
+  .detailblock {
+    font-size: 13px;
+  }
+  .sticky-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  #viewCartBtn,
+  .btn {
+    width: 100%;
+  }
 }
 
 #freeProgressBar {
   transition: width 0.6s ease-in-out;
+}
+
+/* === 🧾 Bottom Sheet（購物明細） === */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
+  display: none;
+  justify-content: center;
+  align-items: flex-end;
+  z-index: 9999;
+  transition: background 0.3s ease;
+}
+
+.sheet-backdrop[aria-hidden="false"] {
+  display: flex;
+}
+
+.sheet {
+  width: 100%;
+  max-width: 480px;
+  background: #fff;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+/* 打開時往上滑入 */
+.sheet[data-open="true"] {
+  transform: translateY(0%);
+}
+
+/* 關閉時滑回下方 */
+.sheet[data-open="false"] {
+  transform: translateY(100%);
+}
+
+.sheet h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.sheet .line {
+  display: flex;
+  justify-content: space-between;
+  margin: 6px 0;
+  font-size: 15px;
+}
+
+.sheet .line.total {
+  font-weight: 700;
+  font-size: 16px;
+  border-top: 1px solid #eee;
+  padding-top: 8px;
+  margin-top: 8px;
+}
+
+.sheet .btn {
+  width: 100%;
+  margin-top: 16px;
 }
