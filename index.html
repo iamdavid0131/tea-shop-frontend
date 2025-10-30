@@ -196,12 +196,20 @@
     </div>
   </div>
 
-  <!-- 購物清單明細 Modal -->
-  <div id="cartDetailModal">
-    <button id="closeCartModal">&times;</button>
-    <h2>🛒 已選商品</h2>
-    <div id="cartItemsList"></div>
+<!-- 購物明細 Bottom Sheet -->
+<div id="cartSheetBackdrop" class="sheet-backdrop" aria-hidden="true">
+  <div id="cartSheet" class="sheet" data-open="false">
+    <h3>購物明細</h3>
+    <div id="cartItems"></div>
+    <div class="line"><span>小計</span><b id="cartSub">—</b></div>
+    <div class="line" id="cartDiscRow"><span>折扣</span><b id="cartDisc">—</b></div>
+    <div class="line"><span>運費</span><b id="cartShip">—</b></div>
+    <div class="line total"><span>應付總額</span><b id="cartTotal">—</b></div>
+    <div id="promoMsg" class="muted" style="margin-top:8px;"></div>
+    <button id="closeCartModal" class="btn btn-outline">關閉</button>
   </div>
+</div>
+
 
   <!-- 成功卡片 -->
   <div id="successBackdrop" class="modal-backdrop" aria-hidden="true">

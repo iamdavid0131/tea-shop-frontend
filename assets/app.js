@@ -226,16 +226,20 @@ document.addEventListener("click", (e) => {
 
 /* === 商品詳情收合（同分類只開一個） === */
 document.addEventListener("click", (e) => {
+  document.addEventListener("click", (e) => {
   const btn = e.target.closest(".more-btn");
   if (!btn) return;
   const id = btn.dataset.id;
   const block = document.getElementById(`detail-${id}`);
   if (!block) return;
 
-  const allBlocks = btn
-    .closest(".category-body")
-    .querySelectorAll(".detailblock");
-  const allBtns = btn.closest(".category-body").querySelectorAll(".more-btn");
+  // ✅ 先記錄目前狀態
+  const isCurrentlyOpen = !block.hidden;
+
+  // 關掉同分類其他詳情
+  const categoryBody = btn.closest(".category-body");
+  const allBlocks = categoryBody.querySelectorAll(".detailblock");
+  const allBtns = categoryBody.querySelectorAll(".more-btn");
 
   allBlocks.forEach((b) => (b.hidden = true));
   allBtns.forEach((b) => {
@@ -244,19 +248,22 @@ document.addEventListener("click", (e) => {
     b.classList.remove("active");
   });
 
-  const open = !block.hidden;
-  block.hidden = open;
+  // ✅ 如果剛剛是開著的 → 不再重新打開（就是「收起來」的行為）
+  if (isCurrentlyOpen) return;
 
-  if (!open) {
-    btn.querySelector(".label").textContent = "隱藏詳情";
-    btn.querySelector(".arrow").textContent = "▲";
-    btn.classList.add("active");
-    block.querySelectorAll(".fade-in").forEach((el, i) => {
-      el.style.animation = `fadeSlideIn 0.5s ease forwards ${i * 0.1}s`;
-    });
-    const offset = block.getBoundingClientRect().top + window.scrollY - 80;
-    window.scrollTo({ top: offset, behavior: "smooth" });
-  }
+  // ✅ 否則打開它
+  btn.querySelector(".label").textContent = "隱藏詳情";
+  btn.querySelector(".arrow").textContent = "▲";
+  btn.classList.add("active");
+  block.hidden = false;
+
+  // 加上動畫
+  block.querySelectorAll(".fade-in").forEach((el, i) => {
+    el.style.animation = `fadeSlideIn 0.5s ease forwards ${i * 0.1}s`;
+  });
+
+  const offset = block.getBoundingClientRect().top + window.scrollY - 80;
+  window.scrollTo({ top: offset, behavior: "smooth" });
 });
 
 /* === 裝罐數量檢查 === */
