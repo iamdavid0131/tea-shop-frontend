@@ -548,16 +548,7 @@ async function showCartSheet() {
     $("promoMsg").textContent = "⚠️ 無法取得折扣資料";
   }
 
-  // 顯示 sheet（動畫）
-  backdrop.style.display = "block";
-  requestAnimationFrame(() => {
-    backdrop.setAttribute("aria-hidden", "false");
-    sheet.dataset.open = "true";
-  });
-  // 🧩 鎖定背景滾動
-  document.body.style.overflow = "hidden";
-  document.body.style.position = "fixed";
-  document.body.style.width = "100%";
+  backdrop.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
 
   backdrop.style.display = "flex";
   requestAnimationFrame(() => {
