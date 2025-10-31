@@ -387,6 +387,22 @@ label {
   font-size: 16px;
 }
 
+.sticky-inner .stack {
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+
+.sticky-inner .grand {
+  font-weight: 700;
+  font-size: 17px;
+}
+
+.sticky-inner .subline {
+  font-size: 14px;
+  color: #555;
+}
+
 /* === 免運提示 === */
 #free_tip_s {
   display: none;
@@ -433,6 +449,39 @@ label {
   .btn {
     width: 100%;
   }
+}
+
+/* === 按鈕列 === */
+.sticky-inner button {
+  width: 100%;
+  font-size: 16px;
+  border-radius: 12px;
+  padding: 10px 0;
+  transition: all 0.25s ease;
+}
+
+#viewCartBtn {
+  border: 2px solid #007aff;
+  color: #007aff;
+  background: #fff;
+  font-weight: 600;
+}
+
+#viewCartBtn:hover {
+  background: #f2f8ff;
+}
+
+#submitBtnSticky {
+  background: #007aff;
+  color: #fff;
+  font-weight: 600;
+  border: none;
+}
+
+#submitBtnSticky:disabled {
+  background: #eee;
+  color: #aaa;
+  cursor: not-allowed;
 }
 
 #freeProgressBar {
@@ -651,4 +700,111 @@ body.modal-open {
 .sheet.dragging .sheet-handle {
   transform: scaleX(1.5);
   background: #999;
+}
+
+
+/* === 收件資料區塊 === */
+.section {
+  background: #fff;
+  margin: 12px 0;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  padding: 16px 16px 20px;
+}
+
+.section h2 {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  color: #111;
+}
+
+.form-group {
+  margin-bottom: 14px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 6px;
+  color: #222;
+}
+
+.form-group input[type="text"],
+.form-group input[type="tel"],
+.form-group input[type="number"],
+.form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 15px;
+  line-height: 1.4;
+  background: #fafafa;
+  transition: border-color 0.2s, background 0.2s;
+  -webkit-appearance: none;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #007aff;
+  background: #fff;
+  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
+}
+
+.form-group .muted {
+  font-size: 13px;
+  color: #999;
+  margin-top: 4px;
+  display: block;
+}
+
+/* === 優惠碼列 === */
+.promo-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.promo-row input {
+  flex: 1;
+}
+
+.promo-row button {
+  flex-shrink: 0;
+  border-radius: 10px;
+  padding: 10px 0;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  background: #eee;
+  color: #333;
+  transition: background 0.2s;
+}
+
+.promo-row button:hover {
+  background: #ddd;
+}
+
+/* === 備註欄 === */
+textarea {
+  min-height: 70px;
+  resize: vertical;
+}
+
+/* === 輕分隔線 === */
+.divider {
+  height: 1px;
+  background: #f0f0f0;
+  margin: 20px 0;
+}
+
+/* === 小標題（例如「2）收件資料」） === */
+.step-title {
+  font-weight: 700;
+  font-size: 16px;
+  margin: 24px 0 12px;
+  color: #000;
 }

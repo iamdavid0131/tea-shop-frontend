@@ -49,6 +49,12 @@ export const api = {
   getPlaceDetail(place_id) {
     return post('/place-detail', { place_id });
   },
+
+  /** 查詢會員資料 */
+  memberSearch(phone) {
+    return fetch(`${API_BASE}/member?phone=${encodeURIComponent(phone)}`)
+      .then(r => r.json());
+  },
 }; 
 
 console.log("✅ app.api.js 已載入，API_BASE =", API_BASE);

@@ -73,32 +73,34 @@
     <div id="categoryList" class="itemlist"></div>
   </div>
 
-  <div class="card stepcard" id="receiverCard">
-    <h2>2）收件資料</h2>
-    <div class="row">
-      <div>
-        <label>聯絡電話</label>
-        <input id="phone" type="tel" inputmode="tel" name="receiver_phone" autocomplete="tel-national" enterkeyhint="next" placeholder="09xxxxxxxx 或 0x-xxxxxxx" />
-        <div id="phoneErr" style="color:#b00020;font-size:14px;margin-top:6px;display:none;"></div>
-      </div>
-      <div>
-        <label>收件姓名</label>
-        <input id="name" name="receiver_name" type="text" autocomplete="name" autocapitalize="words" enterkeyhint="next" placeholder="王小明" />
-      </div>
-    </div>
+  <div class="section">
+  <h2 class="step-title">2）收件資料</h2>
 
-    <div class="field">
-      <label for="promoCode">優惠碼</label>
-      <div style="display:flex; gap:8px; align-items:center;">
-        <input id="promoCode" type="text" inputmode="latin" style="flex:1;" />
-        <button id="applyPromoBtn" type="button" class="btn">套用</button>
-      </div>
-      <div id="promoMsg" class="muted" style="margin-top:4px;"></div>
-    </div>
-
-    <label style="margin-top:10px;">備註（選填）</label>
-    <textarea id="note" name="note" placeholder="例如：有任何其他需求，請備註，有禮盒需求請直接聯繫我" enterkeyhint="done"></textarea>
+  <div class="form-group">
+    <label for="phone">聯絡電話</label>
+    <input id="phone" type="tel" placeholder="09xxxxxxxx 或 0x-xxxxxxx">
+    <span class="muted">輸入後將自動查找會員資料</span>
   </div>
+
+  <div class="form-group">
+    <label for="name">收件姓名</label>
+    <input id="name" type="text" placeholder="王小明">
+  </div>
+
+  <div class="form-group">
+    <label for="promo">優惠碼</label>
+    <div class="promo-row">
+      <input id="promoCode" type="text" placeholder="請輸入優惠碼">
+      <button id="applyPromo">套用</button>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="note">備註（選填）</label>
+    <textarea id="note" placeholder="例如：有任何需求請註明（禮盒需求、延後出貨等）"></textarea>
+  </div>
+</div>
+
 
   <div class="card stepcard" id="shippingCard">
     <h2>3）運送方式</h2>

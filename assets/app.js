@@ -719,3 +719,24 @@ document.addEventListener("click", (e) => {
 
 console.log("祥興茶行 app.js 已載入 ✅");
 
+// 📞 自動查找電話
+$("phone")?.addEventListener("blur", async (e) => {
+  const phone = e.target.value.trim();
+  if (!phone || phone.length < 8) return;
+
+  try {
+    const res = await api.memberSearch(phone);
+    if (res && res.ok && res.data) {
+      const d = res.data;
+      $("name").value = d.name || "";
+      $("address") && ($("address").value = d.address || "");
+      $("storeName") && ($("storeName").value = d.storeName || "");
+      toast(`📦 已載入會員資料：${d.name || ""}`);
+    } else {
+      toast("⚠️ 查無此電話的會員資料");
+    }
+  } catch (err) {
+    console.error("查詢會員資料失敗:", err);
+    toast("⚠️ 無法查詢會員資料");
+  }
+});
