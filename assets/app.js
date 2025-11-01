@@ -94,6 +94,16 @@ document.addEventListener("change", (e) => {
 // 🛍️ 商品渲染（含分類、裝罐、標籤、詳情收合、庫存）
 // ============================================================
 function renderProducts(items) {
+    items = items.map(p => ({
+    ...p,
+    profile: p.profile || {
+      sweetness: Number(p.profile_sweetness) || 0,
+      aroma: Number(p.profile_aroma) || 0,
+      roast: Number(p.profile_roast) || 0,
+      body: Number(p.profile_body) || 0,
+      finish: Number(p.profile_finish) || 0,
+    }
+  }));
   const panel = $("categoryList");
   panel.innerHTML = "";
 
