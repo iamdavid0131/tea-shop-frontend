@@ -213,43 +213,39 @@ label {
 
 /* === Profile 條 === */
 .profile-blocks {
-  margin-top: 8px;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
-  font-size: 14px;
-  color: #444;
+  padding: 14px 8px 12px;
+  border-top: 1px solid #e5e5e5;
+  margin-top: 10px;
 }
+
 .profile-blocks .bar {
   display: flex;
   align-items: center;
-  gap: 8px;
+  margin: 8px 0;
 }
+
 .profile-blocks .bar b {
-  width: 60px;
-  font-weight: 700;
-  color: #2f2f2f;
+  width: 48px;
+  font-size: 14px;
 }
+
 .profile-bar {
   display: flex;
-  gap: 4px;
+  gap: 6px;
+  flex: 1;
+  height: 8px;
 }
+
 .profile-bar .blk {
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-  background: #e9ecef;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  opacity: 0.4;
-  transform: scale(0.9);
-  transition: all 0.3s ease;
+  flex: 1;
+  background: #e5e5e5;
+  border-radius: 4px;
+  opacity: .3;
 }
+
 .profile-bar .blk.on {
+  background: var(--bar-color);
   opacity: 1;
-  transform: scale(1);
-  background: var(--bar-color, linear-gradient(90deg, #8cd37f, #34c759));
-  border-color: color-mix(in srgb, #34c759 60%, #000 0%);
-  animation: lightPulse 0.65s ease forwards;
 }
 
 /* === Profile 條光流動畫 === */

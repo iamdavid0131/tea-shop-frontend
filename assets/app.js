@@ -263,7 +263,7 @@ function renderProfile(label, level, category = "") {
   const bars = Array.from({ length: max }, (_, i) => {
     const active = i < level ? "on" : "";
     const delay = i * 0.08;
-    return `<div class="blk ${active}" style="--bar-color:'${gradient}';animation-delay:${delay}s"></div>`;
+    return `<div class="blk ${active}" style="--bar-color:${gradient};animation-delay:${delay}s"></div>`;
   }).join("");
 
   return `
