@@ -703,19 +703,34 @@ document.addEventListener("click", (e) => {
   const btn = e.target.closest(".step");
   if (!btn) return;
 
-  const id = btn.dataset.id;
+  const id = btn.dataset.id || btn.dataset.pack;
   const dir = btn.dataset.dir;
-  const qtyEl = $(`qty-${id}`);
-  if (!qtyEl) return;
+  const isPack = !!btn.dataset.pack;
 
-  let qty = parseInt(qtyEl.textContent || 0);
-  if (dir === "plus") qty++;
-  if (dir === "minus" && qty > 0) qty--;
+  if (!id || !dir) return;
 
-  qtyEl.textContent = qty;
+  if (isPack) {
+    // 裝罐數量
+    const input = $(`packQty-${id}`);
+    if (!input) return;
+    let qty = parseInt(input.value || 0);
+    if (dir === "plus") qty++;
+    if (dir === "minus" && qty > 0) qty--;
+    input.value = qty;
+  } else {
+    // 主購買數量
+    const qtyEl = $(`qty-${id}`);
+    if (!qtyEl) return;
+    let qty = parseInt(qtyEl.textContent || 0);
+    if (dir === "plus") qty++;
+    if (dir === "minus" && qty > 0) qty--;
+    qtyEl.textContent = qty;
+  }
+
   saveCart();
   updateTotals();
 });
+
 
 console.log("祥興茶行 app.js 已載入 ✅");
 
