@@ -17,7 +17,7 @@ window.$$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 // ------------------------------
 // 💾 全域設定（後端載入後覆蓋）
 // ------------------------------
-let CONFIG = {
+window.CONFIG = {
   PRODUCTS: [],
   PRICES: {},
   FREE_SHIPPING_THRESHOLD: 1000,
@@ -137,18 +137,18 @@ function renderProducts(items) {
 
       const detailBlock = `
         <div class="detailblock" hidden id="detail-${p.id}">
-          ${p.story ? `<p class="story fade-in">${p.story}</p>` : ""}
-          ${
-            p.profile
-              ? `<div class="profile-blocks fade-in">
-                  ${renderProfile("甜度", p.profile.sweetness, p.category)}
-                  ${renderProfile("香氣", p.profile.aroma, p.category)}
-                  ${renderProfile("焙火", p.profile.roast, p.category)}
-                  ${renderProfile("厚度", p.profile.body, p.category)}
-                  ${renderProfile("餘韻", p.profile.finish, p.category)}
-                 </div>`
-              : ""
-          }
+          ${p.story ? `<p class="story fade-in">${p.story}</p><hr>` : ""}
+
+          ${p.profile ? `
+            <div class="profile-blocks fade-in">
+              ${renderProfile("甜度", p.profile.sweetness, p.category)}
+              ${renderProfile("香氣", p.profile.aroma, p.category)}
+              ${renderProfile("焙火", p.profile.roast, p.category)}
+              ${renderProfile("厚度", p.profile.body, p.category)}
+              ${renderProfile("餘韻", p.profile.finish, p.category)}
+            </div>
+            <hr>
+          ` : ""}
           ${
             p.brew
               ? `<div class="brew-info fade-in">

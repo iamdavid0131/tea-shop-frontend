@@ -306,6 +306,12 @@ label {
   color: #333;
   transition: all 0.25s ease;
 }
+.detailblock hr {
+  border: none;
+  border-top: 1.5px solid rgba(0,0,0,0.08);
+  margin: 12px 0;
+}
+
 .detailblock[hidden] {
   display: block !important;
   max-height: 0;
