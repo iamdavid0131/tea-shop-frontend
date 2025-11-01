@@ -59,9 +59,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderProducts(CONFIG.PRODUCTS);
     restoreCart();
     updateTotals();
-    // ✅ 初始化所有商品的 UI 狀態
-    CONFIG.PRODUCTS.forEach((p) => {
-      updatePackUI(p.id);
+  // ✅ DOM 已完整建立後再執行
+    requestAnimationFrame(() => {
+      CONFIG.PRODUCTS.forEach(p => updatePackUI(p.id));
     });
   } catch (err) {
     console.error("載入設定失敗:", err);
