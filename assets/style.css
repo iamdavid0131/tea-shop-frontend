@@ -849,3 +849,15 @@ textarea {
   padding: 2px;
   background: transparent;
 }
+
+.pack-toggle input:disabled + span,
+.pack-toggle input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.step.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}

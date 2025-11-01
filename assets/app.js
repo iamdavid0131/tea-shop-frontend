@@ -754,11 +754,12 @@ document.addEventListener("click", (e) => {
   if (!id || !dir) return;
 
   const qtyEl = $(`qty-${id}`);
-  const packToggle = $(`pack-${id}`);
   const packInput = $(`packQty-${id}`);
-  const wrap = $(`packQtyWrap-${id}`);
+  const packToggle = $(`pack-${id}`);
+  const packWrap = $(`packQtyWrap-${id}`);
+  const packLabel = packToggle.closest(".pack-row")?.querySelector(".pack-toggle");
 
-  /* ✅ 主購買數量調整 */
+  // ✅ 主購買數量調整
   if (!isPack) {
     let qty = parseInt(qtyEl.textContent || 0);
     if (dir === "plus") qty++;
@@ -766,42 +767,39 @@ document.addEventListener("click", (e) => {
 
     qtyEl.textContent = qty;
 
-    // ✅ 主=0 → 裝罐完全禁用 + reset
-    if (packToggle) {
-      if (qty === 0) {
-        packToggle.disabled = true;
-        packToggle.checked = false;
-        if (wrap) wrap.classList.add("hidden");
-        if (packInput) packInput.value = 0;
-      } else {
-        packToggle.disabled = false;
+    if (qty === 0) {
+      packToggle.checked = false;
+      packToggle.disabled = true;
+      packLabel.classList.add("disabled");
+      packWrap.classList.add("hidden");
+      packInput.value = 0;
+    } else {
+      packToggle.disabled = false;
+      packLabel.classList.remove("disabled");
+
+      if (packToggle.checked) {
+        packWrap.classList.remove("hidden");
+        packInput.value = Math.min(qty, Math.max(1, parseInt(packInput.value || 1)));
       }
     }
-
-    // ✅ 若裝罐已勾選 → 裝罐數跟著減（不能超過主購買量）
-    if (packToggle?.checked && packInput) {
-      let packQty = parseInt(packInput.value || 0);
-      if (packQty > qty) packQty = qty;
-      packInput.value = packQty;
-    }
   }
-  /* ✅ 裝罐數調整 */
+
+  // ✅ 裝罐數量調整
   else {
-    const buyQty = parseInt(qtyEl.textContent || 0);
-    let qty = parseInt(packInput.value || 0);
+    const buyQty = parseInt($(`qty-${id}`)?.textContent || 0);
+    let qty = parseInt(packInput.value || 1);
 
     if (dir === "plus") qty++;
-    if (dir === "minus" && qty > 0) qty--;
+    if (dir === "minus" && qty > 1) qty--;
 
-    // ✅ 限制不可超過主購買數量
-    if (qty > buyQty) qty = buyQty;
-
+    qty = Math.min(buyQty, qty);
     packInput.value = qty;
   }
 
   saveCart();
   updateTotals();
 });
+
 
 
 
