@@ -262,21 +262,6 @@ label {
   border-top: 1px dashed #ececec;
 }
 
-.chart-wrap {
-  padding: 8px 0 4px;
-  display: flex;
-  justify-content: center;
-  opacity: 0;
-  animation: fadeSlideIn 0.5s ease forwards;
-}
-
-.radar-canvas {
-  width: 100%;
-  max-width: 260px;
-  margin: 10px auto 6px;
-  display: block;
-}
-
 .detailblock {
   border-top: 1px dashed rgba(0,0,0,0.12);
   padding-top: 12px;

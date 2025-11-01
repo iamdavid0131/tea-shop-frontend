@@ -121,9 +121,6 @@ function renderProducts(items) {
             ${renderProfile("厚度", p.profile.body, p.category)}
             ${renderProfile("餘韻", p.profile.finish, p.category)}
           </div>
-          <div class="chart-wrap fade-in">
-            <canvas id="chart-${p.id}" class="radar-canvas"></canvas>
-          </div>
           ` : ""}
           ${
             p.brew
@@ -308,12 +305,6 @@ document.addEventListener("click", (e) => {
   btn.querySelector(".arrow").textContent = "▲";
   btn.classList.add("active");
   block.hidden = false;
-
-    // ✅ 加在這裡！渲染雷達圖
-if (window.CONFIG?.PRODUCTS) {
-  const p = window.CONFIG.PRODUCTS.find(x => x.id === id);
-  if (p?.profile) renderRadarChart(id, p.profile, p.category);
-}
 
 
   // 加上動畫
@@ -849,108 +840,4 @@ $("phone")?.addEventListener("blur", async (e) => {
     toast("⚠️ 無法查詢會員資料");
   }
 });
-
-// 🎨 雷達圖顏色對照
-const radarColorMap = {
-  "窨花": "rgba(242,179,61,0.9)",
-  "文山": "rgba(10,132,255,0.9)",
-  "高山": "rgba(52,199,89,0.9)",
-  "焙香": "rgba(201,125,66,0.9)",
-  "蜜香": "rgba(255,140,0,0.9)",
-  "紅茶": "rgba(255,90,54,0.9)",
-  "白茶": "rgba(185,165,132,0.9)",
-  "加購": "rgba(10,132,255,0.9)",
-};
-
-// 預設取茶類顏色
-function getRadarColor(category = "") {
-  return (
-    Object.entries(radarColorMap).find(([key]) =>
-      category.includes(key)
-    )?.[1] || "rgba(52,199,89,0.9)" // default green
-  );
-}
-    
-// ✅ 雷達圖渲染＋互動 Highlight
-function renderRadarChart(id, profile, category = "") {
-  const ctxId = `chart-${id}`;
-  if (!document.getElementById(ctxId)) return;
-
-  const maxVal = 5;
-  const labels = ["甜度", "香氣", "焙火", "厚度", "餘韻"];
-  const values = [
-    profile.sweetness || 0,
-    profile.aroma || 0,
-    profile.roast || 0,
-    profile.body || 0,
-    profile.finish || 0
-  ];
-
-  // ✅ 依茶類決定顏色
-  const baseColor = Object.entries(radarColorMap)
-    .find(([key]) => category.includes(key))?.[1]
-    || "rgba(52, 199, 89,0.9)"; // default green
-
-  const borderColor = baseColor.replace("0.9", "1");
-
-  const canvas = document.getElementById(ctxId);
-  canvas.width = 260;
-  canvas.height = 260;
-
-  const chart = new Chart(canvas, {
-    type: "radar",
-    data: {
-      labels,
-      datasets: [{
-        label: "風味雷達",
-        data: values,
-        fill: true,
-        backgroundColor: baseColor.replace("0.9", "0.24"),
-        borderColor: borderColor,
-        borderWidth: 2,
-        pointBackgroundColor: borderColor,
-        pointHoverRadius: 6,
-      }],
-    },
-    options: {
-    scales: {
-      r: {
-        suggestedMin: 0,
-        suggestedMax: maxVal,
-        angleLines: { color: "rgba(0,0,0,0.1)" },
-        grid: { color: "rgba(0,0,0,0.05)" },
-        ticks: { display: false },
-        pointLabels: {
-          font: { size: 13, weight: 600 },
-          color: "#333"
-        },
-      }
-    },
-    plugins: {
-      legend: { display: false },
-      tooltip: { enabled: false },
-    },
-    responsive: true,
-    maintainAspectRatio: false,
-    animation: {
-      duration: 800,
-      easing: "easeOutCubic"
-    }
-  }
-
-  });
-
-  // ✅ C) 互動：滑過時高亮
-  canvas.addEventListener("mousemove", (e) => {
-    const points = chart.getElementsAtEventForMode(e, "nearest", { intersect: true }, false);
-    if (points.length) {
-      points[0].element.options.radius = 8;
-      chart.update("none");
-    }
-  });
-
-  canvas.addEventListener("mouseleave", () => {
-    chart.update();
-  });
-}
 
