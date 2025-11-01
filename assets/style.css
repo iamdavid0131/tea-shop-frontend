@@ -808,3 +808,44 @@ textarea {
   margin: 24px 0 12px;
   color: #000;
 }
+
+/* === 裝罐區塊 === */
+.pack-row {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pack-row input[type="checkbox"] {
+  transform: scale(1.2);
+}
+
+.pack-qty {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pack-qty.hidden {
+  display: none;
+}
+
+.pack-qty .step {
+  width: 32px;
+  height: 32px;
+  font-size: 20px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pack-qty input {
+  width: 36px;
+  text-align: center;
+  font-size: 18px;
+  border: none;
+  padding: 2px;
+  background: transparent;
+}
