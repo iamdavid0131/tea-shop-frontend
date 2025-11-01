@@ -33,7 +33,29 @@ document.addEventListener("DOMContentLoaded", async () => {
   try {
     $("loading").style.display = "block";
     const cfg = await api.getConfig();
-    CONFIG = { ...CONFIG, PRODUCTS: cfg.data || [] };
+    CONFIG = {
+      ...CONFIG,
+      PRODUCTS: (cfg.data || []).map(p => {
+        const hasAnyProfile =
+          p.profile_sweetness !== undefined ||
+          p.profile_aroma !== undefined ||
+          p.profile_roast !== undefined ||
+          p.profile_body !== undefined ||
+          p.profile_finish !== undefined;
+
+        return {
+          ...p,
+          profile: hasAnyProfile ? {
+            sweetness: Number(p.profile_sweetness) || 0,
+            aroma: Number(p.profile_aroma) || 0,
+            roast: Number(p.profile_roast) || 0,
+            body: Number(p.profile_body) || 0,
+            finish: Number(p.profile_finish) || 0,
+          } : null
+        };
+      })
+    };
+
     renderProducts(CONFIG.PRODUCTS);
     restoreCart();
     updateTotals();
@@ -72,23 +94,6 @@ document.addEventListener("change", (e) => {
 // 🛍️ 商品渲染（含分類、裝罐、標籤、詳情收合、庫存）
 // ============================================================
 function renderProducts(items) {
-  items = items.map(p => ({
-  ...p,
-  profile: (p.profile_sweetness ||
-            p.profile_aroma ||
-            p.profile_roast ||
-            p.profile_body ||
-            p.profile_finish)
-    ? {
-        sweetness: Number(p.profile_sweetness) || 0,
-        aroma: Number(p.profile_aroma) || 0,
-        roast: Number(p.profile_roast) || 0,
-        body: Number(p.profile_body) || 0,
-        finish: Number(p.profile_finish) || 0,
-      }
-    : null
-}));
-
   const panel = $("categoryList");
   panel.innerHTML = "";
 
