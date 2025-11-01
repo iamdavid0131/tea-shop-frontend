@@ -44,7 +44,26 @@ document.addEventListener("DOMContentLoaded", async () => {
     $("loading").style.display = "none";
   }
 });
+// ✅ 裝罐開關
+document.addEventListener("change", (e) => {
+  if (!e.target.matches("input[id^='pack-']")) return;
 
+  const id = e.target.id.replace("pack-", "");
+  const wrap = $(`packQtyWrap-${id}`);
+  const input = $(`packQty-${id}`);
+  const buyQty = parseInt($(`qty-${id}`)?.textContent || 0);
+
+  if (e.target.checked && buyQty > 0) {
+    wrap.classList.remove("hidden");
+    input.value = buyQty; // ✅ 裝罐數 = 購買量
+  } else {
+    wrap.classList.add("hidden");
+    input.value = 0;
+  }
+
+  saveCart();
+  updateTotals();
+});
 // ============================================================
 // 🛍️ 商品渲染（含分類、裝罐、標籤、詳情收合、庫存）
 // ============================================================
@@ -502,17 +521,21 @@ async function showCartSheet() {
     list.innerHTML = `<div class="muted" style="padding:12px;">尚未選購商品</div>`;
   } else {
     items.forEach((it) => {
-      const row = document.createElement("div");
-      row.className = "line-item";
-      row.innerHTML = `
-        <div class="li-title">${it.name}</div>
-        <div class="li-qty">× ${it.qty}</div>
-        <div class="li-sub">NT$ ${(it.price * it.qty).toLocaleString(
-          "zh-TW"
-        )}</div>
-      `;
-      list.appendChild(row);
-    });
+  const row = document.createElement("div");
+  row.className = "line-item";
+
+  const packQty = parseInt($(`packQty-${it.id}`)?.value || 0);
+  const packStr = packQty > 0 ? `（裝罐 ${packQty}）` : "";
+
+  row.innerHTML = `
+    <div class="li-title">${it.name}</div>
+    <div class="li-qty">× ${it.qty} ${packStr}</div>
+    <div class="li-sub">NT$ ${(it.price * it.qty).toLocaleString("zh-TW")}</div>
+  `;
+
+  list.appendChild(row);
+});
+
   }
 
   // ✅ 呼叫後端進行金額試算（含折扣與運費）
@@ -705,26 +728,44 @@ document.addEventListener("click", (e) => {
 
   const id = btn.dataset.id || btn.dataset.pack;
   const dir = btn.dataset.dir;
-  const isPack = !!btn.dataset.pack;
+  const isPack = btn.hasAttribute("data-pack");
 
   if (!id || !dir) return;
 
-  if (isPack) {
-    // 裝罐數量
-    const input = $(`packQty-${id}`);
-    if (!input) return;
-    let qty = parseInt(input.value || 0);
-    if (dir === "plus") qty++;
-    if (dir === "minus" && qty > 0) qty--;
-    input.value = qty;
-  } else {
-    // 主購買數量
-    const qtyEl = $(`qty-${id}`);
-    if (!qtyEl) return;
+  const qtyEl = $(`qty-${id}`);
+  const packInput = $(`packQty-${id}`);
+  const packToggle = $(`pack-${id}`);
+
+  if (!isPack) {
+    // ✅ 主購買數量調整
     let qty = parseInt(qtyEl.textContent || 0);
     if (dir === "plus") qty++;
     if (dir === "minus" && qty > 0) qty--;
+
     qtyEl.textContent = qty;
+
+    // ✅ 自動關閉裝罐（購買量=0情況）
+    if (qty === 0) {
+      packToggle.checked = false;
+      if (packInput) packInput.value = 0;
+      const wrap = $(`packQtyWrap-${id}`);
+      if (wrap) wrap.classList.add("hidden");
+    }
+
+    // ✅ 購買量變動時同步更新裝罐量
+    if (packToggle.checked && packInput) {
+      packInput.value = qty;
+    }
+  } else {
+    // ✅ 裝罐數量調整（不得超過購買量）
+    const buyQty = parseInt(qtyEl.textContent || 0);
+    let qty = parseInt(packInput.value || 0);
+
+    if (dir === "plus") qty++;
+    if (dir === "minus" && qty > 0) qty--;
+
+    qty = Math.min(buyQty, qty);
+    packInput.value = qty;
   }
 
   saveCart();
