@@ -26,7 +26,7 @@ export function restoreCart() {
 // ============================================================
 // 💰 金額試算 + sticky bar 更新（含免運提示與進度條）
 // ============================================================
-async function updateTotals() {
+export async function updateTotals() {
   const items = CONFIG.PRODUCTS.map((p) => ({
     id: p.id,
     qty: parseInt($(`qty-${p.id}`)?.textContent || 0),
