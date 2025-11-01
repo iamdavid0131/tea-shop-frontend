@@ -37,6 +37,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderProducts(CONFIG.PRODUCTS);
     restoreCart();
     updateTotals();
+    // ✅ 初始化所有商品的 UI 狀態
+    CONFIG.PRODUCTS.forEach((p) => {
+      updatePackUI(p.id);
+    });
   } catch (err) {
     console.error("載入設定失敗:", err);
     toast("⚠️ 無法載入商品設定，請稍後重試");
@@ -155,10 +159,11 @@ function renderProducts(items) {
             <small class="muted">（剩餘 ${p.stock ?? 0}）</small>
           </div>
           <div class="qty">
-            <button class="step" data-id="${p.id}" data-dir="minus">−</button>
-            <span id="qty-${p.id}">0</span>
-            <button class="step" data-id="${p.id}" data-dir="plus">＋</button>
+            <button class="qty-btn" data-id="${p.id}" data-dir="minus">−</button>
+            <span id="qty-${p.id}" class="qty-value">0</span>
+            <button class="qty-btn" data-id="${p.id}" data-dir="plus">＋</button>
           </div>
+
         </div>
 
         ${
@@ -761,7 +766,7 @@ $("applyPromoBtn")?.addEventListener("click", async () => {
 // 🧩 數量變化即時更新
 // ============================================================
 document.addEventListener("click", (e) => {
-  const btn = e.target.closest(".step");
+  const btn = e.target.closest(".qty-btn");
   if (!btn) return;
 
   const id = btn.dataset.id || btn.dataset.pack;
@@ -772,54 +777,56 @@ document.addEventListener("click", (e) => {
 
   const qtyEl = $(`qty-${id}`);
   const packInput = $(`packQty-${id}`);
-  const packToggle = $(`pack-${id}`);
-  const packWrap = $(`packQtyWrap-${id}`);
-  const packLabel = packToggle.closest(".pack-row")?.querySelector("label.pack-toggle");
-  
 
-  // ✅ 主購買數量調整
   if (!isPack) {
     let qty = parseInt(qtyEl.textContent || 0);
     if (dir === "plus") qty++;
     if (dir === "minus" && qty > 0) qty--;
-
     qtyEl.textContent = qty;
-
-    if (qty === 0) {
-      packToggle.checked = false;
-      packToggle.disabled = true;
-      packLabel.classList.add("disabled");
-      packWrap.classList.add("hidden");
-      packInput.value = 0;
-    } else {
-      packToggle.disabled = false;
-      packLabel.classList.remove("disabled");
-
-      if (packToggle.checked) {
-        packWrap.classList.remove("hidden");
-        packInput.value = Math.min(qty, Math.max(1, parseInt(packInput.value || 1)));
-      }
-    }
-  }
-
-  // ✅ 裝罐數量調整
-  else {
-    const buyQty = parseInt($(`qty-${id}`)?.textContent || 0);
+  } else {
+    const buyQty = parseInt(qtyEl.textContent || 0);
     let qty = parseInt(packInput.value || 1);
-
     if (dir === "plus") qty++;
     if (dir === "minus" && qty > 1) qty--;
-
-    qty = Math.min(buyQty, qty);
-    packInput.value = qty;
+    packInput.value = Math.min(buyQty, qty);
   }
 
+  updatePackUI(id);
   saveCart();
   updateTotals();
 });
 
 
+function updatePackUI(id) {
+  const qty = parseInt($(`qty-${id}`)?.textContent || 0);
+  const packToggle = $(`pack-${id}`);
+  const packInput = $(`packQty-${id}`);
+  const packWrap = $(`packQtyWrap-${id}`);
+  const packLabel = packToggle.closest(".pack-row")?.querySelector("label.pack-toggle");
+  const minusBtn = document.querySelector(`.qty-btn[data-id="${id}"][data-dir="minus"]`);
+  if (qty === 0) minusBtn.classList.add("disabled");
+  else minusBtn.classList.remove("disabled");
 
+  if (qty === 0) {
+    minusBtn.classList.add("disabled");
+    packToggle.checked = false;
+    packToggle.disabled = true;
+    packLabel.classList.add("disabled");
+    packWrap.classList.add("hidden");
+    if (packInput) packInput.value = 0;
+  } else {
+    minusBtn.classList.remove("disabled");
+    packToggle.disabled = false;
+    packLabel.classList.remove("disabled");
+
+    if (packToggle.checked) {
+      packWrap.classList.remove("hidden");
+      packInput.value = Math.max(1, Math.min(qty, parseInt(packInput.value || 1)));
+    } else {
+      packWrap.classList.add("hidden");
+    }
+  }
+}
 
 
 
