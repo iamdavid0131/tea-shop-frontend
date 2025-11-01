@@ -53,9 +53,9 @@ document.addEventListener("change", (e) => {
   const input = $(`packQty-${id}`);
   const buyQty = parseInt($(`qty-${id}`)?.textContent || 0);
 
-  if (e.target.checked && buyQty > 0) {
+  if (e.target.checked) {
     wrap.classList.remove("hidden");
-    input.value = buyQty; // ✅ 裝罐數 = 購買量
+    input.value = buyQty > 0 ? 1 : 0; // ✅主≥1則起始=1
   } else {
     wrap.classList.add("hidden");
     input.value = 0;
@@ -170,6 +170,27 @@ function renderProducts(items) {
         ${detailBlock}
       `;
       body.appendChild(card);
+      // ✅ 初始化：如果主數量為 0 → 禁用裝罐叉選
+      setTimeout(() => {
+        items.forEach(p => {
+          const qty = parseInt($(`qty-${p.id}`)?.textContent || 0);
+          const packToggle = $(`pack-${p.id}`);
+          const wrap = $(`packQtyWrap-${p.id}`);
+          const packInput = $(`packQty-${p.id}`);
+
+          if (packToggle) {
+            if (qty === 0) {
+              packToggle.disabled = true;
+              packToggle.checked = false;
+              wrap?.classList.add("hidden");
+              if (packInput) packInput.value = 0;
+            } else {
+              packToggle.disabled = false;
+            }
+          }
+        });
+      }, 50);
+
     });
 
     section.appendChild(header);
@@ -733,38 +754,48 @@ document.addEventListener("click", (e) => {
   if (!id || !dir) return;
 
   const qtyEl = $(`qty-${id}`);
-  const packInput = $(`packQty-${id}`);
   const packToggle = $(`pack-${id}`);
+  const packInput = $(`packQty-${id}`);
+  const wrap = $(`packQtyWrap-${id}`);
 
+  /* ✅ 主購買數量調整 */
   if (!isPack) {
-    // ✅ 主購買數量調整
     let qty = parseInt(qtyEl.textContent || 0);
     if (dir === "plus") qty++;
     if (dir === "minus" && qty > 0) qty--;
 
     qtyEl.textContent = qty;
 
-    // ✅ 自動關閉裝罐（購買量=0情況）
-    if (qty === 0) {
-      packToggle.checked = false;
-      if (packInput) packInput.value = 0;
-      const wrap = $(`packQtyWrap-${id}`);
-      if (wrap) wrap.classList.add("hidden");
+    // ✅ 主=0 → 裝罐完全禁用 + reset
+    if (packToggle) {
+      if (qty === 0) {
+        packToggle.disabled = true;
+        packToggle.checked = false;
+        if (wrap) wrap.classList.add("hidden");
+        if (packInput) packInput.value = 0;
+      } else {
+        packToggle.disabled = false;
+      }
     }
 
-    // ✅ 購買量變動時同步更新裝罐量
-    if (packToggle.checked && packInput) {
-      packInput.value = qty;
+    // ✅ 若裝罐已勾選 → 裝罐數跟著減（不能超過主購買量）
+    if (packToggle?.checked && packInput) {
+      let packQty = parseInt(packInput.value || 0);
+      if (packQty > qty) packQty = qty;
+      packInput.value = packQty;
     }
-  } else {
-    // ✅ 裝罐數量調整（不得超過購買量）
+  }
+  /* ✅ 裝罐數調整 */
+  else {
     const buyQty = parseInt(qtyEl.textContent || 0);
     let qty = parseInt(packInput.value || 0);
 
     if (dir === "plus") qty++;
     if (dir === "minus" && qty > 0) qty--;
 
-    qty = Math.min(buyQty, qty);
+    // ✅ 限制不可超過主購買數量
+    if (qty > buyQty) qty = buyQty;
+
     packInput.value = qty;
   }
 
@@ -773,7 +804,8 @@ document.addEventListener("click", (e) => {
 });
 
 
-console.log("祥興茶行 app.js 已載入 ✅");
+
+
 
 // 📞 自動查找電話
 $("phone")?.addEventListener("blur", async (e) => {
