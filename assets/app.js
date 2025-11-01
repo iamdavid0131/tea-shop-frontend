@@ -43,6 +43,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderProducts(CONFIG.PRODUCTS);
     restoreCart();
     updateTotals();
+    let lastScrollY = window.scrollY;
+    window.addEventListener("scroll", () => {
+    const bar = document.getElementById("StickyBar");
+    if (window.scrollY > lastScrollY + 20) bar.classList.add("hide");
+    else bar.classList.remove("hide");
+    lastScrollY = window.scrollY;
+    });
   // ✅ DOM 已完整建立後再執行
     requestAnimationFrame(() => {
       CONFIG.PRODUCTS.forEach(p => updatePackUI(p.id));
@@ -370,6 +377,8 @@ async function updateTotals() {
     qty: parseInt($(`qty-${p.id}`)?.textContent || 0),
   })).filter((i) => i.qty > 0);
 
+  const stickyBar = document.getElementById("StickyBar");
+
   // 🪫 若購物車為空 → 重置顯示
   if (items.length === 0) {
     $("total_s").textContent = "NT$ 0";
@@ -378,17 +387,20 @@ async function updateTotals() {
     $("ship_s").textContent = "—";
     $("free_tip_s").style.display = "none";
     $("freeProgress").style.display = "none";
+    stickyBar.classList.remove("show");
+    stickyBar.classList.add("hide");
     return;
+  } else {
+    stickyBar.classList.add("show");
+    stickyBar.classList.remove("hide");
   }
 
   try {
     const preview = await api.previewTotals(items, "store", "");
     console.log("🧾 previewTotals 回傳", preview);
 
-    // ✅ 萬用防呆解析（自動抓 data 層 or 直屬層）
     const data = preview?.data ?? preview ?? {};
 
-    // ✅ 同時支援 shipping / shippingFee / totalAfterDiscount
     const sub = data.subtotal ?? 0;
     const disc = data.discount ?? 0;
     const ship = data.shipping ?? data.shippingFee ?? 0;
@@ -398,12 +410,15 @@ async function updateTotals() {
         ? data.totalAfterDiscount + ship
         : sub - disc + ship);
 
-    // ✅ 安全數值轉換（防止 null）
     const fmt = (n) => `NT$ ${Number(n || 0).toLocaleString("zh-TW")}`;
+
     $("sub_s").textContent = fmt(sub);
     $("disc_s").textContent = fmt(disc);
     $("ship_s").textContent = fmt(ship);
     $("total_s").textContent = fmt(total);
+
+    // ✅ 金額動畫
+    animateMoney();
 
     // 🧾 免運門檻提示
     const freeThreshold = CONFIG.FREE_SHIPPING_THRESHOLD || 1000;
@@ -411,27 +426,32 @@ async function updateTotals() {
     const progressWrap = $("freeProgress");
     const freeTip = $("free_tip_s");
 
+    const progress = Math.min(100, (sub / freeThreshold) * 100);
+    progressBar.style.width = `${progress}%`;
+
     if (sub >= freeThreshold) {
       freeTip.textContent = "🎉 已達免運門檻！";
       freeTip.style.display = "inline-block";
       progressWrap.style.display = "none";
+      progressBar.classList.add("flash-free"); // ✅ Flash 達標亮燈
     } else {
       const diff = freeThreshold - sub;
-      freeTip.textContent = `再消費 NT$${diff.toLocaleString(
-        "zh-TW"
-      )} 即可免運`;
+      freeTip.textContent = `再消費 NT$${diff.toLocaleString("zh-TW")} 即可免運`;
       freeTip.style.display = "inline-block";
       progressWrap.style.display = "block";
-      progressBar.style.width = `${Math.min(
-        100,
-        (sub / freeThreshold) * 100
-      )}%`;
+      progressBar.classList.remove("flash-free");
     }
+
+    // ✅ 折扣淡入
+    document.getElementById("disc_wrap")
+      .classList.toggle("show-disc", disc > 0);
+
   } catch (err) {
     console.error("試算錯誤:", err);
     toast("⚠️ 金額試算失敗");
   }
 }
+
 
 // ============================================================
 // 🔔 Toast 提示
@@ -859,3 +879,10 @@ $("phone")?.addEventListener("blur", async (e) => {
   }
 });
 
+/* 🔥 更新金額動效 */
+function animateMoney() {
+  const el = $("total_s");
+  el.classList.remove("money-pop");
+  void el.offsetWidth; // reset animation
+  el.classList.add("money-pop");
+}

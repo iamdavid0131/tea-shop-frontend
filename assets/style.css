@@ -409,59 +409,93 @@ label {
   transform: rotate(180deg);
 }
 
-/* StickyBar — 最精簡垂直置中布局 */
+/* === StickyBar UI / iOS Style === */
 .stickybar {
   position: fixed;
   bottom: 0;
   left: 0;
-  width: 100%;
-  background: #fff;
-  box-shadow: 0 -4px 30px rgba(0,0,0,0.08);
-  padding: 10px 16px;
-  border-radius: 16px 16px 0 0;
+  right: 0;
   z-index: 999;
-  padding-bottom: calc(env(safe-area-inset-bottom) + 10px);
+  padding: 8px 12px;
 }
 
+.stickybar.glassy {
+  background: rgba(255,255,255,0.82);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+
+/* Sticky hidden when scrolling down */
+.stickybar.hide {
+  transform: translateY(110%);
+  opacity: 0;
+}
+.stickybar.show {
+  transform: translateY(0);
+  opacity: 1;
+  transition: transform .35s ease, opacity .35s ease;
+}
+
+/* Buttons Flex */
 .sticky-inner {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 12px;
-}
-
-/* 總額區保持簡潔 */
-.stack.compact .grand {
-  font-size: 15px;
-  font-weight: 600;
-  color: #111;
-}
-
-/* 隱藏明細列 */
-.hidden {
-  display: none !important;
-}
-
-/* 按鈕組 — 讓送出更突出 */
-.btn-wrap {
-  display: flex;
   gap: 10px;
 }
 
-/* 次按鈕："查看明細" 小型化 */
-.btn.view-detail {
+.amounts {
+  flex: 1;
+}
+
+/* 金額突顯動畫 */
+@keyframes moneyPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.22); }
+  100% { transform: scale(1); }
+}
+.money-pop {
+  animation: moneyPop 0.45s cubic-bezier(.25,.8,.25,1);
+}
+
+/* 免運進度條 */
+.progress-bar-wrap {
+  width: 100%;
+  height: 6px;
   background: #eee;
-  color: #333;
-  font-size: 13px;
-  padding: 6px 10px;
-  border-radius: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 4px;
+  transition: opacity .25s;
+}
+.progress-bar-wrap.hidden { display: none; }
+#freeProgressBar {
+  height: 100%;
+  width: 0%;
+  background: #00c853;
+  transition: width .35s ease-out;
 }
 
-.btn {
-  padding: 10px 16px;
-  font-size: 15px;
+/* Flash when free shipping */
+@keyframes flashFree {
+  0% { background:#4ade80; }
+  50% { background:#22c55e; }
+  100% { background:#4ade80; }
+}
+.flash-free {
+  animation: flashFree .6s infinite alternate;
 }
 
+/* 折扣淡入 */
+#disc_wrap.show-disc {
+  animation: fadeIn .35s ease-out forwards;
+  opacity: 1;
+}
+
+/* Hidden progress container */
+.hidden {
+  display: none !important;
+}
 
 
 /* === 手機優化 === */
