@@ -850,15 +850,23 @@ textarea {
   background: transparent;
 }
 
-.pack-toggle input:disabled + span,
-.pack-toggle input:disabled {
-  opacity: 0.4;
+/* ✅ 裝罐 Toggle（label 本體）禁用狀態 */
+.pack-toggle.disabled {
+  opacity: 0.35 !important;
+  pointer-events: none !important;
   cursor: not-allowed;
-  pointer-events: none;
   filter: grayscale(100%);
 }
 
-.step.disabled {
-  opacity: 0.4;
+/* ✅ Checkbox 本體 disabled 時同步 */
+.pack-toggle input:disabled {
   pointer-events: none;
 }
+
+/* ✅ +/- 按鈕禁用 */
+.step.disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+

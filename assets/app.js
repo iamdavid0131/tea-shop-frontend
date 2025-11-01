@@ -774,7 +774,8 @@ document.addEventListener("click", (e) => {
   const packInput = $(`packQty-${id}`);
   const packToggle = $(`pack-${id}`);
   const packWrap = $(`packQtyWrap-${id}`);
-  const packLabel = packToggle.closest(".pack-row")?.querySelector(".pack-toggle");
+  const packLabel = packToggle.closest(".pack-row")?.querySelector("label.pack-toggle");
+  
 
   // ✅ 主購買數量調整
   if (!isPack) {
