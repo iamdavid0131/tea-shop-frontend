@@ -310,10 +310,10 @@ document.addEventListener("click", (e) => {
   block.hidden = false;
 
     // ✅ 加在這裡！渲染雷達圖
-  if (window.CONFIG?.PRODUCTS) {
-    const p = window.CONFIG.PRODUCTS.find(x => x.id === id);
-    if (p?.profile) renderRadarChart(id, p.profile);
-  }
+if (window.CONFIG?.PRODUCTS) {
+  const p = window.CONFIG.PRODUCTS.find(x => x.id === id);
+  if (p?.profile) renderRadarChart(id, p.profile, p.category);
+}
 
 
   // 加上動畫
@@ -850,7 +850,27 @@ $("phone")?.addEventListener("blur", async (e) => {
   }
 });
 
+// 🎨 雷達圖顏色對照
+const radarColorMap = {
+  "窨花": "rgba(242,179,61,0.9)",
+  "文山": "rgba(10,132,255,0.9)",
+  "高山": "rgba(52,199,89,0.9)",
+  "焙香": "rgba(201,125,66,0.9)",
+  "蜜香": "rgba(255,140,0,0.9)",
+  "紅茶": "rgba(255,90,54,0.9)",
+  "白茶": "rgba(185,165,132,0.9)",
+  "加購": "rgba(10,132,255,0.9)",
+};
 
+// 預設取茶類顏色
+function getRadarColor(category = "") {
+  return (
+    Object.entries(radarColorMap).find(([key]) =>
+      category.includes(key)
+    )?.[1] || "rgba(52,199,89,0.9)" // default green
+  );
+}
+    
 // ✅ 雷達圖渲染＋互動 Highlight
 function renderRadarChart(id, profile, category = "") {
   const ctxId = `chart-${id}`;
@@ -893,24 +913,31 @@ function renderRadarChart(id, profile, category = "") {
       }],
     },
     options: {
-      scales: {
-        r: {
-          suggestedMin: 0,
-          suggestedMax: maxVal,
-          angleLines: { color: "rgba(0,0,0,0.08)" },
-          grid: { color: "rgba(0,0,0,0.06)" },
-          ticks: { display: false },
-          pointLabels: { font: { size: 12 } },
-        }
-      },
-      plugins: {
-        legend: { display: false },
-        tooltip: { enabled: false },
-      },
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: { duration: 900 }
+    scales: {
+      r: {
+        suggestedMin: 0,
+        suggestedMax: maxVal,
+        angleLines: { color: "rgba(0,0,0,0.1)" },
+        grid: { color: "rgba(0,0,0,0.05)" },
+        ticks: { display: false },
+        pointLabels: {
+          font: { size: 13, weight: 600 },
+          color: "#333"
+        },
+      }
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: { enabled: false },
+    },
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: {
+      duration: 800,
+      easing: "easeOutCubic"
     }
+  }
+
   });
 
   // ✅ C) 互動：滑過時高亮
