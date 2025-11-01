@@ -506,6 +506,24 @@ $("submitBtnSticky")?.addEventListener("click", async () => {
    🧾 查看明細（整合後端折扣計算版）
    ============================================================ */
 $("viewCartBtn")?.addEventListener("click", showCartSheet);
+// StickyBar 展開/收合小明細
+document.getElementById("viewCartBtn")?.addEventListener("click", () => {
+  const detail = $("stickySubDetail");
+  const progress = $("freeProgress");
+  const btn = $("viewCartBtn");
+
+  const isOpen = !detail.classList.contains("hidden");
+
+  if (isOpen) {
+    detail.classList.add("hidden");
+    progress.classList.add("hidden");
+    btn.textContent = "查看明細 ▾";
+  } else {
+    detail.classList.remove("hidden");
+    progress.classList.remove("hidden");
+    btn.textContent = "隱藏明細 ▴";
+  }
+});
 
 /* === 🧾 Bottom Sheet 關閉按鈕 === */
 document.getElementById("closeCartModal")?.addEventListener("click", () => {

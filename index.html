@@ -178,25 +178,40 @@
   </div> <!-- ← 正確只關 shippingCard 這一層 -->
 
   <!-- Sticky checkout bar -->
-  <div class="stickybar">
-    <div class="sticky-inner">
-      <div class="stack">
-        <div class="grand">應付總額：<b id="total_s">—</b></div>
-        <div class="subline">
-          小計 <span id="sub_s">—</span>
-          <span id="disc_wrap"> ・ 折扣 <span id="disc_s">—</span></span>
-          ・ 運費 <span id="ship_s">—</span>
-          <span id="free_tip_s" class="muted"></span>
-        </div>
-        <div id="freeProgress" aria-hidden="true" style="height:6px;border-radius:999px;background:#eee;overflow:hidden;display:none;">
-          <div id="freeProgressBar" style="height:100%;width:0%;background:#34c759;"></div>
-        </div>
+<div class="stickybar">
+  <div class="sticky-inner">
+
+    <!-- 左側：總額 -->
+    <div class="stack compact">
+      <div class="grand">應付總額：<b id="total_s">—</b></div>
+
+      <!-- ✅ 展開後才顯示 -->
+      <div class="subline hidden" id="stickySubDetail">
+        小計 <span id="sub_s">—</span>
+        <span id="disc_wrap"> ・ 折扣 <span id="disc_s">—</span></span>
+        ・ 運費 <span id="ship_s">—</span>
+        <span id="free_tip_s" class="muted"></span>
       </div>
-      <button id="stepPrev" class="btn btn-outline" type="button">上一步</button>
-      <button id="viewCartBtn" class="btn btn-outline" type="button">查看明細</button>
-      <button id="submitBtnSticky" class="btn" type="button" disabled>送出訂單</button>
+
+      <div id="freeProgress" class="hidden" aria-hidden="true"
+        style="height:6px;border-radius:999px;background:#eee;overflow:hidden;display:block;">
+        <div id="freeProgressBar" style="height:100%;width:0%;background:#34c759;"></div>
+      </div>
     </div>
+
+    <!-- 右側：按鈕組 -->
+    <div class="btn-wrap">
+      <button id="viewCartBtn" class="btn view-detail" type="button">
+        查看明細 ▾
+      </button>
+      <button id="submitBtnSticky" class="btn" type="button" disabled>
+        送出訂單
+      </button>
+    </div>
+
   </div>
+</div>
+
 
 <!-- 購物明細 Bottom Sheet -->
 <div id="cartSheetBackdrop" class="sheet-backdrop" aria-hidden="true">
