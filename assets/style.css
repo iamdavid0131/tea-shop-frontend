@@ -211,42 +211,81 @@ label {
   background: #f9f9f9 !important;
 }
 
-/* === Profile 條 === */
+/* === Profile 區塊優化 === */
 .profile-blocks {
-  padding: 14px 8px 12px;
-  border-top: 1px solid #e5e5e5;
-  margin-top: 10px;
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .profile-blocks .bar {
   display: flex;
   align-items: center;
-  margin: 8px 0;
+  gap: 10px;
 }
 
 .profile-blocks .bar b {
-  width: 48px;
-  font-size: 14px;
-}
-
-.profile-bar {
-  display: flex;
-  gap: 6px;
-  flex: 1;
-  height: 8px;
+  width: 70px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #222;
 }
 
 .profile-bar .blk {
-  flex: 1;
-  background: #e5e5e5;
+  width: 14px;
+  height: 14px;
   border-radius: 4px;
-  opacity: .3;
+  opacity: 0.35;
+  transition: opacity .25s, transform .25s;
 }
 
 .profile-bar .blk.on {
-  background: var(--bar-color);
   opacity: 1;
+  transform: scale(1.15);
+  box-shadow: 0 0 6px rgba(0,0,0,0.15);
 }
+
+/* 過場更順 */
+.fade-in {
+  animation: fadeSlideIn 0.45s ease-out forwards;
+}
+
+/* 詳情內分隔線 */
+.detailblock > *:not(:first-child) {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed #ececec;
+}
+
+.chart-wrap {
+  padding: 8px 0 4px;
+  display: flex;
+  justify-content: center;
+  opacity: 0;
+  animation: fadeSlideIn 0.5s ease forwards;
+}
+
+.radar-canvas {
+  width: 100%;
+  max-width: 260px;
+  margin: 10px auto 6px;
+  display: block;
+}
+
+.detailblock {
+  border-top: 1px dashed rgba(0,0,0,0.12);
+  padding-top: 12px;
+}
+
+.profile-blocks {
+  margin-bottom: 12px;
+}
+
 
 /* === Profile 條光流動畫 === */
 @keyframes lightPulse {
