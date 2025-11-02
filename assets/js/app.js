@@ -9,7 +9,7 @@ import { CONFIG } from "./config.js";
 import { renderProducts } from "./products.js";
 import { restoreCart, updateTotals } from "./cart.js";
 import { initQtyControls, updatePackUI } from "./qty.js";
-import { enableSmartSheetControl } from "./sheetModal.js";
+import { enableSmartSheetControl, showCartSheet } from "./sheetModal.js";
 import { initMemberLookup } from "./member.js";
 
 window.api = api; // Debug 可留
@@ -36,6 +36,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       CONFIG.PRODUCTS.forEach(p => updatePackUI(p.id));
       updateTotals();
     });
+
+    // ✅ 查看明細按鈕事件（唯一綁定）
+    $("viewCartBtn")?.addEventListener("click", showCartSheet);
+
 
     // StickyBar 自動隱藏
     let lastScrollY = window.scrollY;
