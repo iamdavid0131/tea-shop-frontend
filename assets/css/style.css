@@ -468,7 +468,7 @@ label {
   margin-top: 4px;
   transition: opacity .25s;
 }
-.progress-bar-wrap.hidden { display: none; }
+
 #freeProgressBar {
   height: 100%;
   width: 0%;
@@ -899,22 +899,42 @@ textarea {
 }
 
 .pack-qty .step {
-  width: 32px;
-  height: 32px;
-  font-size: 20px;
-  border-radius: 8px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  background: #f2f3f5;
+  font-size: 22px;
+  font-weight: 600;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
 }
 
+/* ✅ 點擊效果一致 */
+.pack-qty .step:active {
+  background: #e0e0e0;
+  transform: scale(0.92);
+}
+
+/* ✅ 禁用狀態 */
+.pack-qty .step.disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* ✅ 輸入框跟側邊間距調整 */
 .pack-qty input {
-  width: 36px;
+  width: 24px;
   text-align: center;
   font-size: 18px;
-  border: none;
-  padding: 2px;
+  font-weight: 600;
+  color: #1a1a1a;
   background: transparent;
+  border: none;
+  min-width: 22px;
 }
 
 /* ✅ 裝罐 Toggle（label 本體）禁用狀態 */
