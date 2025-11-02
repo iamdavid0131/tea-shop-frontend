@@ -185,7 +185,7 @@ export function enableSmartSheetControl() {
 // ========================================================
 // 綁定 UI 按鈕事件（交由 main app.js 呼叫）
 // ========================================================
-$("viewCartBtn")?.addEventListener("click", showCartSheet);
+
 $("closeCartModal")?.addEventListener("click", hideCartSheet);
 
 export function initSheetModal() {

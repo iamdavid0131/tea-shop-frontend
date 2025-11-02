@@ -55,12 +55,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-// ✅ 數量按鈕全域委派
-document.addEventListener("click", (e) => {
-  const btn = e.target.closest(".qty-btn");
-  if (!btn) return;
-  import("./qty.js").then(({ handleQtyClick }) => handleQtyClick(btn));
-});
 
 /* 👇 避免滾動穿透（resizing 已在 CSS） */
 document.addEventListener("touchmove", (e) => {

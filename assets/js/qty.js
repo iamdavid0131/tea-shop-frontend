@@ -1,105 +1,105 @@
-// qty.js ✅ 統一商品數量 + 裝罐邏輯
 import { $, toast } from "./dom.js";
 import { saveCart, updateTotals } from "./cart.js";
+import { CONFIG } from "./config.js";
 
-function getQty(id) {
-  return parseInt($(`qty-${id}`)?.textContent || 0);
-}
-function setQty(id, v) {
-  $(`qty-${id}`).textContent = v;
-}
-
+/** ✅ 裝罐 UI 動態控制 */
 export function updatePackUI(id) {
-  const qty = getQty(id);
-  const packToggle = $(`pack-${id}`);
-  const packInput = $(`packQty-${id}`);
-  const packWrap = $(`packQtyWrap-${id}`);
+  const qty = parseInt($(`qty-${id}`)?.textContent || 0);
 
-  if (!packToggle) return;
+  const packToggle = $(`pack-${id}`);
+  if (!packToggle) return; // ✅ 非 packable 商品直接忽略
+
+  const packInput = $(`packQty-${id}`);
+  const wrap = $(`packQtyWrap-${id}`);
+  const minusBtn = document.querySelector(`.qty-btn[data-id="${id}"][data-dir="minus"]`);
+  const label = packToggle.closest(".pack-row").querySelector("label.pack-toggle");
 
   if (qty === 0) {
     packToggle.checked = false;
     packToggle.disabled = true;
-    packWrap?.classList.add("hidden");
+    label.classList.add("disabled");
+    wrap.classList.add("hidden");
     if (packInput) packInput.value = 0;
   } else {
     packToggle.disabled = false;
+    label.classList.remove("disabled");
+
     if (packToggle.checked) {
-      packWrap.classList.remove("hidden");
-      packInput.value = Math.min(qty, Math.max(1, parseInt(packInput.value || 1)));
+      wrap.classList.remove("hidden");
+      packInput.value = Math.min(qty, parseInt(packInput.value || 1));
     } else {
-      packWrap.classList.add("hidden");
+      wrap.classList.add("hidden");
     }
   }
+
+  if (qty <= 0) minusBtn.classList.add("disabled");
+  else minusBtn.classList.remove("disabled");
 }
 
-/* ✅ 點擊 +- 數量 */
+/** ✅ 數量按鈕處理 */
 export function handleQtyClick(btn) {
   const id = btn.dataset.id;
   const dir = btn.dataset.dir;
-  if (!id || !dir) return;
 
-  let qty = getQty(id);
+  const qtyEl = $(`qty-${id}`);
+  let qty = parseInt(qtyEl.textContent || 0);
 
   if (dir === "plus") qty++;
   if (dir === "minus" && qty > 0) qty--;
 
-  setQty(id, qty);
+  qtyEl.textContent = qty;
   updatePackUI(id);
   saveCart();
   updateTotals();
 }
 
-/* ✅ 勾選裝罐開關 */
-export function handlePackToggle(e) {
-  const id = e.target.id.replace("pack-", "");
-  const wrap = $(`packQtyWrap-${id}`);
-  const input = $(`packQty-${id}`);
-  const qty = getQty(id);
+/** ✅ 裝罐數量 */
+function handlePackBtn(btn) {
+  const id = btn.dataset.pack;
+  const dir = btn.dataset.dir;
 
-  if (e.target.checked) {
-    wrap.classList.remove("hidden");
-    input.value = qty > 0 ? 1 : 0;
+  const qty = parseInt($(`qty-${id}`)?.textContent || 0);
+  const packInput = $(`packQty-${id}`);
+  let v = parseInt(packInput.value || 1);
+
+  if (dir === "plus") v++;
+  if (dir === "minus" && v > 1) v--;
+
+  packInput.value = Math.min(qty, v);
+  updatePackUI(id);
+  saveCart();
+  updateTotals();
+}
+
+/** ✅ 裝罐 checkbox */
+function handlePackToggle(e) {
+  const chk = e.target;
+  const id = chk.id.replace("pack-", "");
+  if (!chk.checked) {
+    $(`packQtyWrap-${id}`)?.classList.add("hidden");
+    $(`packQty-${id}`).value = 0;
   } else {
-    wrap.classList.add("hidden");
-    input.value = 0;
+    $(`packQtyWrap-${id}`)?.classList.remove("hidden");
+    $(`packQty-${id}`).value = 1;
   }
-
+  updatePackUI(id);
   saveCart();
   updateTotals();
 }
 
-/* ✅ 裝罐數量手動輸入 */
-export function handlePackInput(e) {
-  const id = e.target.id.replace("packQty-", "");
-  const qty = getQty(id);
-  let v = parseInt(e.target.value || 0);
-
-  if (v > qty) v = qty;
-  if (v < 0) v = 0;
-
-  e.target.value = v;
-  saveCart();
-  updateTotals();
-}
-
-/* ✅ 統一掛載事件 */
+/** ✅ 初始化 */
 export function initQtyControls() {
   document.addEventListener("click", (e) => {
     const btn = e.target.closest(".qty-btn");
-    if (!btn) return;
-    handleQtyClick(btn);
+    if (btn) return handleQtyClick(btn);
+
+    const pbtn = e.target.closest(".step");
+    if (pbtn) return handlePackBtn(pbtn);
   });
 
   document.addEventListener("change", (e) => {
-    if (e.target.matches("input[id^='pack-']")) {
-      handlePackToggle(e);
-    }
+    if (e.target.matches("input[id^='pack-']")) handlePackToggle(e);
   });
 
-  document.addEventListener("input", (e) => {
-    if (e.target.matches("input[id^='packQty-']")) {
-      handlePackInput(e);
-    }
-  });
+  CONFIG.PRODUCTS.forEach((p) => updatePackUI(p.id));
 }
