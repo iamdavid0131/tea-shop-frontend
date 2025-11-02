@@ -15,8 +15,7 @@ export async function showCartSheet() {
   const list = $("cartItems");
   const promoCode = ($("promoCode")?.value || "").trim();
 
-  sheet.style.transition = "none";
-  sheet.style.transform = "translateY(100%)";
+
   backdrop.style.opacity = "0";
   backdrop.style.display = "block";
 

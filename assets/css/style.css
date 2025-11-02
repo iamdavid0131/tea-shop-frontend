@@ -585,28 +585,23 @@ label {
 
 /* === Bottom Sheet 容器 === */
 .sheet {
+  position: fixed; /* ✅ 固定在視窗 */
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  max-height: 80vh; /* ✅ 保證不會超出螢幕 */
   background: #fff;
-  width: 100%;
-  max-width: 520px;
   border-radius: 18px 18px 0 0;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
-  padding: 20px 16px 32px;
-  
-  /* 初始位置在底下（由 JS 控制上滑） */
-  transform: translateY(100%);
-  transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+
+  transform: translateY(110%); /* ✅ 初始完全隱藏 */
+  transition: transform 0.35s cubic-bezier(0.25,1,0.5,1);
   will-change: transform;
 
-  /* ✅ 確保內部可滾動但不影響背景 */
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-
-  /* ✅ 防止雙指縮放與橫向滑動干擾 */
-  touch-action: pan-y;
-
-  /* ✅ 額外補強：滑動時不會閃爍 */
-  backface-visibility: hidden;
+  z-index: 1002;
 }
 
 /* === 打開／關閉動畫 === */
@@ -615,7 +610,7 @@ label {
 }
 
 .sheet[data-open="false"] {
-  transform: translateY(110%);
+  transform: translateY(110%); /* ✅ 關閉回到底部 */
 }
 
 
