@@ -1,42 +1,70 @@
+/**
+ * ☕ 祥興茶行購物頁 app.js
+ * 前端主控流程（初始化 + 頁面管理）
+ */
+
 import { api } from "./app.api.js";
-import { $, toast } from "./dom.js";
+import { $, $$, toast } from "./dom.js";
 import { CONFIG } from "./config.js";
 import { renderProducts } from "./products.js";
 import { restoreCart, updateTotals } from "./cart.js";
-import { initQtyControls } from "./qty.js";
+import { initQtyControls, updatePackUI } from "./qty.js";
 import { enableSmartSheetControl } from "./sheetModal.js";
 import { initMemberLookup } from "./member.js";
 
-window.api = api;
+window.api = api; // Debug 可留
 
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     $("loading").style.display = "block";
 
     const cfg = await api.getConfig();
+
     CONFIG.PRODUCTS = (cfg.data || []).map(p => ({
       ...p,
       profile: p.profile || null
     }));
 
-    // ✅ 渲染商品卡片
     renderProducts(CONFIG.PRODUCTS);
 
-    // ✅ 還原購物車
     restoreCart();
-
-    // ✅ 初始化 UI 控制（依序執行）
     initQtyControls();
     enableSmartSheetControl();
     initMemberLookup();
 
-    // ✅ DOM 和 UI 都準備好後再更新金額
-    await updateTotals();
+    requestAnimationFrame(() => {
+      CONFIG.PRODUCTS.forEach(p => updatePackUI(p.id));
+      updateTotals();
+    });
+
+    // StickyBar 自動隱藏
+    let lastScrollY = window.scrollY;
+    window.addEventListener("scroll", () => {
+      const bar = $("StickyBar");
+      if (!bar) return;
+      if (window.scrollY > lastScrollY + 20) bar.classList.add("hide");
+      else bar.classList.remove("hide");
+      lastScrollY = window.scrollY;
+    });
 
   } catch (err) {
-    console.error(err);
-    toast("⚠️ 載入錯誤");
+    console.error("初始化錯誤:", err);
+    toast("⚠️ 載入失敗，請稍後再試");
   } finally {
     $("loading").style.display = "none";
   }
 });
+
+// ✅ 數量按鈕全域委派
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".qty-btn");
+  if (!btn) return;
+  import("./qty.js").then(({ handleQtyClick }) => handleQtyClick(btn));
+});
+
+/* 👇 避免滾動穿透（resizing 已在 CSS） */
+document.addEventListener("touchmove", (e) => {
+  if (document.body.classList.contains("modal-open")) {
+    e.preventDefault();
+  }
+}, { passive: false });
