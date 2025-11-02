@@ -941,4 +941,7 @@ textarea {
   pointer-events: none;
 }
 
-
+input.loading {
+  pointer-events: none;
+  opacity: 0.6;
+}

@@ -187,3 +187,14 @@ export function enableSmartSheetControl() {
 // ========================================================
 $("viewCartBtn")?.addEventListener("click", showCartSheet);
 $("closeCartModal")?.addEventListener("click", hideCartSheet);
+
+export function initSheetModal() {
+  const sheet = $("cartSheet");
+  const backdrop = $("cartSheetBackdrop");
+
+  if (!sheet || !backdrop) return;
+
+  sheet.style.transform = "translateY(100%)"; // ✅ 正確初始位置
+  sheet.style.transition = "transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)";
+  backdrop.style.display = "none";
+}

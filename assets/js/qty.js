@@ -57,3 +57,13 @@ export function handleQtyClick(btn) {
   saveCart();
   updateTotals();
 }
+
+export function initQtyControls() {
+  // 綁定所有點擊事件
+  document.addEventListener("click", handleQtyClick);
+  document.addEventListener("change", handlePackToggle);
+  document.addEventListener("input", handlePackInput);
+
+  // ✅ 初次數量同步裝罐 UI
+  CONFIG.PRODUCTS.forEach(p => updatePackUI(p.id));
+}

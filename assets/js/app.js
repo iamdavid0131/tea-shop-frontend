@@ -1,42 +1,42 @@
 import { api } from "./app.api.js";
-import { $, $$, toast } from "./dom.js";
+import { $, toast } from "./dom.js";
 import { CONFIG } from "./config.js";
 import { renderProducts } from "./products.js";
 import { restoreCart, updateTotals } from "./cart.js";
-import { handleQtyClick, updatePackUI } from "./qty.js";
+import { initQtyControls } from "./qty.js";
 import { enableSmartSheetControl } from "./sheetModal.js";
+import { initMemberLookup } from "./member.js";
 
-window.api = api; // 可選保留
+window.api = api;
 
 document.addEventListener("DOMContentLoaded", async () => {
-  $("loading").style.display = "block";
   try {
+    $("loading").style.display = "block";
+
     const cfg = await api.getConfig();
-    CONFIG.PRODUCTS = (cfg.data || []).map((p) => ({
+    CONFIG.PRODUCTS = (cfg.data || []).map(p => ({
       ...p,
       profile: p.profile || null
     }));
 
+    // ✅ 渲染商品卡片
     renderProducts(CONFIG.PRODUCTS);
+
+    // ✅ 還原購物車
     restoreCart();
-    updateTotals();
 
+    // ✅ 初始化 UI 控制（依序執行）
+    initQtyControls();
     enableSmartSheetControl();
+    initMemberLookup();
 
-    requestAnimationFrame(() => {
-      CONFIG.PRODUCTS.forEach((p) => updatePackUI(p.id));
-    });
+    // ✅ DOM 和 UI 都準備好後再更新金額
+    await updateTotals();
+
   } catch (err) {
     console.error(err);
-    toast("⚠️ 無法載入商品設定");
+    toast("⚠️ 載入錯誤");
   } finally {
     $("loading").style.display = "none";
   }
-});
-
-// 綁定數量按鈕
-document.addEventListener("click", (e) => {
-  const btn = e.target.closest(".qty-btn");
-  if (!btn) return;
-  handleQtyClick(btn);
 });
