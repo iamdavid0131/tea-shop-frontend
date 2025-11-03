@@ -7,7 +7,7 @@ import { api } from "./app.api.js";
 import { $, $$, toast } from "./dom.js";
 import { CONFIG } from "./config.js";
 import { renderProducts } from "./products.js";
-import { restoreCart, updateTotals } from "./cart.js";
+import { restoreCart, updateTotals, animateMoney } from "./cart.js";
 import { initQtyControls, updatePackUI } from "./qty.js";
 import { enableSmartSheetControl, showCartSheet } from "./sheetModal.js";
 import { initMemberLookup } from "./member.js";
