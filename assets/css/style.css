@@ -780,23 +780,52 @@ body.modal-open {
   padding: 16px 16px 20px;
 }
 
-.section h2 {
-  font-size: 17px;
-  font-weight: 700;
-  margin: 0 0 12px;
+.section-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0 0 18px;
+  padding: 0;
   color: #111;
+  letter-spacing: 0.4px;
+  position: relative;
+}
+
+/* 小型 iOS-style 底線設計 */
+.section-title::after {
+  content: "";
+  display: block;
+  width: 46px;
+  height: 3px;
+  background: #007aff;
+  border-radius: 999px;
+  margin-top: 6px;
+  opacity: 0.9;
+  transition: width .25s ease;
+}
+
+/* 滑過互動（桌面精緻效果） */
+@media (hover:hover) {
+  .section-title:hover::after {
+    width: 64px;
+  }
 }
 
 .form-group {
   margin-bottom: 14px;
 }
 
-.form-group label {
-  display: block;
-  font-weight: 600;
+.section .form-group label {
   font-size: 15px;
+  font-weight: 600;
+  color: #333; /* 與標題差一階 */
+} 
+
+.form-group label {
+  font-weight: 500;
+  font-size: 14.5px;
+  color: #555;
   margin-bottom: 6px;
-  color: #222;
+  opacity: .9;
 }
 
 .form-group input[type="text"],
@@ -805,20 +834,29 @@ body.modal-open {
 .form-group textarea {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid #d4d4d4;
   border-radius: 10px;
   font-size: 15px;
   line-height: 1.4;
-  background: #fafafa;
-  transition: border-color 0.2s, background 0.2s;
+  background: #fff; /* ✅ 改白底 */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+/* ✅ Hover 加提示感 */
+.form-group input[type="text"]:hover,
+.form-group input[type="tel"]:hover,
+.form-group input[type="number"]:hover,
+.form-group textarea:hover {
+  border-color: #b8b8b8;
+}
+
+/* ✅ Focus 更清楚 */
 .form-group input:focus,
 .form-group textarea:focus {
   outline: none;
   border-color: #007aff;
   background: #fff;
-  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.18);
 }
 
 .form-group .muted {
@@ -827,6 +865,7 @@ body.modal-open {
   margin-top: 4px;
   display: block;
 }
+
 
 /* === 優惠碼列 === */
 .promo-row {
