@@ -1,5 +1,5 @@
 // ✅ zipcode.js — Taiwan City‧District‧Zip Autoload Module
-
+import { $ } from "./dom.js";
 export const ZIP_MAP = {
   "基隆市": {
     "仁愛區": "200", "信義區": "201", "中正區": "202", "中山區": "203", "安樂區": "204", "暖暖區": "205", "七堵區": "206"

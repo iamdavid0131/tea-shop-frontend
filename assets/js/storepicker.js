@@ -60,5 +60,8 @@ export function initStorePicker() {
         close();
       })
     );
+    console.log("🔍 search query =", q);
+    console.log("API搜尋結果 =", res);
+
   }
 }
