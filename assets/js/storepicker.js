@@ -3,7 +3,7 @@ import { api } from "./app.api.js";
 
 export function initStorePicker() {
   const picker = $("store-picker");
-  const openBtn = $("openStoreBtn"); // ✅ 修正
+  const openBtn = $("openStorePicker"); // ✅ 修正
   const backdrop = picker?.querySelector(".sp-backdrop");
   const closeBtn = picker?.querySelector(".sp-close");
   const results = $("sp-results");

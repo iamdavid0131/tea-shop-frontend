@@ -903,14 +903,7 @@ textarea {
   margin: 20px 0;
 }
 
-/* === 小標題（例如「2）收件資料」） === */
-.step-title {
-  font-weight: 700;
-  font-size: clamp(18px, 4vw, 24px);
-  margin: 20px 0 14px;
-  color: #111;
-  letter-spacing: .3px;
-}
+
 
 /* === 裝罐區塊 === */
 .pack-row {
@@ -1216,6 +1209,16 @@ input.loading {
   border-radius: 12px;
   font-size: 15px;
   font-weight: 600;
+}
+
+.store-option {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.store-option:hover {
+  background: #f7f7f7;
 }
 
 /* ✅ 手機優化 */
