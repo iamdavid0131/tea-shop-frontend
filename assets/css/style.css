@@ -814,19 +814,15 @@ body.modal-open {
   margin-bottom: 14px;
 }
 
-.section .form-group label {
-  font-size: 15px;
-  font-weight: 600;
-  color: #333; /* 與標題差一階 */
-} 
-
 .form-group label {
+  display: block;
   font-weight: 500;
   font-size: 14.5px;
-  color: #555;
-  margin-bottom: 6px;
-  opacity: .9;
+  color: #444;
+  margin-bottom: 8px;
+  letter-spacing: .2px;
 }
+
 
 .form-group input[type="text"],
 .form-group input[type="tel"],
@@ -910,9 +906,10 @@ textarea {
 /* === 小標題（例如「2）收件資料」） === */
 .step-title {
   font-weight: 700;
-  font-size: 16px;
-  margin: 24px 0 12px;
-  color: #000;
+  font-size: clamp(18px, 4vw, 24px);
+  margin: 20px 0 14px;
+  color: #111;
+  letter-spacing: .3px;
 }
 
 /* === 裝罐區塊 === */
@@ -998,4 +995,235 @@ textarea {
 input.loading {
   pointer-events: none;
   opacity: 0.6;
+}
+
+
+/* === 收件區塊 === */
+.ship-options {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.ship-radio {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f8f9fb;
+  border: 1px solid #ddd;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all .2s;
+}
+
+.ship-radio input {
+  transform: scale(1.2);
+}
+
+.ship-radio:hover {
+  border-color: #007aff;
+}
+
+.store-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.store-results {
+  margin-top: 8px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #eee;
+}
+
+.store-result {
+  padding: 10px;
+  border-bottom: 1px solid #f2f2f2;
+  background: #fff;
+  cursor: pointer;
+}
+
+.store-result:hover {
+  background: #e8f2ff;
+}
+
+.zipcode-box {
+  margin-top: 4px;
+  font-size: 14px;
+  background: #eef4ff;
+  padding: 4px 10px;
+  border-radius: 10px;
+  display: inline-block;
+}
+
+.consent-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top:12px;
+}
+
+/* ============================================================
+   🏪 Store Picker - 祥興茶行 iOS Style
+   ============================================================ */
+
+#store-picker {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: none;
+}
+
+#store-picker[aria-hidden="false"] {
+  display: block;
+}
+
+/* ✅ 背景模糊 */
+.sp-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(4px);
+}
+
+/* ✅ Bottom Sheet 主體 */
+.sp-sheet {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  max-height: 85vh;
+  padding: 16px;
+  box-shadow: 0 -10px 30px rgba(0,0,0,0.15);
+  transform: translateY(110%);
+  transition: transform .35s cubic-bezier(.25,1,.5,1);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ✅ 顯示動畫 */
+#store-picker[aria-hidden="false"] .sp-sheet {
+  transform: translateY(0);
+}
+
+/* ✅ Header */
+.sp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sp-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.sp-close {
+  font-size: 18px;
+  background: transparent;
+  border: none;
+  padding: 6px 10px;
+}
+
+/* ✅ Toolbar */
+.sp-toolbar {
+  display: flex;
+  gap: 8px;
+}
+
+.sp-select,
+.sp-brand,
+#sp-radius {
+  flex: 1;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid #d4d4d4;
+  font-size: 15px;
+}
+
+/* ✅ 搜尋列 */
+.sp-search {
+  display: flex;
+  gap: 8px;
+}
+
+.sp-input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #d4d4d4;
+  border-radius: 10px;
+  font-size: 15px;
+}
+
+.sp-search-title {
+  padding: 10px 14px;
+  font-size: 15px;
+  border: none;
+  background: #007aff;
+  color: #fff;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+/* ✅ 地圖 */
+.sp-map {
+  width: 100%;
+  height: 220px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #e8e8e8;
+}
+
+/* ✅ 搜尋結果 */
+.sp-results {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 6px;
+  border-radius: 14px;
+}
+
+.sp-item {
+  padding: 12px 10px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  background: #fff;
+  cursor: pointer;
+}
+
+.sp-item:hover,
+.sp-item:active {
+  background: #f2f8ff;
+}
+
+/* ✅ Footer */
+.sp-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.sp-cancel {
+  width: 100%;
+  padding: 10px 0;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* ✅ 手機優化 */
+@media (max-width: 600px) {
+  .sp-sheet {
+    padding: 18px 14px calc(22px + env(safe-area-inset-bottom));
+  }
+  .sp-map {
+    height: 180px;
+  }
 }

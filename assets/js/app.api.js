@@ -55,6 +55,15 @@ export const api = {
     return fetch(`${API_BASE}/member?phone=${encodeURIComponent(phone)}`)
       .then(r => r.json());
   },
+  
+  searchStores(q, lat, lng) {
+  const params = new URLSearchParams({ q });
+  if (lat) params.append("lat", lat);
+  if (lng) params.append("lng", lng);
+  return this._get(`/stores/search?${params.toString()}`);
+  },
 }; 
+
+
 
 console.log("✅ app.api.js 已載入，API_BASE =", API_BASE);

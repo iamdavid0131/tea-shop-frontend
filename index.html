@@ -101,81 +101,103 @@
   </div>
 </div>
 
+ <!-- 收件區塊 -->
+ <div class="section" id="shippingCard">
+  <h2 class="section-title">運送方式</h2>
 
-  <div class="card stepcard" id="shippingCard">
-    <h2>3）運送方式</h2>
-    <div style="display:flex; gap:12px; align-items:center;">
-      <label><input type="radio" name="ship" value="store" checked> 超商店到店取貨付款</label>
-      <label><input type="radio" name="ship" value="cod"> 貨到付款（宅配）</label>
+  <div class="ship-options">
+    <label class="ship-radio">
+      <input type="radio" name="ship" value="store" checked>
+      <span>超商店到店（取貨付款）</span>
+    </label>
+
+    <label class="ship-radio">
+      <input type="radio" name="ship" value="cod">
+      <span>宅配（貨到付款）</span>
+    </label>
+  </div>
+
+  <!-- ✅ 超商店到店 -->
+  <div id="storeFields">
+    <label>選擇超商</label>
+    <div class="store-row">
+      <select id="carrier">
+        <option value="7-11">7-ELEVEN</option>
+        <option value="全家">全家 FamilyMart</option>
+      </select>
+      <button id="openStorePicker" class="btn btn-outline">附近門市 ▾</button>
     </div>
 
-    <div id="storeFields" style="margin-top:10px;">
-      <div class="row">
-        <div>
-          <label>超商選擇</label>
-          <select id="carrier">
-            <option value="">請選擇</option>
-            <option value="7-11">7-11</option>
-            <option value="全家">全家</option>
-          </select>
-          <button id="openStoreBtn" type="button" class="btn btn-outline"
-                  aria-haspopup="dialog" aria-controls="store-picker"
-                  aria-label="查看附近便利商店（自動搜尋最近門市）">
-            <span class="btn-label">查看附近便利商店</span>
-            <span class="btn-spin" aria-hidden="true" style="display:none;margin-left:8px;">⌛</span>
-          </button>
-        </div>
-        <div>
-          <label>門市店名</label>
-          <input id="storeName" type="text" name="store_name" autocomplete="organization" enterkeyhint="done" placeholder="範例：梧棲大維門市" />
-        </div>
+    <label>門市店名</label>
+    <input id="storeName" type="text" placeholder="輸入附近門市名稱或地標…">
+
+    <div id="storeResults" class="store-results"></div>
+  </div>
+
+  <!-- ✅ 宅配到府 -->
+<div id="codFields" style="display:none;">
+  <label>縣市</label>
+  <select id="city"></select>
+
+  <label>行政區</label>
+  <select id="district"></select>
+
+  <div class="zipcode-box">
+    郵遞區號：<span id="zipDisplay">—</span>
+    <input id="zipCode" type="hidden">
+  </div>
+
+  <label>詳細地址</label>
+  <input id="address" type="text" placeholder="請填入路段、巷弄…">
+</div>
+
+
+  <label class="consent-row">
+    <input type="checkbox" id="consent">
+    我同意提供聯絡資訊用於出貨通知與售後服務
+  </label>
+</div>
+
+
+  <!-- 同頁：超商門市選擇器 Bottom Sheet -->
+  <div id="store-picker" aria-hidden="true">
+    <div class="sp-backdrop" data-sp-close></div>
+    <section class="sp-sheet" role="dialog" aria-modal="true" aria-labelledby="sp-title">
+      <header class="sp-header">
+        <h3 id="sp-title">選擇取貨門市</h3>
+        <button class="sp-close" type="button" title="關閉" data-sp-close>✕</button>
+      </header>
+
+      <div class="sp-toolbar">
+        <select id="sp-brand" class="sp-select sp-brand">
+          <option value="all">全部品牌</option>
+          <option value="7-11">7-ELEVEN</option>
+          <option value="familymart">全家 FamilyMart</option>
+        </select>
+        <select id="sp-radius">
+          <option value="500">500m</option>
+          <option value="1000" selected>1000m</option>
+          <option value="1500">1500m</option>
+        </select>
+        <button id="sp-nearby" type="button">附近門市</button>
       </div>
-      <div class="muted">* 請填寫超商店名或代碼。</div>
-    </div>
 
-    <!-- COD 地址（加上郵遞區號顯示） -->
-    <div id="codFields" style="display:none; margin-top:10px;">
-      <label>收件地址 <span style="font-weight:700;margin-left:8px;background:#eef3ff;border:1px solid #d7e2ff;padding:2px 8px;border-radius:999px;">郵遞區號：<b id="zipDisplay">—</b></span></label>
-      <input id="address" type="text" name="cod_address" autocomplete="shipping street-address" enterkeyhint="done" placeholder="縣市區與詳細地址" />
-      <input id="zipCode" type="hidden" />
-    </div>
-
-    <div style="margin-top:12px;">
-      <label><input type="checkbox" id="consent" /> 我同意提供之聯絡資料僅用於出貨通知與售後服務。</label>
-    </div>
-
-    <!-- 追蹤我們（不參與步驟流程） -->
-    <div class="card social-card" id="socialCard" data-aux="true" aria-labelledby="followTitle">
-      <h2 id="followTitle">追蹤我們</h2>
-      <div class="muted">最新優惠與到貨通知，歡迎追蹤官方帳號：</div>
-
-      <div class="social-list">
-        <!-- Instagram -->
-        <a class="social-btn" id="btnIG" target="_blank" rel="noopener noreferrer"
-           href="https://instagram.com/hsianghsing.tea" aria-label="追蹤 Instagram">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor"
-            d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5A5.5 5.5 0 1 1 6.5 13 5.5 5.5 0 0 1 12 7.5zm0 2A3.5 3.5 0 1 0 15.5 13 3.5 3.5 0 0 0 12 9.5zM18 6.3a1.3 1.3 0 1 1-1.3 1.3A1.3 1.3 0 0 1 18 6.3z"/></svg>
-          Instagram
-        </a>
-
-        <!-- Threads -->
-        <a class="social-btn" id="btnThreads" target="_blank" rel="noopener noreferrer"
-           href="https://www.threads.net/@hsianghsing.tea" aria-label="追蹤 Threads">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor"
-            d="M12 2c5.5 0 10 4.5 10 10s-4.5 10-10 10S2 17.5 2 12 6.5 2 12 2zm4.3 10.4c-.2-1.3-.8-2.3-1.8-3 .5-.3 1-.7 1.3-1.1-1-.9-2.4-1.5-3.9-1.5-3 0-5.4 2.2-5.4 5s2.4 5 5.4 5c1.6 0 3-.6 4-1.7l-1.1-1c-.7.8-1.7 1.3-2.9 1.3-2 0-3.6-1.4-3.6-3.2s1.6-3.2 3.6-3.2c1 0 1.9.3 2.5.9.5.5.8 1.1.9 1.8h-2.3v1.7h3.3c.1-.2.2-.6.1-1z"/></svg>
-          Threads
-        </a>
-
-        <!-- LINE 官方帳號 -->
-        <a class="social-btn" id="btnLINE" target="_blank" rel="noopener noreferrer"
-           href="https://lin.ee/agw3661i" aria-label="追蹤 LINE 官方帳號">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor"
-            d="M12 3c5.5 0 10 3.6 10 8 0 4.4-4.5 8-10 8-.6 0-1.3 0-1.9-.1l-3.4 2 .6-3.2C5 16.6 2 14 2 11 2 6.6 6.5 3 12 3zm-4.7 6.2v4h1.5v-4H7.3zm2.8 0v4h3.1v-1.1h-1.6v-2.9h-1.5zm4.1 0v4h1.5v-1.6h.9c.9 0 1.6-.6 1.6-1.4s-.7-1.4-1.6-1.4h-2.4zm1.5 1.1h.8c.2 0 .4.1.4.3s-.2.3-.4.3h-.8v-.6z"/></svg>
-          LINE 官方
-        </a>
+      <div class="sp-search">
+        <input id="sp-q" type="search" class="sp-input sp-query" placeholder="輸入地址／地標，例如：台北車站、逢甲" autocomplete="off" />
+        <button id="sp-search-btn" class="sp-search-title" type="button">搜尋</button>
       </div>
-    </div>
-  </div> <!-- ← 正確只關 shippingCard 這一層 -->
+
+      <div id="sp-map" class="sp-map" aria-label="地圖" role="img"></div>
+      <div class="sp-results" id="sp-results" role="listbox" aria-label="搜尋結果"></div>
+
+      <footer class="sp-footer">
+        <button class="sp-cancel" type="button" data-sp-close>取消</button>
+      </footer>
+    </section>
+  </div>
+
+
+ 
 
   <!-- Sticky checkout bar -->
 <div class="stickybar glassy" id="StickyBar">
@@ -262,45 +284,6 @@
       </div>
     </div>
   </div>
-
-  <!-- 同頁：超商門市選擇器 Bottom Sheet -->
-  <div id="store-picker" aria-hidden="true">
-    <div class="sp-backdrop" data-sp-close></div>
-    <section class="sp-sheet" role="dialog" aria-modal="true" aria-labelledby="sp-title">
-      <header class="sp-header">
-        <h3 id="sp-title">選擇取貨門市</h3>
-        <button class="sp-close" type="button" title="關閉" data-sp-close>✕</button>
-      </header>
-
-      <div class="sp-toolbar">
-        <select id="sp-brand" class="sp-select sp-brand">
-          <option value="all">全部品牌</option>
-          <option value="7-11">7-ELEVEN</option>
-          <option value="familymart">全家 FamilyMart</option>
-        </select>
-        <select id="sp-radius">
-          <option value="500">500m</option>
-          <option value="1000" selected>1000m</option>
-          <option value="1500">1500m</option>
-        </select>
-        <button id="sp-nearby" type="button">附近門市</button>
-      </div>
-
-      <div class="sp-search">
-        <input id="sp-q" type="search" class="sp-input sp-query" placeholder="輸入地址／地標，例如：台北車站、逢甲" autocomplete="off" />
-        <button id="sp-search-btn" class="sp-search-title" type="button">搜尋</button>
-      </div>
-
-      <div id="sp-map" class="sp-map" aria-label="地圖" role="img"></div>
-      <div class="sp-results" id="sp-results" role="listbox" aria-label="搜尋結果"></div>
-
-      <footer class="sp-footer">
-        <button class="sp-cancel" type="button" data-sp-close>取消</button>
-      </footer>
-    </section>
-  </div>
-
-
   <div id="undoToast" style="position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#111;color:#fff;padding:10px 14px;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,.25);font-size:14px;display:none;z-index:1003;">
     <span id="undoMsg"></span>
     <button id="undoBtn" type="button" style="margin-left:10px;background:#fff;color:#111;border:0;border-radius:8px;padding:4px 10px;font-weight:700;">復原</button>

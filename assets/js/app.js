@@ -11,6 +11,9 @@ import { restoreCart, updateTotals, animateMoney } from "./cart.js";
 import { initQtyControls, updatePackUI } from "./qty.js";
 import { enableSmartSheetControl, showCartSheet } from "./sheetModal.js";
 import { initMemberLookup } from "./member.js";
+import { initShippingUI } from "./shippingUI.js";
+import { initStorePicker } from "./storePicker.js";
+import { initZipAuto } from "./zipcode.js";
 
 window.api = api; // Debug 可留
 
@@ -19,18 +22,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     $("loading").style.display = "block";
 
     const cfg = await api.getConfig();
-
     CONFIG.PRODUCTS = (cfg.data || []).map(p => ({
       ...p,
       profile: p.profile || null
     }));
 
+    // ✅ 渲染商品 UI
     renderProducts(CONFIG.PRODUCTS);
 
+    // ✅ 購物車還原 & 控制初始化
     restoreCart();
     initQtyControls();
-    enableSmartSheetControl();
-    initMemberLookup();
+
+    // ✅ UI 控制
+    enableSmartSheetControl(); // 購物明細 BottomSheet
+    initShippingUI();          // 運送方式
+    initStorePicker();         // 門市選擇器
+    initZipAuto();             // 郵遞區號自動推斷
+    initMemberLookup();        // 會員查詢
 
     requestAnimationFrame(() => {
       CONFIG.PRODUCTS.forEach(p => updatePackUI(p.id));
@@ -58,6 +67,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     $("loading").style.display = "none";
   }
 });
+
 
 
 /* 👇 避免滾動穿透（resizing 已在 CSS） */
