@@ -25,6 +25,18 @@ export function initStorePicker() {
   $("sp-search-btn")?.addEventListener("click", handleSearch);
   input.addEventListener("keydown", e => e.key === "Enter" && handleSearch());
 
+  $("sp-nearby").addEventListener("click", () => {
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const { latitude: lat, longitude: lng } = pos.coords;
+    const brand = $("sp-brand").value;
+    const radius = $("sp-radius").value;
+
+    const res = await api.searchStores("", lat, lng, brand, radius);
+    updateResults(res);
+  }, () => toast("⚠️ 請開啟定位權限"));
+});
+
+
   async function handleSearch() {
     const q = input.value.trim();
     if (!q) return;
