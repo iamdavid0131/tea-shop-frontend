@@ -5,75 +5,59 @@
 
 const API_BASE = 'https://tea-order-server.onrender.com/api';
 
-// -------------------------------
-// 🔧 通用 POST 封裝
-// -------------------------------
-async function post(endpoint, payload) {
-  const url = `${API_BASE}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
+async function _get(path) {
+  const url = path.startsWith("http")
+    ? path
+    : `${API_BASE}${path}`;
+  const r = await fetch(url);
+  return r.json();
+}
+
+async function _post(path, payload) {
+  const url = `${API_BASE}${path}`;
   const r = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload || {}),
   });
-  if (!r.ok) throw new Error(`[HTTP ${r.status}] ${await r.text()}`);
   return r.json();
 }
 
-// -------------------------------
-// 📦 API 模組
-// -------------------------------
 export const api = {
-  /** 取得伺服器設定與商品清單 */
-  async getConfig() {
-    const r = await fetch(`${API_BASE}/config`);
-    if (!r.ok) throw new Error(`[HTTP ${r.status}] ${await r.text()}`);
-    return r.json();
+  /** ✅ 商品資料 */
+  getConfig() {
+    return _get("/config");
   },
 
-  /** 試算金額（含折扣與運費） */
+  /** ✅ 金額試算 */
   previewTotals(items, shippingMethod, promoCode) {
-    return post('/preview', { items, shippingMethod, promoCode });
+    return _post("/preview", { items, shippingMethod, promoCode });
   },
 
-  /** 提交訂單 */
+  /** ✅ 送出訂單 */
   submitOrder(payload) {
-    return post('/order', payload);
+    return _post("/order", payload);
   },
 
-  /** 查詢 Google 門市資料 */
-  searchStores(payload) {
-    return post('/stores', payload);
-  },
-
-  /** 查詢地點詳細資訊 */
-  getPlaceDetail(place_id) {
-    return post('/place-detail', { place_id });
-  },
-
-  /** 查詢會員資料 */
-  memberSearch(phone) {
-    return fetch(`${API_BASE}/member?phone=${encodeURIComponent(phone)}`)
-      .then(r => r.json());
-  },
-
-  _get(url) {
-    return fetch(url).then(r => r.json());
-  },
-
+  /** ✅ 查詢門市（後端 GET） */
   searchStores(q, lat, lng) {
     const params = new URLSearchParams({ q });
     if (lat && lng) {
       params.set("lat", lat);
       params.set("lng", lng);
     }
-    return this._get(`/stores/search?${params.toString()}`);
+    return _get(`/stores/search?${params.toString()}`);
   },
 
-  getConfig() {
-    return this._get("/config");
+  /** ✅ Google Place Detail */
+  getPlaceDetail(placeId) {
+    return _get(`/stores/detail?placeId=${placeId}`);
+  },
+
+  /** ✅ 會員查詢 */
+  memberSearch(phone) {
+    return _get(`/member?phone=${encodeURIComponent(phone)}`);
   }
-}; 
+};
 
-
-
-console.log("✅ app.api.js 已載入，API_BASE =", API_BASE);
+console.log("✅ app.api.js 重新載入成功，API_BASE =", API_BASE);
