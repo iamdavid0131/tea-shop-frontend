@@ -55,13 +55,23 @@ export const api = {
     return fetch(`${API_BASE}/member?phone=${encodeURIComponent(phone)}`)
       .then(r => r.json());
   },
-  
-  searchStores(q, lat, lng) {
-  const params = new URLSearchParams({ q });
-  if (lat) params.append("lat", lat);
-  if (lng) params.append("lng", lng);
-  return this._get(`/stores/search?${params.toString()}`);
+
+  _get(url) {
+    return fetch(url).then(r => r.json());
   },
+
+  searchStores(q, lat, lng) {
+    const params = new URLSearchParams({ q });
+    if (lat && lng) {
+      params.set("lat", lat);
+      params.set("lng", lng);
+    }
+    return this._get(`/stores/search?${params.toString()}`);
+  },
+
+  getConfig() {
+    return this._get("/config");
+  }
 }; 
 
 
