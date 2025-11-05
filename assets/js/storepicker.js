@@ -1,21 +1,17 @@
-// storePicker.js
-import { $ } from "./dom.js";
+import { $, $$ } from "./dom.js";
 import { api } from "./app.api.js";
 
 export function initStorePicker() {
   const picker = $("store-picker");
-  const openBtn = $("openStorePicker");
-  const backdrop = picker.querySelector(".sp-backdrop");
-  const closeBtn = picker.querySelector(".sp-close");
+  const openBtn = $("openStoreBtn"); // ✅ 修正
+  const backdrop = picker?.querySelector(".sp-backdrop");
+  const closeBtn = picker?.querySelector(".sp-close");
   const results = $("sp-results");
   const input = $("sp-q");
 
   if (!picker || !openBtn) return;
 
-  const open = () => {
-    picker.setAttribute("aria-hidden", "false");
-  };
-
+  const open = () => picker.setAttribute("aria-hidden", "false");
   const close = () => {
     picker.setAttribute("aria-hidden", "true");
     results.innerHTML = "";
@@ -23,26 +19,21 @@ export function initStorePicker() {
   };
 
   openBtn.addEventListener("click", open);
-  backdrop.addEventListener("click", close);
-  closeBtn.addEventListener("click", close);
+  backdrop?.addEventListener("click", close);
+  closeBtn?.addEventListener("click", close);
 
-  // ✅ 搜尋功能
-  $("sp-search-btn").addEventListener("click", handleSearch);
-  input.addEventListener("keypress", e => {
-    if (e.key === "Enter") handleSearch();
-  });
+  $("sp-search-btn")?.addEventListener("click", handleSearch);
+  input.addEventListener("keydown", e => e.key === "Enter" && handleSearch());
 
   async function handleSearch() {
     const q = input.value.trim();
     if (!q) return;
 
-    results.innerHTML = "搜尋中…";
+    results.innerHTML = `<div class="store-result">搜尋中…</div>`;
     const res = await api.searchStores(q);
 
-    if (!res?.stores?.length) {
-      results.innerHTML = `<div class="muted">查無資料</div>`;
-      return;
-    }
+    if (!res?.stores?.length)
+      return results.innerHTML = `<div class="muted">查無資料</div>`;
 
     results.innerHTML = res.stores.map(s => `
       <div class="store-option" data-name="${s.name}">
@@ -51,11 +42,11 @@ export function initStorePicker() {
       </div>
     `).join("");
 
-    document.querySelectorAll(".store-option").forEach(el => {
+    $$(".store-option").forEach(el =>
       el.addEventListener("click", () => {
         $("storeName").value = el.dataset.name;
         close();
-      });
-    });
+      })
+    );
   }
 }

@@ -58,47 +58,29 @@ export const ZIP_MAP = {
 };
 
 // ✅ 讓 zipcode UI 一鍵啟用
-export function setupCityDistrict() {
-  const citySel = document.getElementById("city");
-  const distSel = document.getElementById("district");
-  const zipDisplay = document.getElementById("zipDisplay");
-  const zipCode = document.getElementById("zipCode");
+export function initZipAuto() {
+  const addressInput = $("address");
+  const zipDisplay = $("zipDisplay");
+  const zipCode = $("zipCode");
 
-  if (!citySel || !distSel) return;
+  if (!addressInput || !zipDisplay) return;
 
-  // Insert city options
-  Object.keys(ZIP_MAP).forEach(city => {
-    const opt = document.createElement("option");
-    opt.value = city;
-    opt.textContent = city;
-    citySel.appendChild(opt);
-  });
-
-  // 變更縣市 → 更新行政區
-  citySel.addEventListener("change", () => {
-    const city = citySel.value.trim();
-    const districts = ZIP_MAP[city];
-    distSel.innerHTML = '<option value="">— 選擇行政區 —</option>';
-
-    if (districts) {
-      Object.entries(districts)
-        .sort((a, b) => a[1].localeCompare(b[1])) // ✅ 依郵遞區號排序
-        .forEach(([dist]) => {
-          const opt = document.createElement("option");
-          opt.value = dist;
-          opt.textContent = dist;
-          distSel.appendChild(opt);
-        });
-    }
-
-    zipDisplay.textContent = "—";
-    zipCode.value = "";
-  });
-
-  // 變更行政區 → 顯示郵遞區號
-  distSel.addEventListener("change", () => {
-    const zip = ZIP_MAP[citySel.value]?.[distSel.value] || "";
+  addressInput.addEventListener("input", () => {
+    const zip = inferZip(addressInput.value);
     zipDisplay.textContent = zip || "—";
-    zipCode.value = zip;
+    if (zipCode) zipCode.value = zip || "";
   });
+}
+
+// ✅ 「依地址字串」推斷郵遞區號
+export function inferZip(address) {
+  for (const city in ZIP_MAP) {
+    if (!address.includes(city)) continue;
+    for (const dist in ZIP_MAP[city]) {
+      if (address.includes(dist)) {
+        return ZIP_MAP[city][dist];
+      }
+    }
+  }
+  return "";
 }
