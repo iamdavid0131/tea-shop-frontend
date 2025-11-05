@@ -12,7 +12,7 @@ import { initQtyControls, updatePackUI } from "./qty.js";
 import { enableSmartSheetControl, showCartSheet } from "./sheetModal.js";
 import { initMemberLookup } from "./member.js";
 import { initShippingUI } from "./shippingUI.js";
-import { initStorePicker } from "./storePicker.js";
+import { initStorePicker } from "./storepicker.js";
 import { initZipAuto } from "./zipcode.js";
 
 window.api = api; // Debug 可留
