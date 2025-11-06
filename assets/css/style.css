@@ -1171,11 +1171,48 @@ input.loading {
   border-radius: 12px;
   background: #eee;
   overflow: hidden;
+  position: relative;
   margin: 12px 0;
 }
 .leaflet-container {
   z-index: 2000 !important;
   border-radius: 12px;
+}
+/* ✅ 自訂 Zoom 控制按鈕 */
+.leaflet-control-zoom a {
+  width: 36px;
+  height: 36px;
+  line-height: 36px;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  border: none !important;
+  background: #fff !important;
+  font-weight: bold;
+  color: #111 !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: #eee !important;
+}
+
+/* ✅ Popup 卡片風 */
+.leaflet-popup-content-wrapper {
+  border-radius: 14px;
+  padding: 10px 14px;
+  background: #fff;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.leaflet-popup-tip {
+  box-shadow: none;
+}
+
+/* ✅ Attribution 低調處理 */
+.leaflet-control-attribution {
+  background: transparent !important;
+  font-size: 11px;
+  opacity: 0.6;
 }
 
 /* ✅ 搜尋結果 */

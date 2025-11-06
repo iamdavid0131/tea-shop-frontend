@@ -34,14 +34,14 @@ export function initStorePicker() {
 
     // ✅ 如果地圖已存在 → 重設位置即可
     if (!map) {
-      map = L.map(mapEl).setView([lat, lng], 15);
+      map = L.map(mapEl).setView([lat, lng], 17);
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: "&copy; OpenStreetMap"
       }).addTo(map);
     } else {
-      map.setView([lat, lng], 15);
+      map.setView([lat, lng], 17);
     }
 
     // ✅ 先清空所有 marker
@@ -67,10 +67,16 @@ export function initStorePicker() {
 
     // ✅ 自動縮放顯示所有門市
     const group = L.featureGroup(markers);
-    map.fitBounds(group.getBounds(), { padding: [30, 30] });
+    map.fitBounds(group.getBounds(), { padding: [30, 30],maxZoom: 17 });
 
     // ✅ 記錄 marker layer 方便下次移除
     map._markerLayer = group;
+      L.circle([lat, lng], {
+    radius: 500, // 500m
+    color: "#2ecc71",
+    fillColor: "#2ecc71",
+    fillOpacity: 0.15
+  }).addTo(map);
   }
 
 
