@@ -1,68 +1,84 @@
-import { $, $$, toast } from "./dom.js";
+import { $, toast } from "./dom.js";
 import { api } from "./app.api.js";
-
 
 export function initStorePicker() {
   const picker = $("store-picker");
-  const openBtn = $("openStorePicker"); // ✅ 修正
-  const backdrop = picker?.querySelector(".sp-backdrop");
-  const closeBtn = picker?.querySelector(".sp-close");
   const results = $("sp-results");
   const input = $("sp-q");
+  const brandSel = $("sp-brand");
+  const radiusSel = $("sp-radius");
 
-  if (!picker || !openBtn) return;
+  if (!picker) return;
 
-  const open = () => picker.setAttribute("aria-hidden", "false");
-  const close = () => {
-    picker.setAttribute("aria-hidden", "true");
-    results.innerHTML = "";
-    input.value = "";
-  };
+  // ✅ 預設開啟 Nearby 模式
+  autoLoadNearby();
 
-  openBtn.addEventListener("click", open);
-  backdrop?.addEventListener("click", close);
-  closeBtn?.addEventListener("click", close);
+  // ✅ 手動搜尋：使用地理位置
+  $("sp-nearby").addEventListener("click", autoLoadNearby);
 
-  $("sp-search-btn")?.addEventListener("click", handleSearch);
-  input.addEventListener("keydown", e => e.key === "Enter" && handleSearch());
+  // ✅ 文字搜尋
+  $("sp-search-btn").addEventListener("click", () => quickSearch(input.value));
+  input.addEventListener("keypress", e => {
+    if (e.key === "Enter") quickSearch(input.value);
+  });
 
-  $("sp-nearby").addEventListener("click", () => {
-  navigator.geolocation.getCurrentPosition(async pos => {
-    const { latitude: lat, longitude: lng } = pos.coords;
-    const brand = $("sp-brand").value;
-    const radius = $("sp-radius").value;
+  function showResults(stores) {
+    if (!stores?.length) {
+      results.innerHTML = `<div class="muted">查無門市</div>`;
+      return;
+    }
 
-    const res = await api.searchStores("", lat, lng, brand, radius);
-    updateResults(res);
-  }, () => toast("⚠️ 請開啟定位權限"));
-});
-
-
-  async function handleSearch() {
-    const q = input.value.trim();
-    if (!q) return;
-
-    results.innerHTML = `<div class="store-result">搜尋中…</div>`;
-    const res = await api.searchStores(q);
-
-    if (!res?.stores?.length)
-      return results.innerHTML = `<div class="muted">查無資料</div>`;
-
-    results.innerHTML = res.stores.map(s => `
+    results.innerHTML = stores.map(s => `
       <div class="store-option" data-name="${s.name}">
         <b>${s.name}</b><br>
         <span class="muted">${s.address}</span>
       </div>
     `).join("");
 
-    $$(".store-option").forEach(el =>
+    document.querySelectorAll(".store-option").forEach(el => {
       el.addEventListener("click", () => {
         $("storeName").value = el.dataset.name;
-        close();
-      })
-    );
-    console.log("🔍 search query =", q);
-    console.log("API搜尋結果 =", res);
+        $("storeResults").innerHTML = "";
+        toast("✅ 已選擇門市");
+      });
+    });
+  }
 
+  // ✅ 自動定位 + 搜尋附近門市
+  async function autoLoadNearby() {
+    results.innerHTML = `<div class="muted">📍 取得位置中…</div>`;
+
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      const brand = brandSel.value;
+      const radius = radiusSel.value;
+
+      const res = await api.searchStoresNear(lat, lng, brand, radius);
+      showResults(res?.stores);
+    }, () => {
+      toast("⚠️ 請允許定位後再試");
+      results.innerHTML = `<div class="muted">無法取得位置</div>`;
+    });
+  }
+
+  // ✅ 依文字輸入 (使用地理位置篩選)
+  async function quickSearch(keyword) {
+    if (!keyword) return autoLoadNearby();
+
+    results.innerHTML = "搜尋中…";
+
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      const brand = brandSel.value;
+      const radius = radiusSel.value;
+
+      const res = await api.searchStoresNear(lat, lng, brand, radius);
+      const filtered = res.stores.filter(s =>
+        s.name.includes(keyword) || s.address.includes(keyword)
+      );
+      showResults(filtered);
+    }, autoLoadNearby);
   }
 }

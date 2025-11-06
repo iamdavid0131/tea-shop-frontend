@@ -54,6 +54,17 @@ export const api = {
     return _get(`/stores/detail?placeId=${placeId}`);
   },
 
+  /** 查附近門市 */
+  searchStoresNear(lat, lng, brand, radius) {
+    const params = new URLSearchParams({
+      lat, lng,
+      brand: brand || "all",
+      radius: radius || 1000
+    });
+    return this._get(`/stores/near?${params.toString()}`);
+  },
+
+
   /** ✅ 會員查詢 */
   memberSearch(phone) {
     return _get(`/member?phone=${encodeURIComponent(phone)}`);
