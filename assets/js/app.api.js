@@ -46,7 +46,7 @@ export const api = {
       params.set("lat", lat);
       params.set("lng", lng);
     }
-    return this._get(`/stores/search?${params.toString()}`);
+    return _get(`/stores/search?${params.toString()}`);
   },
 
   /** 查附近門市 */
@@ -56,7 +56,7 @@ export const api = {
       brand: brand || "all",
       radius: radius || 1000
     });
-    return this._get(`/stores/near?${params.toString()}`);
+    return _get(`/stores/near?${params.toString()}`);
   },
 
 
