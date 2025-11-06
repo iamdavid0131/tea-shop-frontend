@@ -1,4 +1,4 @@
-import { $, toast } from "./dom.js";
+import { $, $$, toast } from "./dom.js";
 import { api } from "./app.api.js";
 
 export function initStorePicker() {
@@ -8,6 +8,24 @@ export function initStorePicker() {
   const brandSel = $("sp-brand");
   const radiusSel = $("sp-radius");
   let map;
+  // ✅ 計算兩點距離（Haversine）
+  function calculateDistance(lat1, lng1, lat2, lng2) {
+    const R = 6371e3; // 地球半徑（公尺）
+    const toRad = (x) => (x * Math.PI) / 180;
+
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(toRad(lat1)) *
+        Math.cos(toRad(lat2)) *
+        Math.sin(dLng / 2) ** 2;
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return Math.round(R * c); // → 公尺
+  }
+
 
   function updateMap(lat, lng, stores) {
     const mapEl = $("sp-map");
@@ -93,21 +111,26 @@ export function initStorePicker() {
     return;
   }
 
-  // ✅ 由近到遠排序（若未提供距離則排在後面）
-  stores.sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
+  // ✅ 加入距離資訊 + 排序
+  stores = stores
+    .map(s => ({
+      ...s,
+      distance: calculateDistance(userLat, userLng, s.lat, s.lng)
+    }))
+    .sort((a, b) => a.distance - b.distance);
 
   results.innerHTML = stores.map(s => `
     <div class="store-option" data-name="${s.name}">
       <b>${s.name}</b><br>
       <span class="muted">${s.address}</span><br>
-      ${s.distance ? `<span class="muted">${(s.distance / 1000).toFixed(1)} km</span>` : ""}
+      <span class="distance">📍 ${s.distance}m</span>
     </div>
   `).join("");
 
   $$(".store-option").forEach(el => {
     el.addEventListener("click", () => {
       $("storeName").value = el.dataset.name;
-      picker.setAttribute("aria-hidden", "true"); // ✅ 自動關閉
+      picker.setAttribute("aria-hidden", "true");
       toast("✅ 已選擇門市");
     });
   });
@@ -131,7 +154,7 @@ async function autoLoadNearby() {
         radiusSel.value
       );
 
-      showResults(res?.stores);
+      showResults(res?.stores, lat, lng);
       updateMap(lat, lng, res?.stores);
     },
     () => {
