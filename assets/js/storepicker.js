@@ -115,7 +115,7 @@ export function initStorePicker() {
   stores = stores
     .map(s => ({
       ...s,
-      distance: calculateDistance(userLat, userLng, s.lat, s.lng)
+      distance: calculateDistance(lat, lng, s.lat, s.lng)
     }))
     .sort((a, b) => a.distance - b.distance);
 
