@@ -72,11 +72,6 @@ export function initStorePicker() {
       );
     });
 
-    const group = L.featureGroup(markers);
-    map.fitBounds(group.getBounds(), {
-      padding: [30, 30],
-      maxZoom: 17
-    });
 
     map._markerLayer = group;
 

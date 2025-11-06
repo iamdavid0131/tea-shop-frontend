@@ -1180,26 +1180,24 @@ input.loading {
 }
 /* ✅ Zoom 控制器移到右上角 */
 .leaflet-top.leaflet-left {
-  left: auto;
   right: 10px;
-}
-
-.leaflet-control-zoom {
-  right: 10px !important;
-  top: 10px !important;
-  border: none !important;
-  background: transparent !important;
+  left: auto;
+  top: 10px;
 }
 
 /* ✅ 圓形按鈕樣式強化 */
 .leaflet-control-zoom a {
-  width: 36px;
-  height: 36px;
-  line-height: 36px;
-  font-size: 22px;
-  border-radius: 50%;
+  width: 36px !important;
+  height: 36px !important;
+  line-height: 36px !important;
+  font-size: 20px !important;
+  font-weight: bold;
+  text-align: center !important;
+  border-radius: 50% !important;
   background: #fff !important;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  color: #111 !important;
 }
 
 
