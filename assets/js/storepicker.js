@@ -10,75 +10,102 @@ export function initStorePicker() {
 
   if (!picker) return;
 
-  // ✅ 預設開啟 Nearby 模式
-  autoLoadNearby();
+  // ✅ 開關 BottomSheet UI
+  const openBtn = $("openStorePicker");
+  const backdrop = picker.querySelector(".sp-backdrop");
+  const closeBtn = picker.querySelector(".sp-close");
 
-  // ✅ 手動搜尋：使用地理位置
+  openBtn.addEventListener("click", () => {
+    picker.setAttribute("aria-hidden", "false");
+    autoLoadNearby(); // 🔥 一打開就自動找附近門市
+  });
+
+  backdrop.addEventListener("click", () => {
+    picker.setAttribute("aria-hidden", "true");
+  });
+
+  closeBtn.addEventListener("click", () => {
+    picker.setAttribute("aria-hidden", "true");
+  });
+
+  // ✅ 點擊後自動定位
   $("sp-nearby").addEventListener("click", autoLoadNearby);
 
   // ✅ 文字搜尋
   $("sp-search-btn").addEventListener("click", () => quickSearch(input.value));
-  input.addEventListener("keypress", e => {
+  input.addEventListener("keypress", (e) => {
     if (e.key === "Enter") quickSearch(input.value);
   });
 
+  // -----------------------------
+  // 🧠 統一渲染結果 UI 區塊
   function showResults(stores) {
     if (!stores?.length) {
       results.innerHTML = `<div class="muted">查無門市</div>`;
       return;
     }
 
-    results.innerHTML = stores.map(s => `
+    results.innerHTML = stores
+      .map(
+        (s) => `
       <div class="store-option" data-name="${s.name}">
         <b>${s.name}</b><br>
         <span class="muted">${s.address}</span>
       </div>
-    `).join("");
+    `
+      )
+      .join("");
 
-    document.querySelectorAll(".store-option").forEach(el => {
+    $$(".store-option").forEach((el) => {
       el.addEventListener("click", () => {
         $("storeName").value = el.dataset.name;
-        $("storeResults").innerHTML = "";
+        picker.setAttribute("aria-hidden", "true"); // ✅ 自動關閉
         toast("✅ 已選擇門市");
       });
     });
   }
 
-  // ✅ 自動定位 + 搜尋附近門市
+  // ✅ 自動找附近門市
   async function autoLoadNearby() {
     results.innerHTML = `<div class="muted">📍 取得位置中…</div>`;
 
-    navigator.geolocation.getCurrentPosition(async (pos) => {
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-      const brand = brandSel.value;
-      const radius = radiusSel.value;
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const res = await api.searchStoresNear(
+          pos.coords.latitude,
+          pos.coords.longitude,
+          brandSel.value,
+          radiusSel.value
+        );
 
-      const res = await api.searchStoresNear(lat, lng, brand, radius);
-      showResults(res?.stores);
-    }, () => {
-      toast("⚠️ 請允許定位後再試");
-      results.innerHTML = `<div class="muted">無法取得位置</div>`;
-    });
+        showResults(res?.stores);
+      },
+      () => {
+        toast("⚠️ 定位失敗，請手動搜尋");
+        results.innerHTML = `<div class="muted">無法取得位置</div>`;
+      }
+    );
   }
 
-  // ✅ 依文字輸入 (使用地理位置篩選)
+  // ✅ 文字 + 位置搜尋
   async function quickSearch(keyword) {
     if (!keyword) return autoLoadNearby();
 
     results.innerHTML = "搜尋中…";
 
     navigator.geolocation.getCurrentPosition(async (pos) => {
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-      const brand = brandSel.value;
-      const radius = radiusSel.value;
-
-      const res = await api.searchStoresNear(lat, lng, brand, radius);
-      const filtered = res.stores.filter(s =>
-        s.name.includes(keyword) || s.address.includes(keyword)
+      const res = await api.searchStoresNear(
+        pos.coords.latitude,
+        pos.coords.longitude,
+        brandSel.value,
+        radiusSel.value
       );
-      showResults(filtered);
+
+      showResults(
+        res.stores.filter(
+          (s) => s.name.includes(keyword) || s.address.includes(keyword)
+        )
+      );
     }, autoLoadNearby);
   }
 }
