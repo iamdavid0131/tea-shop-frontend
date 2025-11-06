@@ -1,3 +1,4 @@
+//storepicker.js
 import { $, $$, toast } from "./dom.js";
 import { api } from "./app.api.js";
 
@@ -105,7 +106,7 @@ export function initStorePicker() {
 
   // -----------------------------
   // 🧠 統一渲染結果 UI 區塊
-  function showResults(stores) {
+  function showResults(stores, lat, lng) {
   if (!stores?.length) {
     results.innerHTML = `<div class="muted">查無門市</div>`;
     return;
@@ -172,18 +173,23 @@ async function autoLoadNearby() {
     results.innerHTML = "搜尋中…";
 
     navigator.geolocation.getCurrentPosition(async (pos) => {
-      const res = await api.searchStoresNear(
-        pos.coords.latitude,
-        pos.coords.longitude,
-        brandSel.value,
-        radiusSel.value
-      );
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
 
-      showResults(
-        res.stores.filter(
-          (s) => s.name.includes(keyword) || s.address.includes(keyword)
-        )
-      );
+    const res = await api.searchStoresNear(
+      lat,
+      lng,
+      brandSel.value,
+      radiusSel.value
+    );
+
+    showResults(
+      res?.stores.filter(
+        (s) => s.name.includes(keyword) || s.address.includes(keyword)
+      ),
+      lat,
+      lng
+     );
     }, autoLoadNearby);
   }
 }
