@@ -96,7 +96,6 @@ export function initStorePicker() {
   }
 
   // ✅ 自動找附近門市
-  // ✅ 自動找附近門市
 async function autoLoadNearby() {
   results.innerHTML = `<div class="muted">📍 取得位置中…</div>`;
 
