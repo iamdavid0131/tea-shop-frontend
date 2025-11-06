@@ -13,29 +13,47 @@ export function initStorePicker() {
     const mapEl = $("sp-map");
     if (!mapEl) return;
 
-    // ✅ 初始化地圖
-    map = new google.maps.Map(mapEl, {
-      center: { lat, lng },
-      zoom: 14,
-      disableDefaultUI: true,
+    // ✅ 如果地圖已存在 → 重設位置即可
+    if (!map) {
+      map = L.map(mapEl).setView([lat, lng], 15);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap"
+      }).addTo(map);
+    } else {
+      map.setView([lat, lng], 15);
+    }
+
+    // ✅ 先清空所有 marker
+    if (map._markerLayer) {
+      map.removeLayer(map._markerLayer);
+    }
+    
+    const markers = [];
+
+    // ✅ 使用者位置 Marker
+    markers.push(
+      L.marker([lat, lng], { title: "目前位置" }).addTo(map)
+    );
+
+    // ✅ 門市 marker
+    stores.forEach(s => {
+      if (!s.lat || !s.lng) return;
+      markers.push(
+        L.marker([s.lat, s.lng], { title: s.name }).addTo(map)
+          .bindPopup(`<b>${s.name}</b><br>${s.address}`)
+      );
     });
 
-    // ✅ 使用者位置標示
-    new google.maps.Marker({
-      map,
-      position: { lat, lng },
-      label: "我",
-    });
+    // ✅ 自動縮放顯示所有門市
+    const group = L.featureGroup(markers);
+    map.fitBounds(group.getBounds(), { padding: [30, 30] });
 
-    // ✅ 標示搜尋店家
-    stores.forEach((s) => {
-      new google.maps.Marker({
-        map,
-        position: { lat: s.lat, lng: s.lng },
-        title: s.name,
-      });
-    });
+    // ✅ 記錄 marker layer 方便下次移除
+    map._markerLayer = group;
   }
+
 
 
   if (!picker) return;
@@ -70,30 +88,31 @@ export function initStorePicker() {
   // -----------------------------
   // 🧠 統一渲染結果 UI 區塊
   function showResults(stores) {
-    if (!stores?.length) {
-      results.innerHTML = `<div class="muted">查無門市</div>`;
-      return;
-    }
-
-    results.innerHTML = stores
-      .map(
-        (s) => `
-      <div class="store-option" data-name="${s.name}">
-        <b>${s.name}</b><br>
-        <span class="muted">${s.address}</span>
-      </div>
-    `
-      )
-      .join("");
-
-    $$(".store-option").forEach((el) => {
-      el.addEventListener("click", () => {
-        $("storeName").value = el.dataset.name;
-        picker.setAttribute("aria-hidden", "true"); // ✅ 自動關閉
-        toast("✅ 已選擇門市");
-      });
-    });
+  if (!stores?.length) {
+    results.innerHTML = `<div class="muted">查無門市</div>`;
+    return;
   }
+
+  // ✅ 由近到遠排序（若未提供距離則排在後面）
+  stores.sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
+
+  results.innerHTML = stores.map(s => `
+    <div class="store-option" data-name="${s.name}">
+      <b>${s.name}</b><br>
+      <span class="muted">${s.address}</span><br>
+      ${s.distance ? `<span class="muted">${(s.distance / 1000).toFixed(1)} km</span>` : ""}
+    </div>
+  `).join("");
+
+  $$(".store-option").forEach(el => {
+    el.addEventListener("click", () => {
+      $("storeName").value = el.dataset.name;
+      picker.setAttribute("aria-hidden", "true"); // ✅ 自動關閉
+      toast("✅ 已選擇門市");
+    });
+  });
+}
+
 
   // ✅ 自動找附近門市
 async function autoLoadNearby() {

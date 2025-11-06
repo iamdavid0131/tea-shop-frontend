@@ -183,16 +183,21 @@
       </div>
 
       <div class="sp-search">
-        <input id="sp-q" class="sp-input sp-query" type="search" placeholder="輸入附近地標或地址" autocomplete="off">
+        <input id="sp-q" class="sp-input sp-query" type="search"
+          placeholder="輸入附近地標或地址" autocomplete="off">
         <button id="sp-search-btn" class="sp-search-title" type="button">搜尋</button>
       </div>
 
       <div id="sp-map" class="sp-map" aria-label="地圖" role="img"></div>
-      <div class="sp-results" id="sp-results" role="listbox" aria-label="搜尋結果"></div>
+
+      <div class="sp-scroll">
+        <div class="sp-results" id="sp-results" role="listbox" aria-label="搜尋結果"></div>
+      </div>
 
       <footer class="sp-footer">
         <button class="sp-cancel" type="button" data-sp-close>取消</button>
       </footer>
+
     </section>
   </div>
 
