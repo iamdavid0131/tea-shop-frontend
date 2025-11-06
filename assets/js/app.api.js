@@ -46,12 +46,7 @@ export const api = {
       params.set("lat", lat);
       params.set("lng", lng);
     }
-    return _get(`/stores/search?${params.toString()}`);
-  },
-
-  /** ✅ Google Place Detail */
-  getPlaceDetail(placeId) {
-    return _get(`/stores/detail?placeId=${placeId}`);
+    return this._get(`/stores/search?${params.toString()}`);
   },
 
   /** 查附近門市 */
