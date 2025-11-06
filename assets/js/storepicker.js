@@ -1,6 +1,5 @@
 import { $, $$, toast } from "./dom.js";
 import { api } from "./app.api.js";
-import { $, toast } from "./dom.js";
 
 
 export function initStorePicker() {
