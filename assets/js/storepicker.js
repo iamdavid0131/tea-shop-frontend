@@ -7,6 +7,36 @@ export function initStorePicker() {
   const input = $("sp-q");
   const brandSel = $("sp-brand");
   const radiusSel = $("sp-radius");
+  let map;
+
+  function updateMap(lat, lng, stores) {
+    const mapEl = $("sp-map");
+    if (!mapEl) return;
+
+    // ✅ 初始化地圖
+    map = new google.maps.Map(mapEl, {
+      center: { lat, lng },
+      zoom: 14,
+      disableDefaultUI: true,
+    });
+
+    // ✅ 使用者位置標示
+    new google.maps.Marker({
+      map,
+      position: { lat, lng },
+      label: "我",
+    });
+
+    // ✅ 標示搜尋店家
+    stores.forEach((s) => {
+      new google.maps.Marker({
+        map,
+        position: { lat: s.lat, lng: s.lng },
+        title: s.name,
+      });
+    });
+  }
+
 
   if (!picker) return;
 
@@ -66,26 +96,33 @@ export function initStorePicker() {
   }
 
   // ✅ 自動找附近門市
-  async function autoLoadNearby() {
-    results.innerHTML = `<div class="muted">📍 取得位置中…</div>`;
+  // ✅ 自動找附近門市
+async function autoLoadNearby() {
+  results.innerHTML = `<div class="muted">📍 取得位置中…</div>`;
 
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const res = await api.searchStoresNear(
-          pos.coords.latitude,
-          pos.coords.longitude,
-          brandSel.value,
-          radiusSel.value
-        );
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
 
-        showResults(res?.stores);
-      },
-      () => {
-        toast("⚠️ 定位失敗，請手動搜尋");
-        results.innerHTML = `<div class="muted">無法取得位置</div>`;
-      }
-    );
-  }
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+
+      const res = await api.searchStoresNear(
+        lat,
+        lng,
+        brandSel.value,
+        radiusSel.value
+      );
+
+      showResults(res?.stores);
+      updateMap(lat, lng, res?.stores);
+    },
+    () => {
+      toast("⚠️ 定位失敗，請手動搜尋");
+      results.innerHTML = `<div class="muted">無法取得位置</div>`;
+    }
+  );
+}
+
 
   // ✅ 文字 + 位置搜尋
   async function quickSearch(keyword) {
