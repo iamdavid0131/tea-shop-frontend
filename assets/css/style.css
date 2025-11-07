@@ -1052,12 +1052,6 @@ input.loading {
   display: inline-block;
 }
 
-.consent-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top:12px;
-}
 
 /* ============================================================
    🏪 Store Picker - 祥興茶行 iOS Style
@@ -1183,13 +1177,13 @@ input.loading {
   gap: 8px;
 }
 /* ============================================================
-🏪 Store Form 統一樣式（祥興茶行 iOS 樣式）
+🏪 Store Form 統一樣式（祥興茶行 iOS 風格）
 ============================================================ */
 
 /* === 外層容器 === */
 #storeFields {
   width: 100%;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 /* === Form 區塊 === */
@@ -1198,7 +1192,7 @@ input.loading {
   color: #222;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
 }
 
@@ -1215,8 +1209,8 @@ input.loading {
   appearance: none;
   -webkit-appearance: none;
   font-size: 15px;
-  line-height: 1.4;
   font-weight: 500;
+  line-height: 1.5;
   height: 42px;
   padding: 0 12px;
   border: 1px solid #ddd;
@@ -1248,7 +1242,9 @@ input.loading {
 
 /* === Placeholder 顏色 === */
 .sp-input::placeholder {
-  color: #999;
+  color: #aaa;
+  font-size: 14px;
+  font-weight: 400;
 }
 
 /* === 按鈕樣式（附近門市） === */
@@ -1264,12 +1260,16 @@ input.loading {
   white-space: nowrap;
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: background 0.25s, box-shadow 0.25s;
+  transition: background 0.25s, box-shadow 0.25s, transform 0.15s;
 }
 
 .sp-search-title:hover {
   background: #0074e4;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.sp-search-title:active {
+  transform: scale(0.97);
 }
 
 /* === 標籤 === */
@@ -1279,6 +1279,7 @@ input.loading {
   font-weight: 600;
   color: #222;
   margin: 6px 0 2px;
+  letter-spacing: 0.3px;
 }
 
 /* === 結果清單 === */
@@ -1331,7 +1332,7 @@ input.loading {
 }
 
 /* ============================================================
-🩰 統一字體大小與行距（Select / Input 完全一致）
+🩰 字體一致性與行距統一
 ============================================================ */
 #storeFields select.sp-select,
 #storeFields input.sp-input,
@@ -1343,15 +1344,74 @@ input.loading {
   color: #222 !important;
 }
 
-/* iOS Safari 特殊修正：避免 select 被放大 */
+/* === iOS Safari 特殊修正：避免 select 被放大 === */
 @supports (-webkit-touch-callout: none) {
   #storeFields select.sp-select {
     font-size: 16px !important;
   }
 }
 
+/* ============================================================
+🪄 Checkbox（我同意...）優化區塊
+============================================================ */
+.consent-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #111;
+  line-height: 1.5;
+  margin-top: 14px;
+}
 
-/* ✅ 地圖 */
+/* ✅ 美化核取方塊 */
+.consent-row input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* 勾選狀態 */
+.consent-row input[type="checkbox"]:checked {
+  background-color: #1e90ff;
+  border-color: #1e90ff;
+  box-shadow: 0 2px 4px rgba(30, 144, 255, 0.25);
+}
+
+.consent-row input[type="checkbox"]:checked::after {
+  content: "✓";
+  position: absolute;
+  top: 1px;
+  left: 5px;
+  font-size: 14px;
+  color: #fff;
+  font-weight: 700;
+}
+
+/* hover 效果 */
+.consent-row input[type="checkbox"]:hover {
+  border-color: #1e90ff;
+}
+
+/* === Checkbox 文字對齊 === */
+.consent-row label {
+  cursor: pointer;
+  flex: 1;
+}
+
+/* ============================================================
+🗺️ 地圖（Store Picker Map）
+============================================================ */
 #sp-map {
   width: 100%;
   height: 240px;
@@ -1361,6 +1421,7 @@ input.loading {
   position: relative;
   margin: 12px 0;
 }
+
 .leaflet-container {
   z-index: 2000 !important;
   border-radius: 12px;

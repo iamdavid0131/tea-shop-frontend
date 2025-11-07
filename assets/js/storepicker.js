@@ -18,7 +18,9 @@ export function initStorePicker() {
   const handle = sheet ? sheet.querySelector(".sp-handle") : null;
 
   if (!sheet || !backdrop) {
-    console.warn("storepicker.js: 缺少 .sp-sheet 或 .sp-backdrop，請檢查 HTML 結構");
+    console.warn(
+      "storepicker.js: 缺少 .sp-sheet 或 .sp-backdrop，請檢查 HTML 結構"
+    );
     return;
   }
 
@@ -37,158 +39,151 @@ export function initStorePicker() {
     const dLng = toRad(lng2 - lng1);
     const a =
       Math.sin(dLat / 2) ** 2 +
-      Math.cos(toRad(lat1)) *
-        Math.cos(toRad(lat2)) *
-        Math.sin(dLng / 2) ** 2;
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return Math.round(R * c);
   }
 
-  
-// =========================
-// 使用者位置：Google Maps 風格藍點 + 呼吸光暈
-// =========================
-function createPulse(lat, lng) {
-  if (!map) return;
+  // =========================
+  // 使用者位置：Google Maps 風格藍點 + 呼吸光暈
+  // =========================
+  function createPulse(lat, lng) {
+    if (!map) return;
 
-  // 移除舊層
-  if (pulseMarker) {
-    map.removeLayer(pulseMarker);
-    pulseMarker = null;
-  }
-  if (userDot) {
-    map.removeLayer(userDot);
-    userDot = null;
-  }
+    // 移除舊層
+    if (pulseMarker) {
+      map.removeLayer(pulseMarker);
+      pulseMarker = null;
+    }
+    if (userDot) {
+      map.removeLayer(userDot);
+      userDot = null;
+    }
 
-  // 🔵 中心點（固定）
-  userDot = L.circleMarker([lat, lng], {
-    radius: 6,
-    color: "#1E90FF",
-    fillColor: "#1E90FF",
-    fillOpacity: 1,
-    weight: 1
-  }).addTo(map);
+    // 🔵 中心點（固定）
+    userDot = L.circleMarker([lat, lng], {
+      radius: 6,
+      color: "#1E90FF",
+      fillColor: "#1E90FF",
+      fillOpacity: 1,
+      weight: 1,
+    }).addTo(map);
 
-  // 🔵 呼吸光暈（L.circle）
-  pulseMarker = L.circle([lat, lng], {
-    radius: 10,
-    color: "#1E90FF",
-    fillColor: "#1E90FF",
-    fillOpacity: 0.25,
-    stroke: false
-  }).addTo(map);
+    // 🔵 呼吸光暈（L.circle）
+    pulseMarker = L.circle([lat, lng], {
+      radius: 10,
+      color: "#1E90FF",
+      fillColor: "#1E90FF",
+      fillOpacity: 0.25,
+      stroke: false,
+    }).addTo(map);
 
-  // ✨ 呼吸動畫 loop
-  let t = 0;
-  function animatePulse() {
-    if (!pulseMarker) return;
+    // ✨ 呼吸動畫 loop
+    let t = 0;
+    function animatePulse() {
+      if (!pulseMarker) return;
 
-    t += 0.015; // 動畫速度
-    const scale = 1 + 0.3 * Math.sin(t * Math.PI); // 平滑呼吸
-    const opacity = 0.2 + 0.1 * Math.cos(t * Math.PI);
+      t += 0.015; // 動畫速度
+      const scale = 1 + 0.3 * Math.sin(t * Math.PI); // 平滑呼吸
+      const opacity = 0.2 + 0.1 * Math.cos(t * Math.PI);
 
-    pulseMarker.setRadius(10 * scale);
-    pulseMarker.setStyle({ fillOpacity: opacity });
+      pulseMarker.setRadius(10 * scale);
+      pulseMarker.setStyle({ fillOpacity: opacity });
+
+      requestAnimationFrame(animatePulse);
+    }
 
     requestAnimationFrame(animatePulse);
   }
 
-  requestAnimationFrame(animatePulse);
-}
+  // =========================
+  // 更新地圖
+  // mode: "user" | "landmark"
+  // =========================
+  function updateMap(lat, lng, stores = [], mode = "user") {
+    const mapEl = $("sp-map");
+    if (!mapEl) return;
 
+    if (!map) {
+      map = L.map(mapEl).setView([lat, lng], 17);
+      L.tileLayer(
+        "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+        {
+          maxZoom: 19,
+          attribution: "&copy; OpenStreetMap &copy; CARTO",
+        }
+      ).addTo(map);
+    } else {
+      map.setView([lat, lng], 17);
+    }
 
-// =========================
-// 更新地圖
-// mode: "user" | "landmark"
-// =========================
-function updateMap(lat, lng, stores = [], mode = "user") {
-  const mapEl = $("sp-map");
-  if (!mapEl) return;
+    // ✅ 清除舊的商店 marker 群，但保留使用者位置
+    if (map._markerLayer) {
+      map.removeLayer(map._markerLayer);
+      map._markerLayer = null;
+    }
 
-  if (!map) {
-    map = L.map(mapEl).setView([lat, lng], 17);
-    L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-      {
-        maxZoom: 19,
-        attribution: "&copy; OpenStreetMap &copy; CARTO",
-      }
-    ).addTo(map);
-  } else {
-    map.setView([lat, lng], 17);
-  }
+    const markers = [];
 
-  // ✅ 清除舊的商店 marker 群，但保留使用者位置
-  if (map._markerLayer) {
-    map.removeLayer(map._markerLayer);
-    map._markerLayer = null;
-  }
+    // ✅ 使用者位置（或搜尋中心）
+    if (mode === "user") {
+      createPulse(lat, lng);
+    } else if (mode === "landmark") {
+      const landmarkMarker = L.marker([lat, lng], {
+        title: "搜尋中心點",
+        icon: L.icon({
+          iconUrl:
+            "https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi2_hdpi.png",
+          iconSize: [24, 36],
+          iconAnchor: [12, 36],
+        }),
+      })
+        .addTo(map)
+        .bindPopup("📍 搜尋中心點");
+      markers.push(landmarkMarker);
+    }
 
-  const markers = [];
+    // ✅ 只顯示 7-ELEVEN / 全家
+    const validStores = (stores || []).filter(
+      (s) => /7-?ELEVEN|7-11|SEVEN/i.test(s.name) || /全家|FAMILY/i.test(s.name)
+    );
 
-  // ✅ 使用者位置（或搜尋中心）
-  if (mode === "user") {
-    createPulse(lat, lng);
-  } else if (mode === "landmark") {
-    const landmarkMarker = L.marker([lat, lng], {
-      title: "搜尋中心點",
-      icon: L.icon({
-        iconUrl:
-          "https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi2_hdpi.png",
-        iconSize: [24, 36],
-        iconAnchor: [12, 36],
-      }),
-    })
-      .addTo(map)
-      .bindPopup("📍 搜尋中心點");
-    markers.push(landmarkMarker);
-  }
+    // ✅ 加上品牌顏色 Marker
+    validStores.forEach((s) => {
+      if (!s.lat || !s.lng) return;
 
-  // ✅ 只顯示 7-ELEVEN / 全家
-  const validStores = (stores || []).filter(
-    (s) =>
-      /7-?ELEVEN|7-11|SEVEN/i.test(s.name) ||
-      /全家|FAMILY/i.test(s.name)
-  );
+      // 品牌顏色
+      let color = "#888";
+      if (/7-?ELEVEN|7-11|SEVEN/i.test(s.name)) color = "#e67e22"; // 橘紅
+      if (/全家|FAMILY/i.test(s.name)) color = "#00a0e9"; // 藍綠
 
-  // ✅ 加上品牌顏色 Marker
-  validStores.forEach((s) => {
-    if (!s.lat || !s.lng) return;
-
-    // 品牌顏色
-    let color = "#888";
-    if (/7-?ELEVEN|7-11|SEVEN/i.test(s.name)) color = "#e67e22"; // 橘紅
-    if (/全家|FAMILY/i.test(s.name)) color = "#00a0e9"; // 藍綠
-
-    const customIcon = L.divIcon({
-      html: `<div style="
+      const customIcon = L.divIcon({
+        html: `<div style="
         width:14px;height:14px;
         border-radius:50%;
         background:${color};
         border:2px solid #fff;
         box-shadow:0 0 6px rgba(0,0,0,0.3);
       "></div>`,
-      className: "",
-      iconSize: [14, 14],
-      iconAnchor: [7, 7],
+        className: "",
+        iconSize: [14, 14],
+        iconAnchor: [7, 7],
+      });
+
+      const m = L.marker([s.lat, s.lng], { icon: customIcon, title: s.name })
+        .addTo(map)
+        .bindPopup(`<b>${s.name}</b><br>${s.address}`);
+      markers.push(m);
     });
 
-    const m = L.marker([s.lat, s.lng], { icon: customIcon, title: s.name })
-      .addTo(map)
-      .bindPopup(`<b>${s.name}</b><br>${s.address}`);
-    markers.push(m);
-  });
+    // ✅ 建立群組並更新 map
+    if (markers.length) {
+      const group = L.featureGroup(markers);
+      map._markerLayer = group;
+    }
 
-  // ✅ 建立群組並更新 map
-  if (markers.length) {
-    const group = L.featureGroup(markers);
-    map._markerLayer = group;
+    map.setView([lat, lng], 17);
   }
-
-  map.setView([lat, lng], 17);
-}
-
 
   // =========================
   // 渲染門市清單
@@ -196,9 +191,7 @@ function updateMap(lat, lng, stores = [], mode = "user") {
   function showResults(stores = [], lat, lng) {
     // 先過濾 7-11 / 全家
     const filtered = (stores || []).filter(
-      (s) =>
-        /7-?ELEVEN|7-11|SEVEN/i.test(s.name) ||
-        /全家|FAMILY/i.test(s.name)
+      (s) => /7-?ELEVEN|7-11|SEVEN/i.test(s.name) || /全家|FAMILY/i.test(s.name)
     );
 
     if (!filtered.length) {
@@ -209,7 +202,7 @@ function updateMap(lat, lng, stores = [], mode = "user") {
     const withDistance = filtered
       .map((s) => ({
         ...s,
-        distance: calculateDistance(lat, lng, s.lat, s.lng)
+        distance: calculateDistance(lat, lng, s.lat, s.lng),
       }))
       .sort((a, b) => a.distance - b.distance);
 
@@ -229,9 +222,25 @@ function updateMap(lat, lng, stores = [], mode = "user") {
       el.addEventListener("click", () => {
         const name = el.dataset.name || "";
         const inputEl = $("storeName");
+        const carrierSel = $("carrier"); // ✅ 取得超商選單
+
+        // ✅ 更新門市名稱
         if (inputEl) inputEl.value = name;
+
+        // ✅ 自動辨識品牌，設定選單
+        if (carrierSel) {
+          if (/7-?ELEVEN|7-11|SEVEN/i.test(name)) {
+            carrierSel.value = "7-11";
+          } else if (/全家|FAMILY/i.test(name)) {
+            carrierSel.value = "familymart";
+          } else {
+            carrierSel.value = "all";
+          }
+        }
+
+        // ✅ 關閉底部面板與提示
         closeSheet();
-        toast("✅ 已選擇門市");
+        toast(`✅ 已選擇 ${name}`);
       });
     });
   }
@@ -303,7 +312,6 @@ function updateMap(lat, lng, stores = [], mode = "user") {
     }
   }
 
-
   // =========================
   // Bottom Sheet 開關控制（只控制 store-picker）
   // =========================
@@ -342,60 +350,60 @@ function updateMap(lat, lng, stores = [], mode = "user") {
   // 拖曳關閉（只對 sp-handle 生效）
   // =========================
   // =========================
-// ✅ 改良版拖曳關閉（整個上半部可下滑）
-// =========================
-let startY = 0;
-let currentY = 0;
-let isDragging = false;
+  // ✅ 改良版拖曳關閉（整個上半部可下滑）
+  // =========================
+  let startY = 0;
+  let currentY = 0;
+  let isDragging = false;
 
-sheet.addEventListener("touchstart", (e) => {
-  const touch = e.touches[0];
-  startY = touch.clientY;
-  currentY = startY;
-  isDragging = true;
-  sheet.classList.add("sp-dragging");
-  e.stopPropagation();
-});
+  sheet.addEventListener("touchstart", (e) => {
+    const touch = e.touches[0];
+    startY = touch.clientY;
+    currentY = startY;
+    isDragging = true;
+    sheet.classList.add("sp-dragging");
+    e.stopPropagation();
+  });
 
-sheet.addEventListener("touchmove", (e) => {
-  if (!isDragging) return;
-  const touch = e.touches[0];
-  currentY = touch.clientY;
-  const diff = currentY - startY;
+  sheet.addEventListener("touchmove", (e) => {
+    if (!isDragging) return;
+    const touch = e.touches[0];
+    currentY = touch.clientY;
+    const diff = currentY - startY;
 
-  // 只允許向下拖曳
-  if (diff > 0) {
-    sheet.style.transform = `translateY(${diff}px)`;
-    sheet.style.transition = "none";
-  }
-  e.stopPropagation();
-});
+    // 只允許向下拖曳
+    if (diff > 0) {
+      sheet.style.transform = `translateY(${diff}px)`;
+      sheet.style.transition = "none";
+    }
+    e.stopPropagation();
+  });
 
-sheet.addEventListener("touchend", (e) => {
-  if (!isDragging) return;
-  isDragging = false;
-  sheet.classList.remove("sp-dragging");
+  sheet.addEventListener("touchend", (e) => {
+    if (!isDragging) return;
+    isDragging = false;
+    sheet.classList.remove("sp-dragging");
 
-  const diff = currentY - startY;
-  sheet.style.transition = "transform 0.3s ease";
-  sheet.style.transform = "";
+    const diff = currentY - startY;
+    sheet.style.transition = "transform 0.3s ease";
+    sheet.style.transform = "";
 
-  // ✅ 拖超過 100px 就關閉
-  if (diff > 100) {
-    closeSheet();
-  } else {
-    sheet.classList.add("sp-open");
-  }
+    // ✅ 拖超過 100px 就關閉
+    if (diff > 100) {
+      closeSheet();
+    } else {
+      sheet.classList.add("sp-open");
+    }
 
-  // ✅ 拉條 bounce 動畫（如果存在）
-  if (handle) {
-    handle.classList.remove("bounce");
-    void handle.offsetWidth;
-    handle.classList.add("bounce");
-  }
+    // ✅ 拉條 bounce 動畫（如果存在）
+    if (handle) {
+      handle.classList.remove("bounce");
+      void handle.offsetWidth;
+      handle.classList.add("bounce");
+    }
 
-  e.stopPropagation();
-});
+    e.stopPropagation();
+  });
   // =========================
   // 綁定按鈕事件
   // =========================
