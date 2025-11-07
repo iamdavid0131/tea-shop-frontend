@@ -1303,6 +1303,35 @@ input.loading {
   }
 }
 
+#storeName {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "PingFang TC", sans-serif !important;
+  font-size: 15px !important;
+  height: 42px !important;
+  width: 100% !important;
+  padding: 0 12px !important;
+  border: 1px solid #ddd !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  box-sizing: border-box !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+  color: #222 !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+
+/* 聚焦時藍色邊框 */
+#storeName:focus {
+  border-color: #1e90ff !important;
+  box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.15) !important;
+  outline: none !important;
+}
+
+/* Placeholder 顏色 */
+#storeName::placeholder {
+  color: #999 !important;
+}
+
 
 /* ✅ 地圖 */
 #sp-map {
