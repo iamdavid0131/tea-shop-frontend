@@ -1642,19 +1642,6 @@ input.loading {
 
 /* === 付款方式 === */
 
-/* 線上支付區塊預設隱藏 */
-#onlineMethods {
-  display: none;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-/* 顯示狀態 */
-#onlineMethods.show {
-  display: flex !important;
-}
-
 #paymentCard {
   margin-top: 24px;
 }
@@ -1713,10 +1700,11 @@ input.loading {
 }
 
 #onlineMethods.show {
-  display: flex;
+  display: flex !important;
   opacity: 1;
   transform: translateY(0);
 }
+
 @keyframes fadeInSlide {
   from { opacity: 0; transform: translateY(-6px); }
   to { opacity: 1; transform: translateY(0); }
