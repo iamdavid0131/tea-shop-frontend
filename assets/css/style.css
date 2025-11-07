@@ -1312,6 +1312,23 @@ input.loading {
   width: 100% !important;
 }
 
+/* ============================================================
+   🚑 修正 #storeName 高度被壓縮問題（強制一致）
+   ============================================================ */
+#storeFields #storeName,
+#storeFields .sp-input,
+#storeFields input[type="text"] {
+  height: 42px !important;
+  min-height: 42px !important;
+  line-height: 42px !important;
+  padding: 0 12px !important;
+  display: block !important;
+  flex: 0 0 auto !important;
+  align-self: stretch !important;
+  box-sizing: border-box !important;
+}
+
+
 
 /* ✅ 地圖 */
 #sp-map {
