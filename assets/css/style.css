@@ -1110,6 +1110,31 @@ input.loading {
   100% { transform: scaleX(1) scaleY(1); }
 }
 
+/* ✅ 使用者位置光暈 */
+.pulse-icon {
+  width: 30px;
+  height: 30px;
+  background: rgba(30,144,255,0.25);
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(30,144,255,0.6);
+  animation: pulseWave 2s ease-out infinite;
+}
+
+@keyframes pulseWave {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  70% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
+
 /* 拖曳結束後加上這個 class 讓動畫播放 */
 .sp-handle.bounce {
   animation: sp-handle-bounce 0.4s cubic-bezier(0.25, 1.5, 0.5, 1);
