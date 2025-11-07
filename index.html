@@ -55,25 +55,29 @@
 </head>
 
 <body>
-  <div id="loading" role="status" aria-live="polite">送出中…請稍候</div>
-  <div class="rotate-hint" id="rotateHint">建議以直式瀏覽，獲得更好的體驗 🙌</div>
+<!-- ✅ Loading & Rotate 提示 -->
+<div id="loading" role="status" aria-live="polite">送出中…請稍候</div>
+<div class="rotate-hint" id="rotateHint">建議以直式瀏覽，獲得更好的體驗 🙌</div>
 
-  <!-- iOS-style Large Title Header -->
-  <header class="ios-header">
-    <div class="ios-nav">
-      <div class="ios-status"></div>
-      <h1 class="ios-title-lg">祥興台灣茶系列訂購表單</h1>
-      <div class="ios-subtitle">超商未滿 1000 運費 60；貨到付款未滿 2000 運費 100；達標免運</div>
+<!-- ✅ iOS-style Large Title Header -->
+<header class="ios-header">
+  <div class="ios-nav">
+    <div class="ios-status"></div>
+    <h1 class="ios-title-lg">祥興台灣茶系列訂購表單</h1>
+    <div class="ios-subtitle">
+      超商未滿 1000 運費 60；貨到付款未滿 2000 運費 100；達標免運
     </div>
-  </header>
-
-  <!-- 商品步驟 -->
-  <div class="card stepcard" id="itemsCard">
-    <h2>選購商品</h2>
-    <div id="categoryList" class="itemlist"></div>
   </div>
+</header>
 
-  <div class="section">
+<!-- ✅ Step 1: 商品步驟 -->
+<div class="card stepcard" id="itemsCard">
+  <h2>選購商品</h2>
+  <div id="categoryList" class="itemlist"></div>
+</div>
+
+<!-- ✅ Step 2: 收件資料 -->
+<div class="section">
   <h2 class="section-title">收件資料</h2>
 
   <div class="form-group">
@@ -99,10 +103,10 @@
     <label for="note">備註（選填）</label>
     <textarea id="note" placeholder="例如：有任何需求請註明（禮盒需求、延後出貨等）"></textarea>
   </div>
-</div>
+</div> <!-- ✅ 收件資料 section 結束 -->
 
- <!-- 收件區塊 -->
- <div class="section" id="shippingCard">
+<!-- ✅ Step 3: 運送方式 -->
+<div class="section" id="shippingCard">
   <h2 class="section-title">運送方式</h2>
 
   <div class="ship-options">
@@ -135,31 +139,38 @@
 
       <div id="storeResults" class="store-results"></div>
     </div>
-
-  </div>
+  </div> <!-- ✅ 超商結束 -->
 
   <!-- ✅ 宅配到府 -->
-<div id="codFields" class="delivery-form" style="display:none;">
-  <label class="sp-label">縣市</label>
-  <select id="city" class="sp-select">
-    <option value="">請選擇縣市</option>
-  </select>
+  <div id="codFields" class="delivery-form" style="display:none;">
+    <label class="sp-label">縣市</label>
+    <select id="city" class="sp-select">
+      <option value="">請選擇縣市</option>
+    </select>
 
-  <label class="sp-label">行政區</label>
-  <select id="district" class="sp-select">
-    <option value="">請選擇行政區</option>
-  </select>
+    <label class="sp-label">行政區</label>
+    <select id="district" class="sp-select">
+      <option value="">請選擇行政區</option>
+    </select>
 
-  <label class="sp-label">詳細地址</label>
-  <input id="address" type="text" class="sp-input" placeholder="請填入路段、巷弄、門牌…" />
-</div>
+    <label class="sp-label">詳細地址</label>
+    <input id="address" type="text" class="sp-input" placeholder="請填入路段、巷弄、門牌…" />
+  </div> <!-- ✅ 宅配結束 -->
+</div> <!-- ✅ shippingCard 結束 -->
 
-
-  <label class="consent-row">
-    <input type="checkbox" id="consent">
-    我同意提供聯絡資訊用於出貨通知與售後服務
+<div class="consent-row">
+  <label class="sp-toggle">
+    <input type="checkbox" id="consentAgree" />
+    <span class="sp-toggle-slider"></span>
+    <span class="sp-toggle-label">
+      我同意提供聯絡資訊用於出貨通知與售後服務
+    </span>
+    <span class="sp-consent-note">
+      我們僅會使用您的資料於出貨通知、售後服務，不會另作行銷用途。
+    </span>
   </label>
 </div>
+
 
 
   <!-- 同頁：超商門市選擇器 Bottom Sheet -->
