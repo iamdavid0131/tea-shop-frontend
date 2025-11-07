@@ -1667,28 +1667,32 @@ input.loading {
 }
 
 .payment-radio {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  background: #fff;
+  gap: 8px;
   cursor: pointer;
+}
+
+.payment-radio input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.payment-radio span {
+  display: inline-block;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
   transition: all 0.25s;
-  font-size: 15px;
-  font-weight: 500;
 }
 
-.payment-radio:hover {
+.payment-radio input[type="radio"]:checked + span {
   border-color: #1e90ff;
-  background: #f9fcff;
-}
-
-.payment-radio input {
-  width: 18px;
-  height: 18px;
-  accent-color: #1e90ff;
+  background: rgba(30, 144, 255, 0.08);
+  color: #1e90ff;
+  font-weight: 600;
 }
 
 /* === 展開的線上支付區塊 === */
