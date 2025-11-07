@@ -272,36 +272,36 @@ function updateMap(lat, lng, stores = [], mode = "user") {
   // =========================
   // 地標搜尋 → 地標附近超商
   // =========================
-async function quickSearch(keyword) {
-  const brand = brandSel?.value || "all";
-  if (!keyword) return autoLoadNearby();
+  async function quickSearch(keyword) {
+    const brand = brandSel?.value || "all";
+    if (!keyword) return autoLoadNearby();
 
-  results.innerHTML = `<div class="muted">🔍 以地標搜尋中…</div>`;
+    results.innerHTML = `<div class="muted">🔍 以地標搜尋中…</div>`;
 
-  try {
-    const geoData = await api.searchStoresByLandmark(keyword, brand,800);
+    try {
+      const geoData = await api.searchStoresByLandmark(keyword, brand);
 
-    if (!geoData.ok || !geoData.lat || !geoData.lng) {
-      results.innerHTML = `<div class="muted">查無「${keyword}」相關地點</div>`;
-      return;
+      if (!geoData.ok || !geoData.lat || !geoData.lng) {
+        results.innerHTML = `<div class="muted">查無「${keyword}」相關地點</div>`;
+        return;
+      }
+
+      const { lat, lng, stores } = geoData;
+
+      if (!stores.length) {
+        results.innerHTML = `<div class="muted">「${keyword}」附近 800 m 內沒有超商</div>`;
+        updateMap(lat, lng, [], "landmark");
+        return;
+      }
+
+      showResults(stores, lat, lng);
+      updateMap(lat, lng, stores, "landmark");
+    } catch (err) {
+      console.error("地標搜尋錯誤：", err);
+      toast("⚠️ 搜尋發生錯誤");
+      results.innerHTML = `<div class="muted">無法取得搜尋結果</div>`;
     }
-
-    const { lat, lng, stores } = geoData;
-
-    if (!stores.length) {
-      results.innerHTML = `<div class="muted">「${keyword}」附近 800 m 內沒有超商</div>`;
-      updateMap(lat, lng, [], "landmark");
-      return;
-    }
-
-    showResults(stores, lat, lng);
-    updateMap(lat, lng, stores, "landmark");
-  } catch (err) {
-    console.error("地標搜尋錯誤：", err);
-    toast("⚠️ 搜尋發生錯誤");
-    results.innerHTML = `<div class="muted">無法取得搜尋結果</div>`;
   }
-}
 
 
   // =========================
