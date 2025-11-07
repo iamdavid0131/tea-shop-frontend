@@ -273,43 +273,43 @@ function updateMap(lat, lng, stores = [], mode = "user") {
   // 地標搜尋 → 地標附近超商
   // =========================
   async function quickSearch(keyword) {
-    if (!keyword) return autoLoadNearby();
+  if (!keyword) return autoLoadNearby();
 
-    results.innerHTML = `<div class="muted">🔍 以地標搜尋中…</div>`;
+  results.innerHTML = `<div class="muted">🔍 以地標搜尋中…</div>`;
 
-    try {
-      const geoRes = await fetch(
-        `/api/stores/landmark?q=${encodeURIComponent(keyword)}&radius=800`
-      );
-      const geoData = await geoRes.json();
+  try {
+    // ✅ 改成正確的 API 呼叫
+    const geoRes = await fetch(
+      `${window.location.origin}/api/stores/landmark?q=${encodeURIComponent(keyword)}&radius=800`
+    );
+    const geoData = await geoRes.json();
 
-      if (!geoData.length) {
-        results.innerHTML = `<div class="muted">查無「${keyword}」相關地點</div>`;
-        updateMap(geoData.lat, geoData.lng, []);
-        return;
-      }
-
-      const lat = parseFloat(geoData[0].lat);
-      const lng = parseFloat(geoData[0].lon);
-
-      const res = await api.searchStoresByLandmark(keyword, 800);
-
-      const stores = res?.stores || [];
-
-      if (!stores.length) {
-        results.innerHTML = `<div class="muted">「${keyword}」附近 500 m 內沒有超商</div>`;
-        updateMap(lat, lng, [], "landmark");
-        return;
-      }
-
-      showResults(stores, lat, lng);
-      updateMap(lat, lng, stores, "landmark");
-    } catch (err) {
-      console.error("地標搜尋錯誤：", err);
-      toast("⚠️ 搜尋發生錯誤");
-      results.innerHTML = `<div class="muted">無法取得搜尋結果</div>`;
+    // ✅ 檢查格式
+    if (!geoData.ok || !geoData.lat || !geoData.lng) {
+      results.innerHTML = `<div class="muted">查無「${keyword}」相關地點</div>`;
+      return;
     }
+
+    const lat = geoData.lat;
+    const lng = geoData.lng;
+    const stores = geoData.stores || [];
+
+    if (!stores.length) {
+      results.innerHTML = `<div class="muted">「${keyword}」附近 800 m 內沒有超商</div>`;
+      updateMap(lat, lng, [], "landmark");
+      return;
+    }
+
+    // ✅ 正常顯示結果與地圖
+    showResults(stores, lat, lng);
+    updateMap(lat, lng, stores, "landmark");
+  } catch (err) {
+    console.error("地標搜尋錯誤：", err);
+    toast("⚠️ 搜尋發生錯誤");
+    results.innerHTML = `<div class="muted">無法取得搜尋結果</div>`;
   }
+}
+
 
   // =========================
   // Bottom Sheet 開關控制（只控制 store-picker）
