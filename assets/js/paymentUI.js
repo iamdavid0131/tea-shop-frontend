@@ -2,11 +2,12 @@
 import { $ } from "./dom.js";
 
 export function initPaymentUI() {
-  const radios = document.querySelectorAll('input[name="payment"]');
-  const onlineMethods = $("#onlineMethods");
-  if (!radios.length || !onlineMethods) return;
+    console.log("✅ paymentUI 初始化完成");
+    const radios = document.querySelectorAll('input[name="payment"]');
+    const onlineMethods = $("#onlineMethods");
+    if (!radios.length || !onlineMethods) return;
 
-  console.log("✅ paymentUI 初始化完成");
+  
 
   // 付款方式切換：貨到付款 / 線上支付
   radios.forEach(radio => {
