@@ -239,7 +239,40 @@ function updateMap(lat, lng, stores = [], mode = "user") {
   // =========================
   // 目前位置附近超商
   // =========================
-  async function quickSearch(keyword) {
+  async function autoLoadNearby() {
+    results.innerHTML = `<div class="muted">📍 取得位置中…</div>`;
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+
+        const res = await api.searchStoresNear(
+          lat,
+          lng,
+          brandSel?.value || "all",
+          radiusSel?.value || 500
+        );
+
+        const stores = res?.stores || [];
+        if (!stores.length) {
+          results.innerHTML = `<div class="muted">附近沒有超商</div>`;
+        } else {
+          showResults(stores, lat, lng);
+        }
+        updateMap(lat, lng, stores, "user");
+      },
+      () => {
+        toast("⚠️ 定位失敗，請手動搜尋");
+        results.innerHTML = `<div class="muted">無法取得位置</div>`;
+      }
+    );
+  }
+
+  // =========================
+  // 地標搜尋 → 地標附近超商
+  // =========================
+async function quickSearch(keyword) {
   if (!keyword) return autoLoadNearby();
 
   results.innerHTML = `<div class="muted">🔍 以地標搜尋中…</div>`;
@@ -268,7 +301,6 @@ function updateMap(lat, lng, stores = [], mode = "user") {
     results.innerHTML = `<div class="muted">無法取得搜尋結果</div>`;
   }
 }
-
 
 
   // =========================
