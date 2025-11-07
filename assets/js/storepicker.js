@@ -44,89 +44,57 @@ export function initStorePicker() {
     return Math.round(R * c);
   }
 
-  // =========================
+  
+// =========================
 // 使用者位置：Google Maps 風格藍點 + 呼吸光暈
 // =========================
 function createPulse(lat, lng) {
   if (!map) return;
 
   // 移除舊層
-  if (pulseMarker) map.removeLayer(pulseMarker);
-  if (userDot) map.removeLayer(userDot);
+  if (pulseMarker) {
+    map.removeLayer(pulseMarker);
+    pulseMarker = null;
+  }
+  if (userDot) {
+    map.removeLayer(userDot);
+    userDot = null;
+  }
 
-  // 🔵 中心實心藍點
+  // 🔵 中心點（固定）
   userDot = L.circleMarker([lat, lng], {
     radius: 6,
     color: "#1E90FF",
     fillColor: "#1E90FF",
     fillOpacity: 1,
-    weight: 1,
+    weight: 1
   }).addTo(map);
 
-  // 🔵 呼吸光暈（以 L.circle 動畫模擬）
+  // 🔵 呼吸光暈（L.circle）
   pulseMarker = L.circle([lat, lng], {
-    radius: 15,
+    radius: 10,
     color: "#1E90FF",
     fillColor: "#1E90FF",
     fillOpacity: 0.25,
-    stroke: false,
+    stroke: false
   }).addTo(map);
 
-  // ✨ 模擬呼吸動畫
-  let growing = true;
-  let scale = 1;
-
+  // ✨ 呼吸動畫 loop
+  let t = 0;
   function animatePulse() {
     if (!pulseMarker) return;
 
-    scale += growing ? 0.02 : -0.02;
-    if (scale > 1.3) growing = false;
-    if (scale < 1.0) growing = true;
+    t += 0.03; // 動畫速度
+    const scale = 1 + 0.25 * Math.sin(t * Math.PI); // 平滑呼吸
+    const opacity = 0.2 + 0.1 * Math.cos(t * Math.PI);
 
-    pulseMarker.setStyle({
-      fillOpacity: 0.25 * (1.5 - scale),
-    });
-    pulseMarker.setRadius(15 * scale);
+    pulseMarker.setRadius(10 * scale);
+    pulseMarker.setStyle({ fillOpacity: opacity });
 
     requestAnimationFrame(animatePulse);
   }
 
-  animatePulse();
-}
-
-
-
-// =========================
-// 使用者位置：Google Maps 風格藍點 + 呼吸光暈
-// =========================
-function createPulse(lat, lng) {
-  if (!map) return;
-
-  // 移除舊層
-  if (pulseMarker) map.removeLayer(pulseMarker);
-  if (userDot) map.removeLayer(userDot);
-
-  // 🔵 中心實心藍點（核心）
-  userDot = L.circleMarker([lat, lng], {
-    radius: 6,
-    color: "#1E90FF",
-    fillColor: "#1E90FF",
-    fillOpacity: 1,
-    weight: 1,
-  }).addTo(map);
-
-  // 🔵 外層柔光（呼吸動畫）
-  const pulsingIcon = L.divIcon({
-    className: "pulse-icon",
-    iconSize: [20, 20],
-    iconAnchor: [10, 10], // 正中心對齊
-  });
-
-  pulseMarker = L.marker([lat, lng], {
-    icon: pulsingIcon,
-    interactive: false,
-    zIndexOffset: 800,
-  }).addTo(map);
+  requestAnimationFrame(animatePulse);
 }
 
 
