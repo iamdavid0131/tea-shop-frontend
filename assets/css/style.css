@@ -1423,14 +1423,17 @@ input.loading {
 }
 
 /* === iOS Toggle 樣式 === */
+.consent-row {
+  display: flex;
+  flex-direction: column;
+  margin: 20px 0 48px;
+}
+
 .sp-toggle {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  align-items: flex-start;
+  gap: 12px;
   cursor: pointer;
-  font-size: 15px;
-  font-weight: 500;
-  color: #222;
   user-select: none;
 }
 
@@ -1439,12 +1442,14 @@ input.loading {
 }
 
 .sp-toggle-slider {
+  flex-shrink: 0;
   width: 44px;
   height: 26px;
   border-radius: 26px;
   background: #ccc;
   position: relative;
   transition: background 0.25s;
+  margin-top: 2px; /* 對齊文字頂部 */
 }
 
 .sp-toggle-slider::after {
@@ -1460,23 +1465,41 @@ input.loading {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-/* Checked 狀態 */
+/* ✅ 開啟狀態 */
 .sp-toggle input:checked + .sp-toggle-slider {
   background: #1e90ff;
 }
-
 .sp-toggle input:checked + .sp-toggle-slider::after {
   left: 20px;
+  background: linear-gradient(145deg, #1e90ff, #4ca3ff);
+  box-shadow: 0 0 6px rgba(30, 144, 255, 0.4);
 }
 
-.sp-consent-note {
-  display: block;
-  font-size: 13px;
-  color: #777;
-  margin-left: 54px; /* 與 toggle 對齊 */
+/* ✅ 文字組：主要上、次要下 */
+.sp-toggle-text {
+  display: flex;
+  flex-direction: column;
   line-height: 1.4;
 }
 
+.sp-toggle-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #222;
+}
+
+.sp-consent-note {
+  font-size: 13px;
+  color: #777;
+  margin-top: 2px;
+}
+
+/* ✅ Safe Area spacing */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .consent-row {
+    margin-bottom: calc(48px + env(safe-area-inset-bottom));
+  }
+}
 
 
 /* ============================================================
@@ -1615,4 +1638,90 @@ input.loading {
   .sp-map {
     height: 180px;
   }
+}
+
+/* === 付款方式 === */
+#paymentCard {
+  margin-top: 24px;
+}
+
+.payment-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.payment-radio {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.25s;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.payment-radio:hover {
+  border-color: #1e90ff;
+  background: #f9fcff;
+}
+
+.payment-radio input {
+  width: 18px;
+  height: 18px;
+  accent-color: #1e90ff;
+}
+
+/* === 展開的線上支付區塊 === */
+.online-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+  animation: fadeInSlide 0.3s ease forwards;
+}
+
+@keyframes fadeInSlide {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 支付按鈕 */
+.pay-btn {
+  height: 44px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  background: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.pay-btn:hover {
+  border-color: #1e90ff;
+  background: #f0f7ff;
+}
+
+.pay-btn.active {
+  border-color: #1e90ff;
+  background: #e8f2ff;
+  color: #1e90ff;
+}
+
+/* Apple Pay 特殊樣式 */
+.pay-btn.apple-pay {
+  background: #000;
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.pay-btn.apple-pay:hover {
+  background: #111;
 }

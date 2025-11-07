@@ -14,6 +14,8 @@ import { initMemberLookup } from "./member.js";
 import { initShippingUI } from "./shippingUI.js";
 import { initStorePicker } from "./storepicker.js";
 import { initZipAuto } from "./zipcode.js";
+import { initPaymentUI } from "./paymentUI.js";
+
 
 window.api = api; // Debug 可留
 
@@ -40,7 +42,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     initStorePicker();         // 門市選擇器
     initZipAuto();             // 郵遞區號自動推斷
     initMemberLookup();        // 會員查詢
-
+    initPaymentUI();           // 付款方式
+    
     requestAnimationFrame(() => {
       CONFIG.PRODUCTS.forEach(p => updatePackUI(p.id));
       updateTotals();

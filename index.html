@@ -158,22 +158,47 @@
   </div> <!-- ✅ 宅配結束 -->
 </div> <!-- ✅ shippingCard 結束 -->
 
+<!-- ✅ Step 4: 付款方式 -->
+<div class="section" id="paymentCard">
+  <h2 class="section-title">付款方式</h2>
+
+  <div class="payment-options">
+    <label class="payment-radio">
+      <input type="radio" name="payment" value="cod" checked>
+      <span>貨到付款</span>
+    </label>
+
+    <label class="payment-radio">
+      <input type="radio" name="payment" value="online">
+      <span>線上支付</span>
+    </label>
+  </div>
+
+  <!-- ✅ 線上支付展開選項 -->
+  <div id="onlineMethods" class="online-methods" style="display: none;">
+    <button class="pay-btn" data-method="credit">💳 信用卡</button>
+    <button class="pay-btn apple-pay" data-method="applepay" style="display:none;"> Apple Pay</button>
+    <button class="pay-btn" data-method="atm">🏧 網路 ATM</button>
+  </div>
+</div>
+
+
+<!-- ✅ 同頁：隱私同意 -->
 <div class="consent-row">
   <label class="sp-toggle">
     <input type="checkbox" id="consentAgree" />
     <span class="sp-toggle-slider"></span>
-    <span class="sp-toggle-label">
-      我同意提供聯絡資訊用於出貨通知與售後服務
-    </span>
-    <span class="sp-consent-note">
-      我們僅會使用您的資料於出貨通知、售後服務，不會另作行銷用途。
-    </span>
+    <div class="sp-toggle-text">
+      <span class="sp-toggle-label">我同意提供聯絡資訊用於出貨通知與售後服務</span>
+      <span class="sp-consent-note">我們僅會使用您的資料於出貨通知、售後服務，不另作行銷用途。</span>
+    </div>
   </label>
 </div>
 
 
 
-  <!-- 同頁：超商門市選擇器 Bottom Sheet -->
+
+  <!-- ✅ 同頁：超商門市選擇器 Bottom Sheet -->
 <div id="store-picker" aria-hidden="true">
   <div class="sp-backdrop" data-sp-close></div>
   <section class="sp-sheet" role="dialog" aria-modal="true">
@@ -204,7 +229,7 @@
 
  
 
-  <!-- Sticky checkout bar -->
+  <!-- ✅ 固定結帳工具列 -->
 <div class="stickybar glassy" id="StickyBar">
   <div class="sticky-inner">
     <div class="stack amounts">
@@ -232,7 +257,7 @@
 </div>
 
 
-<!-- 購物明細 Bottom Sheet -->
+<!-- ✅ 購物明細 Bottom Sheet -->
 <div id="cartSheetBackdrop" class="sheet-backdrop" aria-hidden="true">
   <div id="cartSheet" class="sheet" data-open="false">
     <div class="sheet-handle"></div>
