@@ -239,60 +239,20 @@ function updateMap(lat, lng, stores = [], mode = "user") {
   // =========================
   // 目前位置附近超商
   // =========================
-  async function autoLoadNearby() {
-    results.innerHTML = `<div class="muted">📍 取得位置中…</div>`;
-
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-
-        const res = await api.searchStoresNear(
-          lat,
-          lng,
-          brandSel?.value || "all",
-          radiusSel?.value || 500
-        );
-
-        const stores = res?.stores || [];
-        if (!stores.length) {
-          results.innerHTML = `<div class="muted">附近沒有超商</div>`;
-        } else {
-          showResults(stores, lat, lng);
-        }
-        updateMap(lat, lng, stores, "user");
-      },
-      () => {
-        toast("⚠️ 定位失敗，請手動搜尋");
-        results.innerHTML = `<div class="muted">無法取得位置</div>`;
-      }
-    );
-  }
-
-  // =========================
-  // 地標搜尋 → 地標附近超商
-  // =========================
   async function quickSearch(keyword) {
   if (!keyword) return autoLoadNearby();
 
   results.innerHTML = `<div class="muted">🔍 以地標搜尋中…</div>`;
 
   try {
-    // ✅ 改成正確的 API 呼叫
-    const geoRes = await fetch(
-      `${window.location.origin}/api/stores/landmark?q=${encodeURIComponent(keyword)}&radius=800`
-    );
-    const geoData = await geoRes.json();
+    const geoData = await api.searchStoresByLandmark(keyword, 800);
 
-    // ✅ 檢查格式
     if (!geoData.ok || !geoData.lat || !geoData.lng) {
       results.innerHTML = `<div class="muted">查無「${keyword}」相關地點</div>`;
       return;
     }
 
-    const lat = geoData.lat;
-    const lng = geoData.lng;
-    const stores = geoData.stores || [];
+    const { lat, lng, stores } = geoData;
 
     if (!stores.length) {
       results.innerHTML = `<div class="muted">「${keyword}」附近 800 m 內沒有超商</div>`;
@@ -300,7 +260,6 @@ function updateMap(lat, lng, stores = [], mode = "user") {
       return;
     }
 
-    // ✅ 正常顯示結果與地圖
     showResults(stores, lat, lng);
     updateMap(lat, lng, stores, "landmark");
   } catch (err) {
@@ -309,6 +268,7 @@ function updateMap(lat, lng, stores = [], mode = "user") {
     results.innerHTML = `<div class="muted">無法取得搜尋結果</div>`;
   }
 }
+
 
 
   // =========================
