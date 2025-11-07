@@ -219,61 +219,54 @@ export function initStorePicker() {
       results.innerHTML = `<div class="muted">無法取得搜尋結果</div>`;
     }
   }
+// ===== Bottom Sheet 開關控制 =====
+const openSheet = () => {
+  picker.setAttribute("aria-hidden", "false");
+  sheet.classList.add("sp-open");
+};
+const closeSheet = () => {
+  picker.setAttribute("aria-hidden", "true");
+  sheet.classList.remove("sp-open");
+};
 
-  const sheet = picker.querySelector(".sp-sheet");
+if (openBtn) openBtn.addEventListener("click", openSheet);
+backdrop.addEventListener("click", closeSheet);
+closeBtns.forEach((btn) => btn.addEventListener("click", closeSheet));
 
-  if (!picker || !sheet) return;
+// ===== 拖曳關閉 =====
+let startY = 0, currentY = 0, isDragging = false;
 
-  // ===== 開關控制 =====
-  const openSheet = () => {
-    picker.setAttribute("aria-hidden", "false");
-    sheet.setAttribute("data-open", "true");
-  };
+sheet.addEventListener("touchstart", (e) => {
+  if (!e.target.closest(".sp-handle")) return;
+  startY = e.touches[0].clientY;
+  isDragging = true;
+  sheet.classList.add("sp-dragging");
+});
 
-  const closeSheet = () => {
-    picker.setAttribute("aria-hidden", "true");
-    sheet.removeAttribute("data-open");
-  };
+sheet.addEventListener("touchmove", (e) => {
+  if (!isDragging) return;
+  currentY = e.touches[0].clientY;
+  const diff = currentY - startY;
+  if (diff > 0) sheet.style.transform = `translateY(${diff}px)`;
+});
 
-  // ✅ 開啟
-  if (openBtn) openBtn.addEventListener("click", openSheet);
+sheet.addEventListener("touchend", () => {
+  if (!isDragging) return;
+  isDragging = false;
+  sheet.classList.remove("sp-dragging");
 
-  // ✅ 點背景或關閉按鈕關閉
-  backdrop.addEventListener("click", closeSheet);
-  closeBtns.forEach(btn => btn.addEventListener("click", closeSheet));
+  // 🔥 炫酷回彈動畫
+  const handle = sheet.querySelector(".sp-handle");
+  if (handle) {
+    handle.classList.remove("bounce");
+    void handle.offsetWidth; // 強制重繪以重新觸發動畫
+    handle.classList.add("bounce");
+  }
 
-  // ===== 拖曳關閉功能 =====
-  let startY = 0, currentY = 0, isDragging = false;
-
-  sheet.addEventListener("touchstart", (e) => {
-    if (!e.target.closest(".sheet-handle")) return; // 只允許從手把拖
-    startY = e.touches[0].clientY;
-    isDragging = true;
-    sheet.classList.add("dragging");
-  });
-
-  sheet.addEventListener("touchmove", (e) => {
-    if (!isDragging) return;
-    currentY = e.touches[0].clientY;
-    const diff = currentY - startY;
-    if (diff > 0) {
-      sheet.style.transform = `translateY(${diff}px)`;
-    }
-  });
-
-  sheet.addEventListener("touchend", () => {
-    if (!isDragging) return;
-    isDragging = false;
-    sheet.classList.remove("dragging");
-
-    const diff = currentY - startY;
-    sheet.style.transform = ""; // reset transform
-
-    if (diff > 100) {
-      closeSheet();
-    } else {
-      sheet.setAttribute("data-open", "true");
-    }
-  });
+  const diff = currentY - startY;
+  sheet.style.transform = "";
+  if (diff > 100) closeSheet();
+  else sheet.classList.add("sp-open");
+});
 
 }

@@ -1073,6 +1073,47 @@ input.loading {
 #store-picker[aria-hidden="false"] {
   display: block;
 }
+/* === StorePicker 專屬拉條（sp-handle） === */
+.sp-handle {
+  width: 36px;
+  height: 4px;
+  background: linear-gradient(90deg, #ccc, #ddd);
+  border-radius: 999px;
+  margin: 8px auto 14px;
+  opacity: 0.85;
+  transition:
+    transform 0.25s cubic-bezier(0.25, 1.5, 0.5, 1),
+    background 0.25s ease,
+    box-shadow 0.25s ease,
+    opacity 0.25s ease;
+  pointer-events: none;
+}
+
+/* ✅ 開啟時亮一點 */
+.sp-open .sp-handle {
+  opacity: 1;
+  background: linear-gradient(90deg, #bbb, #ccc);
+}
+
+/* ✅ 拖曳中：放大、變亮、有陰影、帶彈性感 */
+.sp-dragging .sp-handle {
+  transform: scaleX(2.2) scaleY(1.4);
+  background: linear-gradient(90deg, #8acbff, #66b1ff);
+  box-shadow: 0 4px 14px rgba(102,177,255,0.45);
+  opacity: 1;
+}
+
+/* ✅ 拖曳放開瞬間微回彈動畫 */
+@keyframes sp-handle-bounce {
+  0%   { transform: scaleX(2.2) scaleY(1.4); }
+  60%  { transform: scaleX(0.9) scaleY(0.8); }
+  100% { transform: scaleX(1) scaleY(1); }
+}
+
+/* 拖曳結束後加上這個 class 讓動畫播放 */
+.sp-handle.bounce {
+  animation: sp-handle-bounce 0.4s cubic-bezier(0.25, 1.5, 0.5, 1);
+}
 
 /* ✅ 背景模糊 */
 .sp-backdrop {

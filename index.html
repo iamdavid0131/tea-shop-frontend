@@ -161,43 +161,40 @@
 
   <!-- 同頁：超商門市選擇器 Bottom Sheet -->
   <div id="store-picker" aria-hidden="true">
-    <div class="sp-backdrop" data-sp-close></div>
-    <section class="sp-sheet" role="dialog" aria-modal="true" aria-labelledby="sp-title">
-      <!-- ✅ 拖曳手把 -->
-      <div class="sheet-handle"></div>
-      <header class="sp-header">
-        <h3 id="sp-title">選擇取貨門市</h3>
-        <button class="sp-close" type="button" title="關閉" data-sp-close>✕</button>
-      </header>
+  <div class="sp-backdrop" data-sp-close></div>
+  <section class="sp-sheet" role="dialog" aria-modal="true">
+    <div class="sp-handle"></div>
 
-      <div class="sp-toolbar">
-        <select id="sp-brand" class="sp-select sp-brand">
-          <option value="all">全部品牌</option>
-          <option value="7-11">7-ELEVEN</option>
-          <option value="familymart">全家 FamilyMart</option>
-        </select>
-        <select id="sp-radius">
-          <option value="500">500m</option>
-          <option value="1000" selected>1000m</option>
-          <option value="1500">1500m</option>
-        </select>
-        <button id="sp-nearby" type="button">附近門市</button>
-      </div>
+    <header class="sp-header">
+      <h3 id="sp-title">選擇取貨門市</h3>
+      <button class="sp-close" type="button" title="關閉" data-sp-close>✕</button>
+    </header>
 
-      <div class="sp-search">
-        <input id="sp-q" class="sp-input sp-query" type="search"
-          placeholder="輸入附近地標或地址" autocomplete="off">
-        <button id="sp-search-btn" class="sp-search-title" type="button">搜尋</button>
-      </div>
+    <div class="sp-toolbar">
+      <select id="sp-brand" class="sp-select sp-brand">
+        <option value="all">全部品牌</option>
+        <option value="7-11">7-ELEVEN</option>
+        <option value="familymart">全家 FamilyMart</option>
+      </select>
+      <select id="sp-radius">
+        <option value="500">500m</option>
+        <option value="1000" selected>1000m</option>
+        <option value="1500">1500m</option>
+      </select>
+      <button id="sp-nearby" type="button">附近門市</button>
+    </div>
 
-      <div id="sp-map" class="sp-map" aria-label="地圖" role="img"></div>
+    <div class="sp-search">
+      <input id="sp-q" class="sp-input sp-query" type="search" placeholder="輸入地標或地址">
+      <button id="sp-search-btn" class="sp-search-title" type="button">搜尋</button>
+    </div>
 
-      <div class="sp-scroll">
-        <div class="sp-results" id="sp-results" role="listbox" aria-label="搜尋結果"></div>
-      </div>
-
-    </section>
-  </div>
+    <div id="sp-map" class="sp-map" aria-label="地圖"></div>
+    <div class="sp-scroll">
+      <div id="sp-results" class="sp-results"></div>
+    </div>
+  </section>
+</div>
 
 
  
