@@ -1146,6 +1146,8 @@ input.loading {
   flex-direction: column;
   gap: 12px;
   will-change: transform;
+  touch-action: pan-y;
+  user-select: none;
 }
 .sp-sheet.sp-dragging {
   transition: none;

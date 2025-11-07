@@ -341,57 +341,61 @@ async function quickSearch(keyword) {
   // =========================
   // 拖曳關閉（只對 sp-handle 生效）
   // =========================
-  let startY = 0;
-  let currentY = 0;
-  let isDragging = false;
+  // =========================
+// ✅ 改良版拖曳關閉（整個上半部可下滑）
+// =========================
+let startY = 0;
+let currentY = 0;
+let isDragging = false;
 
-  if (handle) {
-    sheet.addEventListener("touchstart", (e) => {
-      if (!e.target.closest(".sp-handle")) return;
-      startY = e.touches[0].clientY;
-      currentY = startY;
-      isDragging = true;
-      sheet.classList.add("sp-dragging");
-      e.stopPropagation();
-    });
+sheet.addEventListener("touchstart", (e) => {
+  const touch = e.touches[0];
+  startY = touch.clientY;
+  currentY = startY;
+  isDragging = true;
+  sheet.classList.add("sp-dragging");
+  e.stopPropagation();
+});
 
-    sheet.addEventListener("touchmove", (e) => {
-      if (!isDragging) return;
-      const touch = e.touches[0];
-      currentY = touch.clientY;
-      const diff = currentY - startY;
-      if (diff > 0) {
-        sheet.style.transform = `translateY(${diff}px)`;
-      }
-      e.stopPropagation();
-    });
+sheet.addEventListener("touchmove", (e) => {
+  if (!isDragging) return;
+  const touch = e.touches[0];
+  currentY = touch.clientY;
+  const diff = currentY - startY;
 
-    sheet.addEventListener("touchend", (e) => {
-      if (!isDragging) return;
-      isDragging = false;
-      sheet.classList.remove("sp-dragging");
+  // 只允許向下拖曳
+  if (diff > 0) {
+    sheet.style.transform = `translateY(${diff}px)`;
+    sheet.style.transition = "none";
+  }
+  e.stopPropagation();
+});
 
-      const diff = currentY - startY;
-      sheet.style.transform = "";
+sheet.addEventListener("touchend", (e) => {
+  if (!isDragging) return;
+  isDragging = false;
+  sheet.classList.remove("sp-dragging");
 
-      // 拉夠遠就關閉
-      if (diff > 100) {
-        closeSheet();
-      } else {
-        sheet.classList.add("sp-open");
-      }
+  const diff = currentY - startY;
+  sheet.style.transition = "transform 0.3s ease";
+  sheet.style.transform = "";
 
-      // 拉條 bounce 動畫
-      if (handle) {
-        handle.classList.remove("bounce");
-        void handle.offsetWidth; // reset
-        handle.classList.add("bounce");
-      }
-
-      e.stopPropagation();
-    });
+  // ✅ 拖超過 100px 就關閉
+  if (diff > 100) {
+    closeSheet();
+  } else {
+    sheet.classList.add("sp-open");
   }
 
+  // ✅ 拉條 bounce 動畫（如果存在）
+  if (handle) {
+    handle.classList.remove("bounce");
+    void handle.offsetWidth;
+    handle.classList.add("bounce");
+  }
+
+  e.stopPropagation();
+});
   // =========================
   // 綁定按鈕事件
   // =========================
