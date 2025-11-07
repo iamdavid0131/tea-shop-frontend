@@ -65,9 +65,13 @@ export const api = {
     return _get(`/member?phone=${encodeURIComponent(phone)}`);
   },
   
-  async searchStoresByLandmark(q, radius = 800) {
-    const res = await fetch(`/stores/landmark?q=${encodeURIComponent(q)}&radius=${radius}`);
-    return res.json();
+  /** ✅ 查地標附近的門市（Google Maps Geocode + Places） */
+  searchStoresByLandmark(q, radius = 800) {
+    const params = new URLSearchParams({
+      q,
+      radius
+    });
+    return _get(`/stores/landmark?${params.toString()}`);
   }
 
 };
