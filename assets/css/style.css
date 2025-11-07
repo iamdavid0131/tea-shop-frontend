@@ -1114,15 +1114,13 @@ input.loading {
 
 /* ✅ 使用者位置光暈 */
 .pulse-icon {
-  width: 12px;
-  height: 12px;
-  background: rgba(30, 144, 255, 0.5);
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  position: relative;
-  transform: translate(-6px, -6px);
-  animation: pulseGlow 1.8s ease-in-out infinite;
+  background: radial-gradient(circle at center, rgba(30,144,255,0.9) 40%, rgba(30,144,255,0.2) 70%, transparent 100%);
+  animation: pulseGlow 2s ease-in-out infinite;
   pointer-events: none;
-  z-index: 500;
+  z-index: 1000;
 }
 
 @keyframes pulseGlow {
