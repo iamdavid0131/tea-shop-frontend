@@ -175,24 +175,109 @@ export function initStorePicker() {
   }
 
 
+  // ✅ 文字 + 地標搜尋（找地標附近的超商）
   async function quickSearch(keyword) {
     if (!keyword) return autoLoadNearby();
 
-    results.innerHTML = "搜尋中…";
+    results.innerHTML = `<div class="muted">🔍 以地標搜尋中…</div>`;
 
-    navigator.geolocation.getCurrentPosition(async (pos) => {
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-
-      const res = await api.searchStoresNear(lat, lng, brandSel.value, radiusSel.value);
-
-      showResults(
-        res?.stores.filter(
-          (s) => s.name.includes(keyword) || s.address.includes(keyword)
-        ),
-        lat,
-        lng
+    try {
+      // 1️⃣ 先用 Nominatim 將地標轉座標
+      const geoRes = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(keyword)}&limit=1`
       );
-    }, autoLoadNearby);
+      const geoData = await geoRes.json();
+
+      if (!geoData.length) {
+        results.innerHTML = `<div class="muted">查無「${keyword}」相關地點</div>`;
+        return;
+      }
+
+      const lat = parseFloat(geoData[0].lat);
+      const lng = parseFloat(geoData[0].lon);
+
+      // 2️⃣ 以地標為中心搜尋 500m 內的門市
+      const res = await api.searchStoresNear(lat, lng, brandSel.value, 500);
+      const stores = (res?.stores || []).filter(s =>
+        /7-?ELEVEN|7-11|SEVEN/i.test(s.name) ||
+        /全家|FAMILY/i.test(s.name)
+      );
+
+      if (!stores.length) {
+        results.innerHTML = `<div class="muted">「${keyword}」附近 500 m 內沒有超商</div>`;
+        updateMap(lat, lng, []); // 顯示地標位置
+        return;
+      }
+
+      // 3️⃣ 顯示結果與地圖
+      showResults(stores, lat, lng);
+      updateMap(lat, lng, stores);
+
+    } catch (err) {
+      console.error("地標搜尋錯誤：", err);
+      toast("⚠️ 搜尋發生錯誤");
+      results.innerHTML = `<div class="muted">無法取得搜尋結果</div>`;
+    }
   }
+
+     const picker = $("store-picker");
+  const sheet = picker.querySelector(".sp-sheet");
+  const backdrop = picker.querySelector(".sp-backdrop");
+  const closeBtns = picker.querySelectorAll("[data-sp-close]");
+  const openBtn = $("openStorePicker"); // 你外部觸發開啟的按鈕
+
+  if (!picker || !sheet) return;
+
+  // ===== 開關控制 =====
+  const openSheet = () => {
+    picker.setAttribute("aria-hidden", "false");
+    sheet.setAttribute("data-open", "true");
+  };
+
+  const closeSheet = () => {
+    picker.setAttribute("aria-hidden", "true");
+    sheet.removeAttribute("data-open");
+  };
+
+  // ✅ 開啟
+  if (openBtn) openBtn.addEventListener("click", openSheet);
+
+  // ✅ 點背景或關閉按鈕關閉
+  backdrop.addEventListener("click", closeSheet);
+  closeBtns.forEach(btn => btn.addEventListener("click", closeSheet));
+
+  // ===== 拖曳關閉功能 =====
+  let startY = 0, currentY = 0, isDragging = false;
+
+  sheet.addEventListener("touchstart", (e) => {
+    if (!e.target.closest(".sheet-handle")) return; // 只允許從手把拖
+    startY = e.touches[0].clientY;
+    isDragging = true;
+    sheet.classList.add("dragging");
+  });
+
+  sheet.addEventListener("touchmove", (e) => {
+    if (!isDragging) return;
+    currentY = e.touches[0].clientY;
+    const diff = currentY - startY;
+    if (diff > 0) {
+      sheet.style.transform = `translateY(${diff}px)`;
+    }
+  });
+
+  sheet.addEventListener("touchend", () => {
+    if (!isDragging) return;
+    isDragging = false;
+    sheet.classList.remove("dragging");
+
+    const diff = currentY - startY;
+    sheet.style.transform = ""; // reset transform
+
+    if (diff > 100) {
+      closeSheet();
+    } else {
+      sheet.setAttribute("data-open", "true");
+    }
+  });
+
 }

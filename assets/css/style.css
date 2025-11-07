@@ -1185,6 +1185,13 @@ input.loading {
   top: 10px;
 }
 
+/* ✅ 移除外層灰框與背景 */
+.leaflet-control-zoom {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
 /* ✅ 圓形按鈕樣式強化 */
 .leaflet-control-zoom a {
   width: 36px !important;
@@ -1198,6 +1205,11 @@ input.loading {
   border: none !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   color: #111 !important;
+}
+
+
+.leaflet-control-zoom a:hover {
+  background: #f4f4f4 !important;
 }
 
 
