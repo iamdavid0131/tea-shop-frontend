@@ -1,17 +1,23 @@
-//storepicker.js
+// storepicker.js
 import { $, $$, toast } from "./dom.js";
 import { api } from "./app.api.js";
 
 export function initStorePicker() {
   const picker = $("store-picker");
+  if (!picker) return;
+
   const results = $("sp-results");
   const input = $("sp-q");
   const brandSel = $("sp-brand");
   const radiusSel = $("sp-radius");
-  let map;
-  let circleLayer;
+  const sheet = picker.querySelector(".sp-sheet");
+  const backdrop = picker.querySelector(".sp-backdrop");
+  const closeBtns = picker.querySelectorAll("[data-sp-close]");
+  const openBtn = $("openStorePicker");
 
-  // ✅ 計算兩點距離（Haversine）
+  let map, circleLayer;
+
+  // ===== 計算兩點距離（Haversine）=====
   function calculateDistance(lat1, lng1, lat2, lng2) {
     const R = 6371e3;
     const toRad = (x) => (x * Math.PI) / 180;
@@ -26,103 +32,71 @@ export function initStorePicker() {
     return Math.round(R * c);
   }
 
+  // ===== 更新地圖 =====
   function updateMap(lat, lng, stores) {
     const mapEl = $("sp-map");
     if (!mapEl) return;
 
     if (!map) {
       map = L.map(mapEl).setView([lat, lng], 17);
-
-      // ✅ 更簡約地圖
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap &copy; CARTO'
-      }).addTo(map);
+      L.tileLayer(
+        "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+        {
+          maxZoom: 19,
+          attribution: "&copy; OpenStreetMap &copy; CARTO",
+        }
+      ).addTo(map);
     } else {
       map.setView([lat, lng], 17);
     }
 
-    // ✅ 清除之前 markerLayer
-    if (map._markerLayer) {
-      map.removeLayer(map._markerLayer);
-    }
-
-    if (circleLayer) {
-      map.removeLayer(circleLayer);
-    }
+    // 清空舊圖層
+    if (map._markerLayer) map.removeLayer(map._markerLayer);
+    if (circleLayer) map.removeLayer(circleLayer);
 
     const markers = [];
+    markers.push(L.marker([lat, lng], { title: "目前位置" }).addTo(map));
 
-    // 使用者位置
-    markers.push(
-      L.marker([lat, lng], { title: "目前位置" }).addTo(map)
+    // 只顯示超商
+    const validStores = (stores || []).filter(
+      (s) =>
+        /7-?ELEVEN|7-11|SEVEN/i.test(s.name) ||
+        /全家|FAMILY/i.test(s.name)
     );
 
-    // ✅ 僅顯示 7-11 ＆ 全家
-    const validStores = stores.filter(s =>
-      /7-?ELEVEN|7-11|SEVEN/i.test(s.name) ||
-      /全家|FAMILY/i.test(s.name)
-    );
-
-    validStores.forEach(s => {
+    validStores.forEach((s) => {
       if (!s.lat || !s.lng) return;
       markers.push(
-        L.marker([s.lat, s.lng], { title: s.name }).addTo(map)
+        L.marker([s.lat, s.lng], { title: s.name })
+          .addTo(map)
           .bindPopup(`<b>${s.name}</b><br>${s.address}`)
       );
     });
 
-
+    const group = L.featureGroup(markers);
     map._markerLayer = group;
 
-    // ✅ 限制視野 500m範圍
+    // 使用者 500 m 範圍
     circleLayer = L.circle([lat, lng], {
       radius: 500,
       color: "#4CAF50",
       fillColor: "#4CAF50",
       fillOpacity: 0.12,
-      weight: 1
+      weight: 1,
     }).addTo(map);
   }
 
-  if (!picker) return;
-
-  const openBtn = $("openStorePicker");
-  const backdrop = picker.querySelector(".sp-backdrop");
-  const closeBtn = picker.querySelector(".sp-close");
-
-  openBtn.addEventListener("click", () => {
-    picker.setAttribute("aria-hidden", "false");
-    autoLoadNearby();
-  });
-
-  backdrop.addEventListener("click", () => {
-    picker.setAttribute("aria-hidden", "true");
-  });
-
-  closeBtn.addEventListener("click", () => {
-    picker.setAttribute("aria-hidden", "true");
-  });
-
-  $("sp-nearby").addEventListener("click", autoLoadNearby);
-
-  $("sp-search-btn").addEventListener("click", () => quickSearch(input.value));
-  input.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") quickSearch(input.value);
-  });
-
-
-
+  // ===== 渲染結果 =====
   function showResults(stores, lat, lng) {
     if (!stores?.length) {
       results.innerHTML = `<div class="muted">查無門市</div>`;
       return;
     }
 
-    // ✅ 僅顯示 7/11 & 全家
-    stores = stores.filter(s =>
-      /7-?ELEVEN|7-11|SEVEN/i.test(s.name) ||
-      /全家|FAMILY/i.test(s.name)
+    stores = stores.filter(
+      (s) =>
+        /7-?ELEVEN|7-11|SEVEN/i.test(s.name) ||
+        /全家|FAMILY/i.test(s.name)
     );
 
     if (!stores.length) {
@@ -131,39 +105,46 @@ export function initStorePicker() {
     }
 
     stores = stores
-      .map(s => ({
+      .map((s) => ({
         ...s,
-        distance: calculateDistance(lat, lng, s.lat, s.lng)
+        distance: calculateDistance(lat, lng, s.lat, s.lng),
       }))
       .sort((a, b) => a.distance - b.distance);
 
-    results.innerHTML = stores.map(s => `
+    results.innerHTML = stores
+      .map(
+        (s) => `
       <div class="store-option" data-name="${s.name}">
         <b>${s.name}</b><br>
         <span class="muted">${s.address}</span><br>
-        <span class="distance">📍 ${s.distance}m</span>
+        <span class="distance">📍 ${s.distance} m</span>
       </div>
-    `).join("");
+    `
+      )
+      .join("");
 
-    $$(".store-option").forEach(el => {
+    $$(".store-option").forEach((el) => {
       el.addEventListener("click", () => {
         $("storeName").value = el.dataset.name;
-        picker.setAttribute("aria-hidden", "true");
+        closeSheet();
         toast("✅ 已選擇門市");
       });
     });
   }
 
-
+  // ===== 目前位置搜尋 =====
   async function autoLoadNearby() {
     results.innerHTML = `<div class="muted">📍 取得位置中…</div>`;
-
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
-
-        const res = await api.searchStoresNear(lat, lng, brandSel.value, radiusSel.value);
+        const res = await api.searchStoresNear(
+          lat,
+          lng,
+          brandSel.value,
+          radiusSel.value
+        );
         showResults(res?.stores || [], lat, lng);
         updateMap(lat, lng, res?.stores || []);
       },
@@ -174,20 +155,18 @@ export function initStorePicker() {
     );
   }
 
-
-  // ✅ 文字 + 地標搜尋（找地標附近的超商）
+  // ===== 地標搜尋（找地標附近的超商）=====
   async function quickSearch(keyword) {
     if (!keyword) return autoLoadNearby();
-
     results.innerHTML = `<div class="muted">🔍 以地標搜尋中…</div>`;
 
     try {
-      // 1️⃣ 先用 Nominatim 將地標轉座標
       const geoRes = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(keyword)}&limit=1`
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          keyword
+        )}&limit=1`
       );
       const geoData = await geoRes.json();
-
       if (!geoData.length) {
         results.innerHTML = `<div class="muted">查無「${keyword}」相關地點</div>`;
         return;
@@ -195,24 +174,21 @@ export function initStorePicker() {
 
       const lat = parseFloat(geoData[0].lat);
       const lng = parseFloat(geoData[0].lon);
-
-      // 2️⃣ 以地標為中心搜尋 500m 內的門市
       const res = await api.searchStoresNear(lat, lng, brandSel.value, 500);
-      const stores = (res?.stores || []).filter(s =>
-        /7-?ELEVEN|7-11|SEVEN/i.test(s.name) ||
-        /全家|FAMILY/i.test(s.name)
+      const stores = (res?.stores || []).filter(
+        (s) =>
+          /7-?ELEVEN|7-11|SEVEN/i.test(s.name) ||
+          /全家|FAMILY/i.test(s.name)
       );
 
       if (!stores.length) {
         results.innerHTML = `<div class="muted">「${keyword}」附近 500 m 內沒有超商</div>`;
-        updateMap(lat, lng, []); // 顯示地標位置
+        updateMap(lat, lng, []);
         return;
       }
 
-      // 3️⃣ 顯示結果與地圖
       showResults(stores, lat, lng);
       updateMap(lat, lng, stores);
-
     } catch (err) {
       console.error("地標搜尋錯誤：", err);
       toast("⚠️ 搜尋發生錯誤");
@@ -220,37 +196,27 @@ export function initStorePicker() {
     }
   }
 
-     const picker = $("store-picker");
-  const sheet = picker.querySelector(".sp-sheet");
-  const backdrop = picker.querySelector(".sp-backdrop");
-  const closeBtns = picker.querySelectorAll("[data-sp-close]");
-  const openBtn = $("openStorePicker"); // 你外部觸發開啟的按鈕
-
-  if (!picker || !sheet) return;
-
-  // ===== 開關控制 =====
+  // ===== Bottom Sheet 開關控制 =====
   const openSheet = () => {
     picker.setAttribute("aria-hidden", "false");
     sheet.setAttribute("data-open", "true");
   };
-
   const closeSheet = () => {
     picker.setAttribute("aria-hidden", "true");
     sheet.removeAttribute("data-open");
   };
 
-  // ✅ 開啟
   if (openBtn) openBtn.addEventListener("click", openSheet);
-
-  // ✅ 點背景或關閉按鈕關閉
   backdrop.addEventListener("click", closeSheet);
-  closeBtns.forEach(btn => btn.addEventListener("click", closeSheet));
+  closeBtns.forEach((btn) => btn.addEventListener("click", closeSheet));
 
-  // ===== 拖曳關閉功能 =====
-  let startY = 0, currentY = 0, isDragging = false;
+  // ===== 拖曳關閉 =====
+  let startY = 0,
+    currentY = 0,
+    isDragging = false;
 
   sheet.addEventListener("touchstart", (e) => {
-    if (!e.target.closest(".sheet-handle")) return; // 只允許從手把拖
+    if (!e.target.closest(".sheet-handle")) return;
     startY = e.touches[0].clientY;
     isDragging = true;
     sheet.classList.add("dragging");
@@ -260,24 +226,23 @@ export function initStorePicker() {
     if (!isDragging) return;
     currentY = e.touches[0].clientY;
     const diff = currentY - startY;
-    if (diff > 0) {
-      sheet.style.transform = `translateY(${diff}px)`;
-    }
+    if (diff > 0) sheet.style.transform = `translateY(${diff}px)`;
   });
 
   sheet.addEventListener("touchend", () => {
     if (!isDragging) return;
     isDragging = false;
     sheet.classList.remove("dragging");
-
     const diff = currentY - startY;
-    sheet.style.transform = ""; // reset transform
-
-    if (diff > 100) {
-      closeSheet();
-    } else {
-      sheet.setAttribute("data-open", "true");
-    }
+    sheet.style.transform = "";
+    if (diff > 100) closeSheet();
+    else sheet.setAttribute("data-open", "true");
   });
 
+  // ===== 綁定搜尋事件 =====
+  $("sp-nearby").addEventListener("click", autoLoadNearby);
+  $("sp-search-btn").addEventListener("click", () => quickSearch(input.value));
+  input.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") quickSearch(input.value);
+  });
 }
