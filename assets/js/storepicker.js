@@ -84,8 +84,8 @@ function createPulse(lat, lng) {
   function animatePulse() {
     if (!pulseMarker) return;
 
-    t += 0.03; // 動畫速度
-    const scale = 1 + 0.25 * Math.sin(t * Math.PI); // 平滑呼吸
+    t += 0.015; // 動畫速度
+    const scale = 1 + 0.3 * Math.sin(t * Math.PI); // 平滑呼吸
     const opacity = 0.2 + 0.1 * Math.cos(t * Math.PI);
 
     pulseMarker.setRadius(10 * scale);
