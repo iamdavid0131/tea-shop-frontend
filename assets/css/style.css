@@ -1183,13 +1183,13 @@ input.loading {
   gap: 8px;
 }
 /* ============ Store Form 統一樣式 ============ */
-
 .store-form {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "PingFang TC", sans-serif;
   color: #222;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  width: 100%;
   margin-bottom: 16px;
 }
 
@@ -1199,7 +1199,7 @@ input.loading {
   gap: 8px;
 }
 
-/* Select + Input 統一視覺 */
+/* === Select + Input 統一視覺 === */
 .sp-select,
 .sp-input {
   appearance: none;
@@ -1213,6 +1213,8 @@ input.loading {
   flex: 1;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
   transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .sp-select:focus,
@@ -1231,7 +1233,12 @@ input.loading {
   padding-right: 30px;
 }
 
-/* 附近門市按鈕 */
+/* Placeholder 顏色 */
+.sp-input::placeholder {
+  color: #999;
+}
+
+/* === 附近門市按鈕 === */
 .sp-search-title {
   height: 42px;
   padding: 0 16px;
@@ -1243,20 +1250,23 @@ input.loading {
   color: #fff;
   white-space: nowrap;
   transition: background 0.25s;
+  cursor: pointer;
 }
 
 .sp-search-title:hover {
   background: #0074e4;
 }
 
-/* Label */
+/* === Label 樣式 === */
 .sp-label {
+  display: block;
   font-size: 15px;
   font-weight: 600;
-  margin-top: 6px;
+  margin: 4px 0;
+  color: #222;
 }
 
-/* 結果清單 */
+/* === 結果清單 === */
 .store-results {
   margin-top: 8px;
   font-size: 14px;
