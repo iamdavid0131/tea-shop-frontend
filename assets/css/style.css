@@ -1182,7 +1182,16 @@ input.loading {
   display: flex;
   gap: 8px;
 }
-/* ============ Store Form 統一樣式 ============ */
+/* ============================================================
+   🏪 Store Form 統一樣式（祥興茶行 iOS 樣式）
+   ============================================================ */
+
+#storeFields {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+/* === 容器 === */
 .store-form {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "PingFang TC", sans-serif;
   color: #222;
@@ -1190,16 +1199,16 @@ input.loading {
   flex-direction: column;
   gap: 10px;
   width: 100%;
-  margin-bottom: 16px;
 }
 
+/* === Row：選單與按鈕水平排列 === */
 .store-row {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-/* === Select + Input 統一視覺 === */
+/* === Input / Select 統一視覺 === */
 .sp-select,
 .sp-input {
   appearance: none;
@@ -1211,12 +1220,13 @@ input.loading {
   border-radius: 10px;
   background: #fff;
   flex: 1;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
-  transition: border-color 0.2s, box-shadow 0.2s;
   width: 100%;
   box-sizing: border-box;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
+/* 聚焦時高亮 */
 .sp-select:focus,
 .sp-input:focus {
   border-color: #1e90ff;
@@ -1224,7 +1234,7 @@ input.loading {
   outline: none;
 }
 
-/* Select 下拉箭頭 */
+/* 下拉箭頭圖示（SVG） */
 .sp-select {
   background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23999' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -1249,21 +1259,23 @@ input.loading {
   background: #1e90ff;
   color: #fff;
   white-space: nowrap;
-  transition: background 0.25s;
   cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: background 0.25s, box-shadow 0.25s;
 }
 
 .sp-search-title:hover {
   background: #0074e4;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
 
-/* === Label 樣式 === */
+/* === Label === */
 .sp-label {
   display: block;
   font-size: 15px;
   font-weight: 600;
-  margin: 4px 0;
   color: #222;
+  margin: 6px 0 2px;
 }
 
 /* === 結果清單 === */
@@ -1271,6 +1283,24 @@ input.loading {
   margin-top: 8px;
   font-size: 14px;
   color: #444;
+  line-height: 1.5;
+}
+
+/* === 統一 focus glow === */
+#storeFields select:focus,
+#storeFields input:focus,
+#storeFields button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.15);
+}
+
+/* === iOS 邊緣微調 === */
+@supports (-webkit-touch-callout: none) {
+  .sp-input,
+  .sp-select,
+  .sp-search-title {
+    border-radius: 12px;
+  }
 }
 
 
