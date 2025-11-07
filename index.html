@@ -139,20 +139,19 @@
   </div>
 
   <!-- ✅ 宅配到府 -->
-<div id="codFields" style="display:none;">
-  <label>縣市</label>
-  <select id="city"></select>
+<div id="codFields" class="delivery-form" style="display:none;">
+  <label class="sp-label">縣市</label>
+  <select id="city" class="sp-select">
+    <option value="">請選擇縣市</option>
+  </select>
 
-  <label>行政區</label>
-  <select id="district"></select>
+  <label class="sp-label">行政區</label>
+  <select id="district" class="sp-select">
+    <option value="">請選擇行政區</option>
+  </select>
 
-  <div class="zipcode-box">
-    郵遞區號：<span id="zipDisplay">—</span>
-    <input id="zipCode" type="hidden">
-  </div>
-
-  <label>詳細地址</label>
-  <input id="address" type="text" placeholder="請填入路段、巷弄…">
+  <label class="sp-label">詳細地址</label>
+  <input id="address" type="text" class="sp-input" placeholder="請填入路段、巷弄、門牌…" />
 </div>
 
 
