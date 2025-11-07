@@ -3,12 +3,10 @@
 // 祥興茶行前端專用 API 模組
 // ===============================
 
-const API_BASE = 'https://tea-order-server.onrender.com/api';
+const API_BASE = "https://tea-order-server.onrender.com/api";
 
 async function _get(path) {
-  const url = path.startsWith("http")
-    ? path
-    : `${API_BASE}${path}`;
+  const url = path.startsWith("http") ? path : `${API_BASE}${path}`;
   const r = await fetch(url);
   return r.json();
 }
@@ -52,31 +50,28 @@ export const api = {
   /** 查附近門市 */
   searchStoresNear(lat, lng, brand, radius) {
     const params = new URLSearchParams({
-      lat, lng,
+      lat,
+      lng,
       brand: brand || "all",
-      radius: radius || 1000
+      radius: radius || 1000,
     });
     return _get(`/stores/near?${params.toString()}`);
   },
-
 
   /** ✅ 會員查詢 */
   memberSearch(phone) {
     return _get(`/member?phone=${encodeURIComponent(phone)}`);
   },
-  
+
   /** ✅ 查地標附近的門市（Google Maps Geocode + Places） */
   async searchStoresByLandmark(q, brand = "all") {
     const params = new URLSearchParams({
       q,
       brand,
-      radius
     });
     const res = await fetch(`${API_BASE}/stores/landmark?${params.toString()}`);
     return res.json();
-  }
-
-
+  },
 };
 
 console.log("✅ app.api.js 重新載入成功，API_BASE =", API_BASE);
