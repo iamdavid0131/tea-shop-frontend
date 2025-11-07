@@ -1,4 +1,5 @@
-export const $ = (id) => document.getElementById(id);
+//dom.js
+export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
 export function toast(msg) {
