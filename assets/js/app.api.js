@@ -63,7 +63,13 @@ export const api = {
   /** ✅ 會員查詢 */
   memberSearch(phone) {
     return _get(`/member?phone=${encodeURIComponent(phone)}`);
+  },
+  
+  async searchStoresByLandmark(q, radius = 800) {
+    const res = await fetch(`/stores/landmark?q=${encodeURIComponent(q)}&radius=${radius}`);
+    return res.json();
   }
+
 };
 
 console.log("✅ app.api.js 重新載入成功，API_BASE =", API_BASE);

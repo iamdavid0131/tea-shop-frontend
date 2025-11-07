@@ -293,12 +293,8 @@ function updateMap(lat, lng, stores = [], mode = "user") {
       const lat = parseFloat(geoData[0].lat);
       const lng = parseFloat(geoData[0].lon);
 
-      const res = await api.searchStoresNear(
-        lat,
-        lng,
-        brandSel?.value || "all",
-        500
-      );
+      const res = await api.searchStoresByLandmark(keyword, 800);
+
       const stores = res?.stores || [];
 
       if (!stores.length) {
