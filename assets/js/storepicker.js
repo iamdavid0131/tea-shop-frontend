@@ -273,12 +273,13 @@ function updateMap(lat, lng, stores = [], mode = "user") {
   // 地標搜尋 → 地標附近超商
   // =========================
 async function quickSearch(keyword) {
+  const brand = brandSel?.value || "all";
   if (!keyword) return autoLoadNearby();
 
   results.innerHTML = `<div class="muted">🔍 以地標搜尋中…</div>`;
 
   try {
-    const geoData = await api.searchStoresByLandmark(keyword, 800);
+    const geoData = await api.searchStoresByLandmark(keyword, brand);
 
     if (!geoData.ok || !geoData.lat || !geoData.lng) {
       results.innerHTML = `<div class="muted">查無「${keyword}」相關地點</div>`;
