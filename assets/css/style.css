@@ -1668,10 +1668,24 @@ input.loading {
 
 .payment-radio {
   position: relative;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  border: 1.5px solid #ddd;
+  border-radius: 12px;
+  padding: 12px 28px;
+  font-size: 17px;
+  font-weight: 700;
   cursor: pointer;
+  color: #222;
+  background: #fff;
+  transition: all 0.25s ease;
+}
+
+.payment-radio span {
+  display: inline-block;
+  line-height: 1.2;
+  user-select: none;
 }
 
 .payment-radio input[type="radio"] {
@@ -1680,30 +1694,29 @@ input.loading {
   pointer-events: none;
 }
 
-.payment-radio span {
-  display: inline-block;
-  padding: 10px 16px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  transition: all 0.25s;
+.payment-radio input[type="radio"]:checked + span {
+  color: #1e90ff;
+  border-color: #1e90ff;
+  box-shadow: 0 0 0 3px rgba(30,144,255,0.1);
 }
 
-.payment-radio input[type="radio"]:checked + span {
-  border-color: #1e90ff;
-  background: rgba(30, 144, 255, 0.08);
-  color: #1e90ff;
-  font-weight: 600;
-}
 
 /* === 展開的線上支付區塊 === */
-.online-methods {
-  display: flex;
+#onlineMethods {
+  display: none;
   flex-direction: column;
   gap: 10px;
   margin-top: 10px;
-  animation: fadeInSlide 0.3s ease forwards;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: all 0.3s ease;
 }
 
+#onlineMethods.show {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+}
 @keyframes fadeInSlide {
   from { opacity: 0; transform: translateY(-6px); }
   to { opacity: 1; transform: translateY(0); }
