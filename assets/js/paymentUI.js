@@ -9,7 +9,7 @@ export function initPaymentUI() {
   // 切換付款方式（貨到付款 / 線上支付）
   radios.forEach(radio => {
     radio.addEventListener("change", () => {
-      const isOnline = radio.value === "online";
+      const isOnline = document.querySelector('input[name="payment"]:checked')?.value === "online";
       onlineMethods.style.display = isOnline ? "flex" : "none";
     });
   });
