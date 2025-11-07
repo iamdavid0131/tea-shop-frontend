@@ -46,25 +46,30 @@ export function initStorePicker() {
   // =========================
   // 使用者位置脈衝光暈
   // =========================
-  function createPulse(lat, lng) {
-    if (!map) return;
+function createPulse(lat, lng) {
+  if (!map) return;
 
-    // 移除舊的 pulse marker，避免堆積
-    if (pulseMarker) {
-      map.removeLayer(pulseMarker);
-      pulseMarker = null;
-    }
-
-    const pulsingIcon = L.divIcon({
-      className: "pulse-icon",
-      iconSize: [30, 30]
-    });
-
-    pulseMarker = L.marker([lat, lng], {
-      icon: pulsingIcon,
-      interactive: false // 不吃事件
-    }).addTo(map);
+  // 先刪掉舊的 pulse
+  if (pulseMarker) {
+    map.removeLayer(pulseMarker);
+    pulseMarker = null;
   }
+
+  // ✅ 正確 anchor，確保中心對齊座標
+  const pulsingIcon = L.divIcon({
+    className: "pulse-icon",
+    iconSize: [20, 20],
+    iconAnchor: [10, 10], // 中心點
+  });
+
+  // ✅ 直接用 pulse 取代原本藍點，不需再建立 circleMarker
+  pulseMarker = L.marker([lat, lng], {
+    icon: pulsingIcon,
+    interactive: false,
+    zIndexOffset: 500
+  }).addTo(map);
+}
+
 
   // =========================
   // 更新地圖
@@ -105,14 +110,9 @@ export function initStorePicker() {
 
     // 中心點顯示：使用者 or 搜尋地標
     if (mode === "user") {
-      const userDot = L.circleMarker([lat, lng], {
-        radius: 7,
-        color: "#1e90ff",
-        fillColor: "#1e90ff",
-        fillOpacity: 0.95
-      }).addTo(map);
-      markers.push(userDot);
+      // ✅ 使用者位置只顯示脈衝動畫
       createPulse(lat, lng);
+
     } else {
       const landmarkMarker = L.marker([lat, lng], {
         title: "搜尋中心點"
