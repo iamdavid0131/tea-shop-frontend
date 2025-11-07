@@ -6,11 +6,17 @@ export function initPaymentUI() {
   const onlineMethods = $("#onlineMethods");
   if (!radios.length || !onlineMethods) return;
 
-  // 切換付款方式（貨到付款 / 線上支付）
+  console.log("✅ paymentUI 初始化完成");
+
+  // 付款方式切換：貨到付款 / 線上支付
   radios.forEach(radio => {
     radio.addEventListener("change", () => {
-      const isOnline = document.querySelector('input[name="payment"]:checked')?.value === "online";
-      onlineMethods.style.display = isOnline ? "flex" : "none";
+      const selected = document.querySelector('input[name="payment"]:checked')?.value;
+      const isOnline = selected === "online";
+      console.log("💡 payment changed →", selected);
+
+      // 使用 class 控制顯示
+      onlineMethods.classList.toggle("show", isOnline);
     });
   });
 
