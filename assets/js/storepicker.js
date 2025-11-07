@@ -45,41 +45,75 @@ export function initStorePicker() {
   }
 
   // =========================
-  // 使用者位置脈衝光暈
-  // =========================
-  function createPulse(lat, lng) {
-    if (!map) return;
+// 使用者位置：Google Maps 風格藍點 + 呼吸光暈
+// =========================
+function createPulse(lat, lng) {
+  if (!map) return;
 
-    // 移除舊層
-    if (pulseMarker) map.removeLayer(pulseMarker);
-    if (userDot) map.removeLayer(userDot);
+  // 移除舊層
+  if (pulseMarker) map.removeLayer(pulseMarker);
+  if (userDot) map.removeLayer(userDot);
 
-    // 綠色實心小點（使用者位置）
-    userDot = L.circleMarker([lat, lng], {
-      radius: 5,
-      color: "#2ecc71",
-      fillColor: "#2ecc71",
-      fillOpacity: 1,
-      weight: 1
-    }).addTo(map);
+  // 🔵 中心實心藍點（核心）
+  userDot = L.circleMarker([lat, lng], {
+    radius: 6,
+    color: "#1E90FF",
+    fillColor: "#1E90FF",
+    fillOpacity: 1,
+    weight: 1,
+  }).addTo(map);
 
-    // 藍色呼吸光暈
-    const pulsingIcon = L.divIcon({
-      className: "pulse-icon",
-      iconSize: [18, 18],
-      iconAnchor: [9, 9], // 中心對齊
-    });
+  // 🔵 外層柔光（呼吸動畫）
+  const pulsingIcon = L.divIcon({
+    className: "pulse-icon",
+    iconSize: [20, 20],
+    iconAnchor: [10, 10], // 正中心對齊
+  });
 
-    pulseMarker = L.marker([lat, lng], {
-      icon: pulsingIcon,
-      interactive: false,
-      zIndexOffset: 800
-    }).addTo(map);
-  
+  pulseMarker = L.marker([lat, lng], {
+    icon: pulsingIcon,
+    interactive: false,
+    zIndexOffset: 800,
+  }).addTo(map);
 }
 
 
-  // =========================
+
+// =========================
+// 使用者位置：Google Maps 風格藍點 + 呼吸光暈
+// =========================
+function createPulse(lat, lng) {
+  if (!map) return;
+
+  // 移除舊層
+  if (pulseMarker) map.removeLayer(pulseMarker);
+  if (userDot) map.removeLayer(userDot);
+
+  // 🔵 中心實心藍點（核心）
+  userDot = L.circleMarker([lat, lng], {
+    radius: 6,
+    color: "#1E90FF",
+    fillColor: "#1E90FF",
+    fillOpacity: 1,
+    weight: 1,
+  }).addTo(map);
+
+  // 🔵 外層柔光（呼吸動畫）
+  const pulsingIcon = L.divIcon({
+    className: "pulse-icon",
+    iconSize: [20, 20],
+    iconAnchor: [10, 10], // 正中心對齊
+  });
+
+  pulseMarker = L.marker([lat, lng], {
+    icon: pulsingIcon,
+    interactive: false,
+    zIndexOffset: 800,
+  }).addTo(map);
+}
+
+
+// =========================
 // 更新地圖
 // mode: "user" | "landmark"
 // =========================
@@ -100,7 +134,7 @@ function updateMap(lat, lng, stores = [], mode = "user") {
     map.setView([lat, lng], 17);
   }
 
-  // ✅ 僅清除「超商 marker 群」，保留使用者脈衝層
+  // ✅ 清除舊的商店 marker 群，但保留使用者位置
   if (map._markerLayer) {
     map.removeLayer(map._markerLayer);
     map._markerLayer = null;
@@ -108,13 +142,10 @@ function updateMap(lat, lng, stores = [], mode = "user") {
 
   const markers = [];
 
-  // ✅ 使用者模式：畫出綠點與藍色呼吸光暈
+  // ✅ 使用者位置（或搜尋中心）
   if (mode === "user") {
     createPulse(lat, lng);
-  }
-
-  // ✅ 地標模式：用紅色 pin 標記搜尋中心
-  if (mode === "landmark") {
+  } else if (mode === "landmark") {
     const landmarkMarker = L.marker([lat, lng], {
       title: "搜尋中心點",
       icon: L.icon({
@@ -129,31 +160,50 @@ function updateMap(lat, lng, stores = [], mode = "user") {
     markers.push(landmarkMarker);
   }
 
-  // ✅ 篩出 7-11 與全家
+  // ✅ 只顯示 7-ELEVEN / 全家
   const validStores = (stores || []).filter(
     (s) =>
       /7-?ELEVEN|7-11|SEVEN/i.test(s.name) ||
       /全家|FAMILY/i.test(s.name)
   );
 
-  // ✅ 加入商店 marker
+  // ✅ 加上品牌顏色 Marker
   validStores.forEach((s) => {
     if (!s.lat || !s.lng) return;
-    const m = L.marker([s.lat, s.lng], { title: s.name })
+
+    // 品牌顏色
+    let color = "#888";
+    if (/7-?ELEVEN|7-11|SEVEN/i.test(s.name)) color = "#e67e22"; // 橘紅
+    if (/全家|FAMILY/i.test(s.name)) color = "#00a0e9"; // 藍綠
+
+    const customIcon = L.divIcon({
+      html: `<div style="
+        width:14px;height:14px;
+        border-radius:50%;
+        background:${color};
+        border:2px solid #fff;
+        box-shadow:0 0 6px rgba(0,0,0,0.3);
+      "></div>`,
+      className: "",
+      iconSize: [14, 14],
+      iconAnchor: [7, 7],
+    });
+
+    const m = L.marker([s.lat, s.lng], { icon: customIcon, title: s.name })
       .addTo(map)
       .bindPopup(`<b>${s.name}</b><br>${s.address}`);
     markers.push(m);
   });
 
-  // ✅ 建立 marker 群組並掛回地圖（不影響使用者點）
+  // ✅ 建立群組並更新 map
   if (markers.length) {
     const group = L.featureGroup(markers);
     map._markerLayer = group;
   }
 
-  // ✅ 維持固定 zoom level，不要 fitBounds
   map.setView([lat, lng], 17);
 }
+
 
   // =========================
   // 渲染門市清單
