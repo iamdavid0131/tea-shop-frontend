@@ -279,14 +279,13 @@ function updateMap(lat, lng, stores = [], mode = "user") {
 
     try {
       const geoRes = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-          keyword
-        )}&limit=1`
+        `/api/stores/landmark?q=${encodeURIComponent(keyword)}&radius=800`
       );
       const geoData = await geoRes.json();
 
       if (!geoData.length) {
         results.innerHTML = `<div class="muted">查無「${keyword}」相關地點</div>`;
+        updateMap(geoData.lat, geoData.lng, []);
         return;
       }
 
