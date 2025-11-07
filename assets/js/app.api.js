@@ -66,13 +66,16 @@ export const api = {
   },
   
   /** ✅ 查地標附近的門市（Google Maps Geocode + Places） */
-  searchStoresByLandmark(q, radius = 800) {
+  async searchStoresByLandmark(q, brand = "all", radius = 800) {
     const params = new URLSearchParams({
       q,
+      brand,
       radius
     });
-    return _get(`/stores/landmark?${params.toString()}`);
+    const res = await fetch(`${API_BASE}/stores/landmark?${params.toString()}`);
+    return res.json();
   }
+
 
 };
 
