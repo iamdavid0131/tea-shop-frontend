@@ -1086,7 +1086,9 @@ input.loading {
     background 0.25s ease,
     box-shadow 0.25s ease,
     opacity 0.25s ease;
-  pointer-events: none;
+  pointer-events: auto;
+  touch-action: none; /* 避免瀏覽器滾動衝突 */
+
 }
 
 /* ✅ 開啟時亮一點 */
@@ -1112,31 +1114,32 @@ input.loading {
 
 /* ✅ 使用者位置光暈 */
 .pulse-icon {
-  width: 30px;
-  height: 30px;
-  background: rgba(30,144,255,0.25);
+  width: 12px;
+  height: 12px;
+  background: rgba(30, 144, 255, 0.5);
   border-radius: 50%;
-  box-shadow: 0 0 12px rgba(30,144,255,0.6);
-  animation: pulseWave 2s ease-out infinite;
+  position: relative;
+  transform: translate(-6px, -6px);
+  animation: pulseGlow 1.8s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 500;
 }
 
-@keyframes pulseWave {
-  0% {
-    transform: scale(0.8);
-    opacity: 0.8;
+@keyframes pulseGlow {
+  0%, 100% {
+    transform: translate(-6px, -6px) scale(1);
+    opacity: 0.5;
   }
-  70% {
-    transform: scale(1.8);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(0.8);
-    opacity: 0;
+  50% {
+    transform: translate(-6px, -6px) scale(1.15);
+    opacity: 0.25;
   }
 }
+
 
 /* 拖曳結束後加上這個 class 讓動畫播放 */
 .sp-handle.bounce {
+  transition: none;
   animation: sp-handle-bounce 0.4s cubic-bezier(0.25, 1.5, 0.5, 1);
 }
 
@@ -1160,16 +1163,20 @@ input.loading {
   padding: 16px;
   box-shadow: 0 -10px 30px rgba(0,0,0,0.15);
   transform: translateY(110%);
-  transition: transform .35s cubic-bezier(.25,1,.5,1);
+  transition: transform 0.3s ease;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  will-change: transform;
 }
-
-/* ✅ 顯示動畫 */
-#store-picker[aria-hidden="false"] .sp-sheet {
+.sp-sheet.sp-dragging {
+  transition: none;
+}
+.sp-sheet.sp-open {
   transform: translateY(0);
 }
+
+
 
 /* ✅ Header */
 .sp-header {
