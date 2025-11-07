@@ -12,9 +12,10 @@ export function initPaymentUI() {
   // 付款方式切換：貨到付款 / 線上支付
   radios.forEach(radio => {
     radio.addEventListener("change", () => {
+      console.log("🔄 切換付款方式:", radio.value);
       const selected = document.querySelector('input[name="payment"]:checked')?.value;
       const isOnline = selected === "online";
-      console.log("💡 payment changed →", selected);
+      console.log("isOnline =", isOnline);
 
       // 使用 class 控制顯示
       onlineMethods.classList.toggle("show", isOnline);
