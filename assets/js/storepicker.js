@@ -54,7 +54,7 @@ function createPulse(lat, lng) {
   if (pulseMarker) map.removeLayer(pulseMarker);
   if (userDot) map.removeLayer(userDot);
 
-  // 🔵 中心實心藍點（核心）
+  // 🔵 中心實心藍點
   userDot = L.circleMarker([lat, lng], {
     radius: 6,
     color: "#1E90FF",
@@ -63,18 +63,35 @@ function createPulse(lat, lng) {
     weight: 1,
   }).addTo(map);
 
-  // 🔵 外層柔光（呼吸動畫）
-  const pulsingIcon = L.divIcon({
-    className: "pulse-icon",
-    iconSize: [20, 20],
-    iconAnchor: [10, 10], // 正中心對齊
-  });
-
-  pulseMarker = L.marker([lat, lng], {
-    icon: pulsingIcon,
-    interactive: false,
-    zIndexOffset: 800,
+  // 🔵 呼吸光暈（以 L.circle 動畫模擬）
+  pulseMarker = L.circle([lat, lng], {
+    radius: 15,
+    color: "#1E90FF",
+    fillColor: "#1E90FF",
+    fillOpacity: 0.25,
+    stroke: false,
   }).addTo(map);
+
+  // ✨ 模擬呼吸動畫
+  let growing = true;
+  let scale = 1;
+
+  function animatePulse() {
+    if (!pulseMarker) return;
+
+    scale += growing ? 0.02 : -0.02;
+    if (scale > 1.3) growing = false;
+    if (scale < 1.0) growing = true;
+
+    pulseMarker.setStyle({
+      fillOpacity: 0.25 * (1.5 - scale),
+    });
+    pulseMarker.setRadius(15 * scale);
+
+    requestAnimationFrame(animatePulse);
+  }
+
+  animatePulse();
 }
 
 
