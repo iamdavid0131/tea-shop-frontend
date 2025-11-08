@@ -42,12 +42,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     initStorePicker();         // 門市選擇器
     initZipAuto();             // 郵遞區號自動推斷
     initMemberLookup();        // 會員查詢
-    initPaymentUI();           // 付款方式
+   
     
 
     requestAnimationFrame(() => {
       CONFIG.PRODUCTS.forEach(p => updatePackUI(p.id));
       updateTotals();
+      initPaymentUI();           // 付款方式
     });
 
     // ✅ 查看明細按鈕事件（唯一綁定）
