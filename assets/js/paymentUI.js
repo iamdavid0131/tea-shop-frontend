@@ -3,40 +3,48 @@ import { $ } from "/assets/js/dom.js";
 export function initPaymentUI() {
   console.log("✅ paymentUI 初始化完成");
 
-  // 🔍 找出所有運送方式 radio
   const radios = document.querySelectorAll('input[name="payment"]');
   const onlineMethods = $("#onlineMethods");
 
-  console.log("📡 綁定運送方式事件數量 =", radios.length);
+  console.log("📡 綁定付款方式事件數量 =", radios.length);
+
   if (!radios.length || !onlineMethods) {
-    console.warn("⚠️ 沒找到運送 radio 或 onlineMethods");
+    console.warn("⚠️ 沒找到付款 radio 或 #onlineMethods");
     return;
   }
 
-  // 📦 當切換運送方式時，判斷是否要展開線上支付
-  radios.forEach(radio => {
+  // 🎯 切換付款方式：線上支付展開 / 收起
+  radios.forEach((radio) => {
     radio.addEventListener("change", (e) => {
-      const paymentValue = e.target.value;
-      console.log("🚚 切換運送方式:", paymentValue);
+      const value = e.target.value;
+      const isOnline = value === "online";
 
-      // 🔧 依據運送方式決定是否顯示線上支付
-      const isOnline = paymentValue === "online"; 
-      // ↑ 可依實際命名調整，例如：home=宅配, pickup=超取付款, store=店取等
+      console.log("💳 切換付款方式:", value);
 
-      onlineMethods.style.display = isOnline ? "flex" : "none";
-      onlineMethods.classList.toggle("show", isOnline);
-
-      console.log("🔄 切換付款區塊: isOnline =", isOnline);
+      if (isOnline) {
+        onlineMethods.classList.add("show");
+        onlineMethods.style.display = "flex";
+        console.log("✅ 顯示線上支付區塊");
+      } else {
+        onlineMethods.classList.remove("show");
+        // 🔧 延遲收起以配合動畫
+        setTimeout(() => {
+          if (!onlineMethods.classList.contains("show")) {
+            onlineMethods.style.display = "none";
+          }
+        }, 250);
+        console.log("🚫 隱藏線上支付區塊");
+      }
     });
   });
 
   // 🍎 Apple Pay（僅 iOS Safari 顯示）
   if (window.ApplePaySession) {
-    const appleBtn = document.querySelector(".apple-pay");
+    const appleBtn = $(".apple-pay");
     if (appleBtn) appleBtn.style.display = "block";
   }
 
-  // 💳 選擇線上支付方式
+  // 💰 點擊線上支付方式按鈕
   const payButtons = document.querySelectorAll(".pay-btn");
   payButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
