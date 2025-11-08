@@ -72,20 +72,3 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-
-
-/* 👇 避免滾動穿透（resizing 已在 CSS） */
-document.addEventListener("touchmove", (e) => {
-  if (document.body.classList.contains("modal-open")) {
-    e.preventDefault();
-  }
-}, { passive: false });
-
-const observer = new MutationObserver(() => {
-  if (document.getElementById("onlineMethods")) {
-    console.log("✅ 監測到 onlineMethods，初始化付款 UI");
-    initPaymentUI();
-    observer.disconnect();
-  }
-});
-observer.observe(document.body, { childList: true, subtree: true });

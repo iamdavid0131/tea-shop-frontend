@@ -1,39 +1,37 @@
 import { $ } from "/assets/js/dom.js";
+
 export function initPaymentUI() {
   console.log("✅ paymentUI 初始化完成");
 
-  const radios = document.querySelectorAll('input[name="payment"]');
-  const onlineMethods = $("#onlineMethods");
-
-  console.log("📡 綁定付款方式事件數量 =", radios.length);
-  if (!radios.length || !onlineMethods) {
-    console.warn("⚠️ 沒找到付款 radio 或 onlineMethods");
-    return;
-  }
-
-  radios.forEach(radio => {
-    radio.addEventListener("change", (e) => {
-      console.log("🟢 收到 change 事件", e.target.value);
+  // 💡 監聽整個文件變化，只要 payment radio 改變都會觸發
+  document.addEventListener("change", (e) => {
+    if (e.target.matches('input[name="payment"]')) {
       const isOnline = e.target.value === "online";
+      const onlineMethods = document.getElementById("onlineMethods");
+      if (!onlineMethods) {
+        console.warn("⚠️ 找不到 #onlineMethods，略過切換");
+        return;
+      }
       onlineMethods.style.display = isOnline ? "flex" : "none";
       onlineMethods.classList.toggle("show", isOnline);
       console.log("🔄 切換付款方式:", e.target.value, "isOnline =", isOnline);
-    });
+    }
   });
 
-  // 🍎 Apple Pay
+  // 🍎 Apple Pay（僅 iOS Safari 顯示）
   if (window.ApplePaySession) {
-    $(".apple-pay").style.display = "block";
+    const appleBtn = document.querySelector(".apple-pay");
+    if (appleBtn) appleBtn.style.display = "block";
   }
 
-  // 💳 按鈕事件
-  const payButtons = document.querySelectorAll(".pay-btn");
-  payButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
+  // 💳 選擇線上支付方式
+  document.addEventListener("click", (e) => {
+    if (e.target.classList.contains("pay-btn")) {
+      const payButtons = document.querySelectorAll(".pay-btn");
       payButtons.forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-      sessionStorage.setItem("paymentMethod", btn.dataset.method);
-      console.log("💳 已選擇支付方式：", btn.dataset.method);
-    });
+      e.target.classList.add("active");
+      sessionStorage.setItem("paymentMethod", e.target.dataset.method);
+      console.log("💳 已選擇支付方式：", e.target.dataset.method);
+    }
   });
 }
