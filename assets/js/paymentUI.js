@@ -1,28 +1,31 @@
-// ✅ paymentUI.js
-import { $ } from "./dom.js";
-
 export function initPaymentUI() {
   console.log("✅ paymentUI 初始化完成");
 
   const radios = document.querySelectorAll('input[name="payment"]');
   const onlineMethods = $("#onlineMethods");
-  if (!radios.length || !onlineMethods) return;
+
+  console.log("📡 綁定付款方式事件數量 =", radios.length);
+  if (!radios.length || !onlineMethods) {
+    console.warn("⚠️ 沒找到付款 radio 或 onlineMethods");
+    return;
+  }
 
   radios.forEach(radio => {
     radio.addEventListener("change", (e) => {
+      console.log("🟢 收到 change 事件", e.target.value);
       const isOnline = e.target.value === "online";
-      console.log("🔄 切換付款方式:", e.target.value, "isOnline =", isOnline);
       onlineMethods.style.display = isOnline ? "flex" : "none";
       onlineMethods.classList.toggle("show", isOnline);
+      console.log("🔄 切換付款方式:", e.target.value, "isOnline =", isOnline);
     });
   });
 
-  // 🍎 Apple Pay（僅 iOS Safari 顯示）
+  // 🍎 Apple Pay
   if (window.ApplePaySession) {
     $(".apple-pay").style.display = "block";
   }
 
-  // 💳 選擇線上支付方式
+  // 💳 按鈕事件
   const payButtons = document.querySelectorAll(".pay-btn");
   payButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
