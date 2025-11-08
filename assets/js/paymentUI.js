@@ -1,3 +1,4 @@
+import { $ } from "/assets/js/dom.js";
 export function initPaymentUI() {
   console.log("✅ paymentUI 初始化完成");
 
