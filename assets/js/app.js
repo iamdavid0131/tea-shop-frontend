@@ -48,7 +48,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     requestAnimationFrame(() => {
       CONFIG.PRODUCTS.forEach(p => updatePackUI(p.id));
       updateTotals();
-      initPaymentUI();           // 付款方式
     });
 
     // ✅ 查看明細按鈕事件（唯一綁定）
@@ -81,3 +80,12 @@ document.addEventListener("touchmove", (e) => {
     e.preventDefault();
   }
 }, { passive: false });
+
+const observer = new MutationObserver(() => {
+  if (document.getElementById("onlineMethods")) {
+    console.log("✅ 監測到 onlineMethods，初始化付款 UI");
+    initPaymentUI();
+    observer.disconnect();
+  }
+});
+observer.observe(document.body, { childList: true, subtree: true });
