@@ -151,7 +151,7 @@ label {
 
 .qty-btn.disabled {
   opacity: 0.3;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .qty-value {
