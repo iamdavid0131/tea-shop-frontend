@@ -151,7 +151,7 @@ label {
 
 .qty-btn.disabled {
   opacity: 0.3;
-  pointer-events: auto;
+  pointer-events: none;
 }
 
 .qty-value {
@@ -1678,7 +1678,7 @@ input.loading {
 .payment-radio input[type="radio"] {
   position: absolute;
   opacity: 0;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .payment-radio input[type="radio"]:checked + span {
