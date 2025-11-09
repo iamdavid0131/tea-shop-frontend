@@ -1,6 +1,7 @@
 import { $ } from "/assets/js/dom.js";
 
 export function initPaymentUI() {
+  console.log("🔍 檢查 radio input 數量：", document.querySelectorAll('input[name="payment"]').length);
   console.log("✅ paymentUI 初始化完成");
 
   document.addEventListener("change", (e) => {
