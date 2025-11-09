@@ -42,7 +42,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     initStorePicker();         // 門市選擇器
     initZipAuto();             // 郵遞區號自動推斷
     initMemberLookup();        // 會員查詢
-    initPaymentUI();           // 支付方式
    
     
 
@@ -50,6 +49,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       CONFIG.PRODUCTS.forEach(p => updatePackUI(p.id));
       updateTotals();
     });
+
+    setTimeout(() => {
+      console.log("⏳ 延後初始化付款 UI");
+      initPaymentUI();
+    }, 300);
 
     // ✅ 查看明細按鈕事件（唯一綁定）
     $("viewCartBtn")?.addEventListener("click", showCartSheet);
