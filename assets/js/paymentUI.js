@@ -1,16 +1,17 @@
-import { $ } from "/assets/js/dom.js";
+import { $ } from "./dom.js";
 
-export function initPaymentUI() {
-  console.log("✅ paymentUI 初始化完成");
-
+export function initPaymentUI(retry = 0) {
   const radios = document.querySelectorAll('input[name="payment"]');
   const onlineMethods = $("#onlineMethods");
 
-  console.log("🔍 檢查 radio input 數量：", radios.length);
-  if (!radios.length || !onlineMethods) {
-    console.warn("⚠️ 沒找到付款 radio 或 onlineMethods");
+  if ((!radios.length || !onlineMethods) && retry < 10) {
+    console.warn(`⚠️ 第 ${retry + 1} 次找不到付款 radio 或 onlineMethods，50ms 後重試`);
+    setTimeout(() => initPaymentUI(retry + 1), 50);
     return;
   }
+
+  console.log("✅ paymentUI 初始化完成");
+  console.log("🔍 檢查 radio input 數量：", radios.length);
 
   radios.forEach((radio) => {
     radio.addEventListener("change", (e) => {
@@ -19,18 +20,10 @@ export function initPaymentUI() {
 
       if (isOnline) {
         onlineMethods.classList.add("show");
-        onlineMethods.style.setProperty("display", "flex", "important");
-        onlineMethods.style.opacity = "1";
-        onlineMethods.style.transform = "translateY(0)";
+        onlineMethods.style.display = "flex";
       } else {
         onlineMethods.classList.remove("show");
-        onlineMethods.style.opacity = "0";
-        onlineMethods.style.transform = "translateY(-6px)";
-        setTimeout(() => {
-          if (!onlineMethods.classList.contains("show")) {
-            onlineMethods.style.setProperty("display", "none", "important");
-          }
-        }, 300);
+        onlineMethods.style.display = "none";
       }
     });
   });
