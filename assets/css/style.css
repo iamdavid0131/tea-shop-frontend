@@ -1690,6 +1690,7 @@ input.loading {
 
 /* === 展開的線上支付區塊 === */
 #onlineMethods {
+  display: none;              /* ✅ 預設隱藏 */
   flex-direction: column;
   gap: 10px;
   margin-top: 10px;
