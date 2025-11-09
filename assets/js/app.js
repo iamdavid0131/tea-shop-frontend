@@ -42,6 +42,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     initStorePicker();         // 門市選擇器
     initZipAuto();             // 郵遞區號自動推斷
     initMemberLookup();        // 會員查詢
+    initPaymentUI();           // 支付方式
    
     
 
