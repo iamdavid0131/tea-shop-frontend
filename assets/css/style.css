@@ -1689,6 +1689,8 @@ input.loading {
 /* === 展開的線上支付區塊 === */
 .online-methods {
   display: none;
+  flex-direction: column; /* ✅ 提前指定方向，避免閃排 */
+  gap: 10px; /* ✅ 統一間距 */
   opacity: 0;
   max-height: 0;
   overflow: hidden;
@@ -1701,9 +1703,8 @@ input.loading {
 
 .online-methods.show {
   display: flex;
-  flex-direction: column;
   opacity: 1;
-  max-height: 500px;
+  max-height: 400px;
   transform: translateY(0);
 }
 
@@ -1712,37 +1713,81 @@ input.loading {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* 支付按鈕 */
+/* ✨ 按鈕通用樣式 */
 .pay-btn {
-  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
   border: 1px solid #ddd;
   border-radius: 12px;
   background: #fff;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
+  color: #222;
   cursor: pointer;
-  transition: all 0.25s;
+  transition: all 0.25s ease;
+  margin: 8px 0; /* ✅ 統一上下間距 */
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
+/* hover 狀態 */
 .pay-btn:hover {
   border-color: #1e90ff;
   background: #f0f7ff;
 }
 
+/* active 狀態（選中） */
 .pay-btn.active {
   border-color: #1e90ff;
   background: #e8f2ff;
   color: #1e90ff;
+  box-shadow: 0 2px 6px rgba(30,144,255,0.15);
 }
 
-/* Apple Pay 特殊樣式 */
+/* =========================
+   🖤 Apple Pay 專屬樣式
+========================= */
 .pay-btn.apple-pay {
   background: #000;
   color: #fff;
   font-weight: 600;
   letter-spacing: 0.3px;
+  border: none; /* ✅ 去掉灰框，讓黑底更純粹 */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .pay-btn.apple-pay:hover {
   background: #111;
 }
+
+/* ✅ 若想在點選時仍有獨立按下效果 */
+.pay-btn.apple-pay.active {
+  background: #000;
+  box-shadow: 0 0 0 2px #1e90ff inset;
+}
+
+/* =========================
+   ✨ 付款按鈕區塊容器動畫修正
+========================= */
+#onlineMethods {
+  display: none;
+  flex-direction: column; /* ✅ 預先定義，避免閃爍橫排 */
+  gap: 10px;
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transform: translateY(-6px);
+  transition:
+    opacity 0.35s ease,
+    max-height 0.45s ease,
+    transform 0.35s ease;
+}
+
+#onlineMethods.show {
+  display: flex;
+  opacity: 1;
+  max-height: 300px;
+  transform: translateY(0);
+}
+
