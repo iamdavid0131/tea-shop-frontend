@@ -15,7 +15,7 @@ import { initShippingUI } from "./shippingUI.js";
 import { initStorePicker } from "./storepicker.js";
 import { initZipAuto } from "./zipcode.js";
 import { initPaymentUI } from "./paymentUI.js";
-//import { submitOrder } from "./submitOrder.js"; // ✅ 必須引入！
+import { initSubmitOrder } from "./submitOrder.js";
 
 window.api = api; // Debug 可留
 
@@ -42,6 +42,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     initStorePicker();         // 門市選擇器
     initZipAuto();             // 郵遞區號自動推斷
     initMemberLookup();        // 會員查詢
+    initSubmitOrder();         // 送出訂單
 
     requestAnimationFrame(() => {
       CONFIG.PRODUCTS.forEach(p => updatePackUI(p.id));

@@ -9,10 +9,10 @@ import { getCartItems, clearCart } from "./cart.js";
 
 // ✅ 主送出流程
 export async function submitOrder() {
-  const btn = $("submitOrderBtn"); // 確保與 HTML 按鈕 ID 一致
+  const btn = $("submitOrderBtn");
   const loading = $("loading");
 
-  if (!btn || btn.disabled) return; // 防止重複點擊
+  if (!btn || btn.disabled) return;
 
   try {
     btn.disabled = true;
@@ -23,15 +23,15 @@ export async function submitOrder() {
     const order = {
       items: getCartItems(),
       payment: document.querySelector(".pay-btn.active")?.dataset.method || "cod",
-      shipping: $("shippingType")?.value || "",
+      shipping: document.querySelector("input[name='ship']:checked")?.value || "",
       store: $("storeName")?.value || "",
       receiver: {
-        name: $("receiverName")?.value?.trim(),
-        phone: $("receiverPhone")?.value?.trim(),
-        address: $("receiverAddress")?.value?.trim(),
+        name: $("name")?.value?.trim(),
+        phone: $("phone")?.value?.trim(),
+        address: $("address")?.value?.trim(),
       },
       total: Number($("total_s")?.textContent.replace(/[^\d]/g, "") || 0),
-      note: $("orderNote")?.value?.trim() || "",
+      note: $("note")?.value?.trim() || "",
     };
 
     // 2️⃣ 基本驗證
@@ -39,7 +39,6 @@ export async function submitOrder() {
       toast("⚠️ 請輸入收件人姓名與電話");
       return;
     }
-
     if (order.items.length === 0) {
       toast("🛒 您的購物車是空的");
       return;
@@ -59,15 +58,13 @@ export async function submitOrder() {
     console.error("❌ 送出訂單錯誤:", err);
     toast("⚠️ 網路異常，請稍後再試");
   } finally {
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = "送出訂單";
-    }
+    btn.disabled = false;
+    btn.textContent = "送出訂單";
     if (loading) loading.style.display = "none";
   }
 }
 
-// ✅ 成功卡片顯示
+// ✅ 顯示成功卡片
 function showSuccessModal(orderId, total, lineUrl) {
   const backdrop = $("successBackdrop");
   const idEl = $("successOrderId");
@@ -89,15 +86,18 @@ function showSuccessModal(orderId, total, lineUrl) {
   backdrop.setAttribute("aria-hidden", "false");
 }
 
-// ✅ 關閉成功卡片
-$("successClose")?.addEventListener("click", () => {
-  const backdrop = $("successBackdrop");
-  backdrop.classList.remove("show");
-  backdrop.setAttribute("aria-hidden", "true");
-});
+// ✅ 初始化送出訂單 & 關閉事件
+export function initSubmitOrder() {
+  // 綁定送出按鈕
+  $("submitOrderBtn")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    submitOrder();
+  });
 
-// ✅ 綁定送出按鈕
-$("submitOrderBtn")?.addEventListener("click", (e) => {
-  e.preventDefault();
-  submitOrder();
-});
+  // 綁定成功卡片關閉按鈕
+  $("successClose")?.addEventListener("click", () => {
+    const backdrop = $("successBackdrop");
+    backdrop.classList.remove("show");
+    backdrop.setAttribute("aria-hidden", "true");
+  });
+}
