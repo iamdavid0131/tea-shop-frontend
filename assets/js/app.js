@@ -21,7 +21,8 @@ window.api = api; // Debug 可留
 
 document.addEventListener("DOMContentLoaded", async () => {
   try {
-    $("loading").style.display = "block";
+    $("loading")?.style && ($("loading").style.display = "block");
+
 
     const cfg = await api.getConfig();
     CONFIG.PRODUCTS = (cfg.data || []).map(p => ({
@@ -32,17 +33,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     // ✅ 渲染商品 UI
     renderProducts(CONFIG.PRODUCTS);
     // 🟢 裝罐按鈕監聽（放在商品渲染之後）
-    document.querySelectorAll(".pack-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        btn.classList.toggle("active");
-        window.dispatchEvent(new Event("cart:update")); // 即時觸發驗證
-      });
+   document.querySelectorAll(".pack-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      btn.classList.toggle("active");
+      updateTotals(); // 🟢 即時重新計算金額
+      window.dispatchEvent(new Event("cart:update")); // 🟢 觸發送出驗證更新
     });
+  });
 
     // ✅ 還原購物車 & 初始化控制
     restoreCart();
     initQtyControls();
-    
+
     // ✅ 各模組初始化
     enableSmartSheetControl(); // 購物明細 BottomSheet
     initShippingUI();          // 運送方式
@@ -97,6 +99,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error("初始化錯誤:", err);
     toast("⚠️ 載入失敗，請稍後再試");
   } finally {
-    $("loading").style.display = "none";
+    $("loading")?.style && ($("loading").style.display = "none");
+
   }
 });
