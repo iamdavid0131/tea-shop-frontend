@@ -1694,19 +1694,16 @@ input.loading {
   opacity: 0;
   max-height: 0;
   overflow: hidden;
-  transform: translateY(-6px);
+  transform: translateY(-4px);
   transition:
-    opacity 0.35s cubic-bezier(0.22, 0.61, 0.36, 1),
-    max-height 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
-    transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
-  will-change: opacity, transform, max-height;
+    opacity 0.3s ease,
+    max-height 0.35s ease,
+    transform 0.3s ease;
 }
 
 #onlineMethods.show {
-  display: flex;
-  flex-direction: column;
+  display: flex !important;
   opacity: 1;
-  max-height: 300px; /* 視內容可調整 */
   transform: translateY(0);
 }
 
