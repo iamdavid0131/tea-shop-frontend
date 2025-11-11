@@ -1,21 +1,26 @@
 import { $ } from "./dom.js";
 
-export function initPaymentUI() {
-  console.log("✅ paymentUI 初始化完成");
-
+export function initPaymentUI(retry = 0) {
   const paymentCard = $("#paymentCard");
+
   if (!paymentCard) {
-    console.warn("⚠️ 找不到付款卡片 #paymentCard");
+    if (retry < 10) {
+      console.warn(`⚠️ 找不到付款卡片 #paymentCard，第 ${retry + 1} 次重試`);
+      setTimeout(() => initPaymentUI(retry + 1), 100);
+    } else {
+      console.error("❌ 多次重試仍找不到付款卡片，放棄初始化付款 UI");
+    }
     return;
   }
 
-  // ✅ 使用事件委派，監聽子元素的 change
+  console.log("✅ paymentUI 初始化完成（付款卡片已載入）");
+
+  // ✅ 事件委派監聽付款方式變更
   paymentCard.addEventListener("change", (e) => {
-    if (e.target.name !== "payment") return; // 只針對付款 radio
+    if (e.target.name !== "payment") return;
     const isOnline = e.target.value === "online";
     console.log("🔥 change 事件觸發", e.target.value, "isOnline =", isOnline);
 
-    // 每次都重新抓，確保是最新的 DOM
     const onlineMethods = $("#onlineMethods");
     if (!onlineMethods) {
       console.warn("⚠️ 找不到 #onlineMethods，略過這次事件");
@@ -45,7 +50,7 @@ export function initPaymentUI() {
     if (appleBtn) appleBtn.style.display = "block";
   }
 
-  // 💳 綁定線上支付按鈕事件（重新 render 後也能動）
+  // 💳 線上支付按鈕事件
   paymentCard.addEventListener("click", (e) => {
     const btn = e.target.closest(".pay-btn");
     if (!btn) return;
