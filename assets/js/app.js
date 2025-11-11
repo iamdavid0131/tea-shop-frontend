@@ -50,17 +50,22 @@ document.addEventListener("DOMContentLoaded", async () => {
       updateTotals();
     });
 
-    // ✅ 僅監測 #paymentCard 出現（父層）
+// ✅ 僅監測 #paymentCard 出現（父層）
     const paymentObserver = new MutationObserver(() => {
       const paymentCard = document.getElementById("paymentCard");
       if (paymentCard) {
-        console.log("✅ 偵測到 #paymentCard 出現，初始化付款 UI");
-        initPaymentUI();
-        paymentObserver.disconnect(); // 偵測到後就關閉，避免重複
+        console.log("✅ 偵測到 #paymentCard 出現，排程初始化付款 UI");
+
+        // 🔧 延遲到下一個渲染幀（DOM 真的完成 attach）
+        requestAnimationFrame(() => {
+          console.log("🎬 DOM attach 已完成，執行 initPaymentUI()");
+          initPaymentUI();
+        });
+
+        paymentObserver.disconnect(); // 只觸發一次
       }
     });
 
-    // 監控整個 body（因為付款區塊可能是 renderProducts() 動態插入）
     paymentObserver.observe(document.body, { childList: true, subtree: true });
 
 
