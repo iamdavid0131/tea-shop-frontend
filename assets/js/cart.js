@@ -119,11 +119,22 @@ export function animateMoney() {
 // ============================================================
 export function getCartItems() {
   try {
-    const items = CONFIG.PRODUCTS.map(p => ({
-      id: p.id,
-      name: p.name || "",
-      qty: parseInt($(`qty-${p.id}`)?.textContent || 0),
-    })).filter(i => i.qty > 0);
+    const items = CONFIG.PRODUCTS.map(p => {
+      const qty = parseInt($(`qty-${p.id}`)?.textContent || 0);
+      const packEl = $(`pack-${p.id}`); // ✅ 假設裝罐按鈕或 checkbox id 為 pack-xxx
+      const pack = packEl?.classList?.contains("active") || packEl?.checked || false;
+
+      return {
+        id: p.id,
+        name: p.name || "",
+        qty,
+        pack,
+      };
+    }).filter(i => i.qty > 0);
+
+    // ✅ 對外觸發更新事件（供驗證用）
+    window.dispatchEvent(new Event("cart:update"));
+
     return items;
   } catch (err) {
     console.error("⚠️ getCartItems 失敗:", err);

@@ -1,11 +1,25 @@
 // ===============================
 // ☕ submitOrder.js
-// 送出訂單主流程模組
+// 送出訂單主流程模組（逐品項版本）
 // ===============================
 
 import { api } from "./app.api.js";
 import { $, toast } from "./dom.js";
-import { getCartItems, clearCart } from "./cart.js";  
+import { getCartItems, clearCart } from "./cart.js";
+import { CONFIG } from "./config.js"; // ✅ 一定要引入產品資料
+
+// ✅ 格式化購物車品項（對應 Sheet 欄位名稱）
+function formatCartItems(rawItems) {
+  return rawItems.map((i) => {
+    const product = CONFIG.PRODUCTS.find((p) => p.id === i.id);
+    return {
+      id: i.id,
+      name: product?.name || i.name || "",
+      qty: Number(i.qty) || 0,
+      pack: Boolean(i.pack), // ✅ 轉為布林值，方便後端對應「_裝罐」
+    };
+  });
+}
 
 // ✅ 主送出流程
 export async function submitOrder() {
@@ -19,37 +33,63 @@ export async function submitOrder() {
     loadingOverlay?.classList.add("show");
     loadingOverlay?.setAttribute("aria-hidden", "false");
 
-    // 1️⃣ 組裝訂單資料
+    // === 組裝訂單資料 ===
+    const shippingMethod =
+      document.querySelector("input[name='ship']:checked")?.value || "";
+    const payMethod =
+      document.querySelector(".pay-btn.active")?.dataset.method ||
+      document.querySelector("input[name='payment']:checked")?.value ||
+      "cod";
+
+    const items = formatCartItems(getCartItems());
+
     const order = {
-      items: getCartItems(),
-      payment: document.querySelector(".pay-btn.active")?.dataset.method || "cod",
-      shipping: document.querySelector("input[name='ship']:checked")?.value || "",
-      store: $("storeName")?.value || "",
-      receiver: {
-        name: $("name")?.value?.trim(),
-        phone: $("phone")?.value?.trim(),
-        address: $("address")?.value?.trim(),
-      },
-      total: Number($("total_s")?.textContent.replace(/[^\d]/g, "") || 0),
+      timestamp: new Date().toLocaleString("zh-TW", { hour12: false }),
+      orderId: "O" + Date.now(), // 前端臨時 ID，後端仍會覆寫
+      buyerName: $("name")?.value?.trim() || "",
+      buyerPhone: $("phone")?.value?.trim() || "",
+      shippingMethod,
+      storeCarrier: shippingMethod === "store" ? $("carrier")?.value || "" : "",
+      storeName: shippingMethod === "store" ? $("storeName")?.value?.trim() || "" : "",
+      codAddress: shippingMethod === "cod" ? $("address")?.value?.trim() || "" : "",
+      promoCode: $("promoCode")?.value?.trim() || "",
       note: $("note")?.value?.trim() || "",
+      consent: $("consentAgree")?.checked ? "Y" : "N",
+
+      // 🟢 支付欄位（完全對應你的 Sheet）
+      paymentMethod: payMethod,
+      paymentStatus: "pending",
+      paymentTxId: "",
+      paymentTime: "",
+
+      // 🫖 商品與金額區
+      items,
+      pricingPolicy: {}, // 後端可補免運/折扣政策
+      subtotal: 0,
+      discount: 0,
+      shippingFee: 0,
+      total: Number($("total_s")?.textContent.replace(/[^\d]/g, "") || 0),
+
+      // 狀態追蹤
+      status: "created",
     };
 
-        // 2️⃣ 基本驗證
-    let invalidField = null;
+    // === 基本驗證 ===
     const nameInput = $("name");
     const phoneInput = $("phone");
     const errName = $("err-name");
     const errPhone = $("err-phone");
 
-    // 清除先前錯誤
-    [nameInput, phoneInput].forEach(i => i?.classList.remove("form-error"));
-    [errName, errPhone].forEach(e => e?.classList.remove("show"));
+    // 先清除錯誤樣式
+    [nameInput, phoneInput].forEach((i) => i?.classList.remove("form-error"));
+    [errName, errPhone].forEach((e) => e?.classList.remove("show"));
 
-    if (!order.receiver.name) {
+    let invalidField = null;
+    if (!order.buyerName) {
       nameInput?.classList.add("form-error");
       errName?.classList.add("show");
       invalidField = nameInput;
-    } else if (!order.receiver.phone) {
+    } else if (!order.buyerPhone) {
       phoneInput?.classList.add("form-error");
       errPhone?.classList.add("show");
       invalidField = phoneInput;
@@ -70,7 +110,7 @@ export async function submitOrder() {
       return;
     }
 
-    // 3️⃣ 傳送到後端
+    // === 傳送到後端 ===
     const res = await api.submitOrder(order);
     console.log("🧾 submitOrder response:", res);
 
@@ -114,13 +154,13 @@ function showSuccessModal(orderId, total, lineUrl) {
   backdrop.setAttribute("aria-hidden", "false");
 
   // ✅ 重設表單
-  ["name", "phone", "address", "note"].forEach(id => {
+  ["name", "phone", "address", "note"].forEach((id) => {
     const el = $(id);
     if (el) el.value = "";
   });
   $("consentAgree")?.removeAttribute("checked");
-  document.querySelectorAll("input[name='ship']").forEach(r => r.checked = false);
-  document.querySelectorAll("input[name='payment']").forEach(r => r.checked = false);
+  document.querySelectorAll("input[name='ship']").forEach((r) => (r.checked = false));
+  document.querySelectorAll("input[name='payment']").forEach((r) => (r.checked = false));
   $("submitOrderBtn")?.setAttribute("disabled", "true");
 }
 
@@ -140,15 +180,15 @@ export function initSubmitOrder() {
     const hasItem = (getCartItems()?.length || 0) > 0;
     const hasName = name?.value.trim().length > 0;
     const hasPhone = phone?.value.trim().length >= 8;
-    const hasShip = [...shipRadios].some(r => r.checked);
-    const hasPay = [...payRadios].some(r => r.checked);
+    const hasShip = [...shipRadios].some((r) => r.checked);
+    const hasPay = [...payRadios].some((r) => r.checked);
     const agreed = consent?.checked;
 
     btn.disabled = !(hasItem && hasName && hasPhone && hasShip && hasPay && agreed);
   };
 
   // ✅ 綁定變更監聽
-  [name, phone, consent, ...shipRadios, ...payRadios].forEach(el => {
+  [name, phone, consent, ...shipRadios, ...payRadios].forEach((el) => {
     el?.addEventListener("input", validate);
     el?.addEventListener("change", validate);
   });
