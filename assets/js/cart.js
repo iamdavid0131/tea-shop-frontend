@@ -112,3 +112,43 @@ export function animateMoney() {
   void el.offsetWidth; // ✅ reflow 重新觸發動畫
   el.classList.add("money-pop");
 }
+
+// ============================================================
+// 🛒 取得目前購物車內容（供訂單送出用）
+// ============================================================
+export function getCartItems() {
+  try {
+    const items = CONFIG.PRODUCTS.map(p => ({
+      id: p.id,
+      name: p.name || "",
+      qty: parseInt($(`qty-${p.id}`)?.textContent || 0),
+    })).filter(i => i.qty > 0);
+    return items;
+  } catch (err) {
+    console.error("⚠️ getCartItems 失敗:", err);
+    return [];
+  }
+}
+
+// ============================================================
+// 🧹 清空購物車（用於訂單送出成功後）
+// ============================================================
+export function clearCart() {
+  try {
+    // 1️⃣ 清空 localStorage
+    localStorage.removeItem("teaOrderCart");
+
+    // 2️⃣ 重設畫面上的數量顯示
+    CONFIG.PRODUCTS.forEach(p => {
+      const qtyEl = $(`qty-${p.id}`);
+      if (qtyEl) qtyEl.textContent = "0";
+    });
+
+    // 3️⃣ 更新金額
+    updateTotals();
+
+    console.log("🧹 購物車已清空");
+  } catch (err) {
+    console.error("⚠️ clearCart 錯誤:", err);
+  }
+}

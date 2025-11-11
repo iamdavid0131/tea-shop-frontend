@@ -98,5 +98,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   } finally {
     $("loading").style.display = "none";
   }
+  
+  // 綁定送出訂單按鈕
+  const submitBtn = $("submitBtn");
+  if (submitBtn) {
+    submitBtn.addEventListener("click", async () => {
+      await submitOrder();
+    });
+  }
 });
 

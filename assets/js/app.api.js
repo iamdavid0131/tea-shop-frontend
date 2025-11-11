@@ -34,7 +34,7 @@ export const api = {
 
   /** ✅ 送出訂單 */
   submitOrder(payload) {
-    return _post("/order", payload);
+    return _post("/order/submit", payload);
   },
 
   /** ✅ 查詢門市（後端 GET） */
@@ -72,6 +72,7 @@ export const api = {
     const res = await fetch(`${API_BASE}/stores/landmark?${params.toString()}`);
     return res.json();
   },
+
 };
 
 console.log("✅ app.api.js 重新載入成功，API_BASE =", API_BASE);
