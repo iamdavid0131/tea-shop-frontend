@@ -103,6 +103,7 @@ export async function updateTotals() {
   } catch (err) {
     console.error("試算錯誤:", err);
   }
+  window.dispatchEvent(new Event("cart:update"));
 }
 
 export function animateMoney() {

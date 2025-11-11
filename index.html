@@ -82,12 +82,14 @@
 
   <div class="form-group">
     <label for="phone">聯絡電話</label>
+    <div id="err-phone" class="error-msg">請輸入有效電話</div>
     <input id="phone" type="tel" placeholder="09xxxxxxxx 或 0x-xxxxxxx">
     <span class="muted">輸入後將自動查找會員資料</span>
   </div>
 
   <div class="form-group">
     <label for="name">收件姓名</label>
+    <div id="err-name" class="error-msg">請輸入姓名</div>
     <input id="name" type="text" placeholder="王小明">
   </div>
 
@@ -136,6 +138,7 @@
 
       <label for="storeName" class="sp-label">門市店名</label>
       <input id="storeName" type="text" class="sp-input" placeholder="輸入附近門市名稱或地標…" />
+      <div id="err-store" class="error-msg">請選擇門市或輸入店名</div>
 
       <div id="storeResults" class="store-results"></div>
     </div>
@@ -155,6 +158,7 @@
 
     <label class="sp-label">詳細地址</label>
     <input id="address" type="text" class="sp-input" placeholder="請填入路段、巷弄、門牌…" />
+    <div id="err-address" class="error-msg">請填寫完整宅配地址</div>
   </div> <!-- ✅ 宅配結束 -->
 </div> <!-- ✅ shippingCard 結束 -->
 
@@ -195,6 +199,12 @@
   </label>
 </div>
 
+<!-- ✅ 送出訂單按鈕 -->
+<div class="submit-area">
+  <button id="submitOrderBtn" class="btn btn-primary" type="button" disabled>
+    送出訂單
+  </button>
+</div>
 
 
 
@@ -252,7 +262,6 @@
     </div>
 
     <button id="viewCartBtn" class="btn btn-outline" type="button">查看明細 ▾</button>
-    <button id="submitOrderBtn" class="btn" type="button">送出訂單</button>
   </div>
 </div>
 
@@ -303,6 +312,11 @@
   </div>
 </div>
 
+<!-- ✅ 全螢幕 Loading 動畫 -->
+<div id="globalLoading" class="loading-overlay hidden" aria-hidden="true">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">正在送出訂單…</div>
+</div>
 
 
     <!-- 主 JS（指向 /api/*） -->
