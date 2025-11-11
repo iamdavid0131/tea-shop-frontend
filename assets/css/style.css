@@ -1688,24 +1688,30 @@ input.loading {
 
 /* === 展開的線上支付區塊 === */
 .online-methods {
-  display: none;
-  flex-direction: column; /* ✅ 提前指定方向，避免閃排 */
-  gap: 10px; /* ✅ 統一間距 */
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* ✅ 保證間距 */
   opacity: 0;
+  visibility: hidden;
   max-height: 0;
   overflow: hidden;
   transform: translateY(-6px);
   transition:
-    opacity 0.35s cubic-bezier(0.22, 0.61, 0.36, 1),
-    max-height 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
-    transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+    opacity 0.35s ease,
+    max-height 0.45s ease,
+    transform 0.35s ease,
+    visibility 0s linear 0.45s; /* ✅ 延後顯示切換 */
 }
 
 .online-methods.show {
-  display: flex;
   opacity: 1;
-  max-height: 400px;
+  visibility: visible;
+  max-height: 300px;
   transform: translateY(0);
+  transition:
+    opacity 0.35s ease,
+    max-height 0.45s ease,
+    transform 0.35s ease;
 }
 
 @keyframes fadeInSlide {
@@ -1765,29 +1771,5 @@ input.loading {
 .pay-btn.apple-pay.active {
   background: #000;
   box-shadow: 0 0 0 2px #1e90ff inset;
-}
-
-/* =========================
-   ✨ 付款按鈕區塊容器動畫修正
-========================= */
-#onlineMethods {
-  display: none;
-  flex-direction: column; /* ✅ 預先定義，避免閃爍橫排 */
-  gap: 10px;
-  opacity: 0;
-  max-height: 0;
-  overflow: hidden;
-  transform: translateY(-6px);
-  transition:
-    opacity 0.35s ease,
-    max-height 0.45s ease,
-    transform 0.35s ease;
-}
-
-#onlineMethods.show {
-  display: flex;
-  opacity: 1;
-  max-height: 300px;
-  transform: translateY(0);
 }
 
