@@ -134,6 +134,9 @@ export async function submitOrder() {
     // ✅ 線上支付：後端回傳綠界 HTML form，前端自動 submit（Option 1）
     if (res.ok && res.ecpay) {
       console.log("✅ 綠界參數回傳成功，準備導向綠界");
+
+
+      console.log("➡️ 導向綠界", res.ecpay.action, res.ecpay.payload);
       try {
         const { action, payload } = res.ecpay;
         const form = document.createElement("form");
