@@ -1678,7 +1678,7 @@ input.loading {
 .payment-radio input[type="radio"] {
   position: absolute;
   opacity: 0;
-  pointer-events: auto;
+  pointer-events: none;
 }
 
 .payment-radio input[type="radio"]:checked + span {
@@ -1691,14 +1691,12 @@ input.loading {
 /* === 展開的線上支付區塊 === */
 #onlineMethods {
   display: none;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
   opacity: 0;
-  max-height: 0;
-  overflow: hidden;
-  transform: translateY(-4px);
-  transition:
-    opacity 0.3s ease,
-    max-height 0.35s ease,
-    transform 0.3s ease;
+  transform: translateY(-6px);
+  transition: all 0.3s ease;
 }
 
 #onlineMethods.show {
