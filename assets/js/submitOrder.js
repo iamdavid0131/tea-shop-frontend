@@ -132,22 +132,33 @@ export async function submitOrder() {
     console.log("🧾 submitOrder response:", res);
 
     // ✅ 線上支付：後端回傳綠界 HTML form，前端自動 submit（Option 1）
-    if (res.ok && res.paymentForm) {
-      console.log("✅ 綠界表單回傳成功，準備導向綠界");
+    if (res.ok && res.ecpay) {
+      console.log("✅ 綠界參數回傳成功，準備導向綠界");
       try {
-        const wrapper = document.createElement("div");
-        wrapper.innerHTML = res.paymentForm.trim();
-        const form = wrapper.querySelector("form");
-        if (!form) throw new Error("綠界表單內容無效");
-        document.body.appendChild(wrapper);
+        const { action, payload } = res.ecpay;
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = action;
+
+        for (const [k, v] of Object.entries(payload)) {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = k;
+          input.value = v;
+          form.appendChild(input);
+        }
+
+        document.body.appendChild(form);
         form.submit();
-        // 這裡不清 loading，因為即將跳轉
+
+        // ✅ 不清除 loading，因為頁面即將跳轉
         return;
       } catch (e) {
-        console.error("⚠️ 綠界表單解析失敗:", e);
+        console.error("⚠️ 綠界參數解析失敗:", e);
         toast("⚠️ 金流表單異常，請稍後再試");
       }
     }
+
 
     // ✅ 貨到付款 or 後端直接給 orderId
     if (res.ok || res.orderId) {
