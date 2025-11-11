@@ -116,10 +116,21 @@ export async function submitOrder() {
     const res = await api.submitOrder(order);
     console.log("🧾 submitOrder response:", res);
 
+    if (res.ok && res.paymentForm) {
+      // 線上支付 → 自動送出綠界表單
+      const wrapper = document.createElement("div");
+      wrapper.innerHTML = res.paymentForm;
+      document.body.appendChild(wrapper);
+      const form = wrapper.querySelector("form");
+      form.submit();
+      return;
+    }
+
     if (res.ok || res.orderId) {
-      showSuccessModal(res.orderId || "—", order.total, res.lineBindUrl);
+      // 貨到付款
+      showSuccessModal(res.orderId || "—", order.total);
       clearCart();
-    } else {
+    }else {
       console.warn("❌ 後端回傳錯誤:", res);
       toast("❌ 訂單送出失敗：" + (res?.error || "伺服器未回應"));
     }
