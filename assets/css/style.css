@@ -1689,19 +1689,23 @@ input.loading {
 
 
 /* === 展開的線上支付區塊 === */
-#onlineMethods {
+.online-methods {
   display: none;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 10px;
   opacity: 0;
+  max-height: 0;
+  overflow: hidden;
   transform: translateY(-6px);
-  transition: all 0.3s ease;
+  transition:
+    opacity 0.35s cubic-bezier(0.22, 0.61, 0.36, 1),
+    max-height 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
-#onlineMethods.show {
-  display: flex !important;
+.online-methods.show {
+  display: flex;
+  flex-direction: column;
   opacity: 1;
+  max-height: 500px;
   transform: translateY(0);
 }
 
