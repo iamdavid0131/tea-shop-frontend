@@ -42,7 +42,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     initStorePicker();         // 門市選擇器
     initZipAuto();             // 郵遞區號自動推斷
     initMemberLookup();        // 會員查詢
-    initSubmitOrder();         // 送出訂單
 
     requestAnimationFrame(() => {
       CONFIG.PRODUCTS.forEach(p => updatePackUI(p.id));
@@ -84,15 +83,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       else bar.classList.remove("hide");
       lastScrollY = window.scrollY;
     });
+    initSubmitOrder();
 
-    // ✅ 綁定送出訂單按鈕
-    const submitBtn = $("submitOrderBtn");
-    if (submitBtn) {
-      submitBtn.addEventListener("click", async () => {
-        if (submitBtn.disabled) return;
-        await submitOrder();
-      });
-    }
 
   } catch (err) {
     console.error("初始化錯誤:", err);
