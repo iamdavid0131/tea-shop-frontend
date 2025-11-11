@@ -252,7 +252,7 @@
     </div>
 
     <button id="viewCartBtn" class="btn btn-outline" type="button">查看明細 ▾</button>
-    <button id="submitBtnSticky" class="btn" type="button" disabled>送出訂單</button>
+    <button id="submitOrderBtn" class="btn" type="button">送出訂單</button>
   </div>
 </div>
 
@@ -272,52 +272,38 @@
   </div>
 </div>
 
+<!-- ✅ 成功卡片 -->
+<div id="successBackdrop" class="modal-backdrop hidden" aria-hidden="true">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="successTitle">
+    <div class="success-icon">✓</div>
+    <h2 id="successTitle" class="big">訂單已送出</h2>
+    <p id="successDetail" class="muted">感謝您的訂購，我們將儘快為您出貨。</p>
 
-  <!-- 成功卡片 -->
-  <div id="successBackdrop" class="modal-backdrop" aria-hidden="true">
-    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="successTitle">
-      <div class="success-icon">✓</div>
-      <div id="successTitle" class="big">訂單已送出</div>
-      <div class="muted" id="successDetail">感謝您的訂購。</div>
-
-      <div class="order-summary">
-        <div><strong>訂單編號：</strong><span id="successOrderId"></span></div>
-        <div><strong>金額：</strong><span id="successTotal"></span> 元</div>
+    <div class="order-summary">
+      <div class="summary-item">
+        <span class="label">訂單編號</span>
+        <span id="successOrderId" class="value"></span>
       </div>
-
-      <div class="line-bind-box" id="lineBindBox" hidden>
-        <div class="line-bind-title">LINE 通知綁定</div>
-        <div class="line-bind-text">點擊下方按鈕即可追蹤訂單進度與出貨狀態。</div>
-        <a id="lineBindBtn" class="line-bind-btn" target="_blank">🔗 前往 LINE 綁定</a>
-        <div class="line-bind-note">若尚未加好友，系統會先跳出加好友畫面。</div>
-      </div>
-
-      <div class="ok">
-        <button id="successClose" class="btn" type="button">回到表單</button>
+      <div class="summary-item">
+        <span class="label">金額</span>
+        <span id="successTotal" class="value"></span>
       </div>
     </div>
-  </div>
 
-  <!-- 送出前確認：Bottom Sheet -->
-  <div id="sheetBackdrop" class="sheet-backdrop" aria-hidden="true">
-    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
-      <h3 id="confirmTitle">確認訂單內容</h3>
-      <div id="sheetItems"></div>
-      <hr style="border:none;border-top:1px solid #eee;margin:8px 0;">
-      <div class="line"><span>小計</span><b id="sheetSub">—</b></div>
-      <div class="line"><span>折扣</span><b id="sheetDisc">—</b></div>
-      <div class="line"><span>運費</span><b id="sheetShip">—</b></div>
-      <div class="line total"><span>應付總額</span><b id="sheetTotal">—</b></div>
-      <div class="actions">
-        <button id="sheetCancel" class="btn btn-outline" type="button">返回修改</button>
-        <button id="sheetConfirm" class="btn" type="button">確認送出</button>
-      </div>
+    <div class="line-bind-box" id="lineBindBox" hidden>
+      <div class="line-bind-title">LINE 通知綁定</div>
+      <div class="line-bind-text">點擊下方按鈕即可追蹤訂單進度與出貨狀態。</div>
+      <a id="lineBindBtn" class="line-bind-btn" target="_blank">🔗 前往 LINE 綁定</a>
+      <div class="line-bind-note">若尚未加好友，系統會先跳出加好友畫面。</div>
+    </div>
+
+    <div class="ok">
+      <button id="successClose" class="btn btn-primary" type="button">回到表單</button>
     </div>
   </div>
-  <div id="undoToast" style="position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#111;color:#fff;padding:10px 14px;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,.25);font-size:14px;display:none;z-index:1003;">
-    <span id="undoMsg"></span>
-    <button id="undoBtn" type="button" style="margin-left:10px;background:#fff;color:#111;border:0;border-radius:8px;padding:4px 10px;font-weight:700;">復原</button>
-  </div>
+</div>
+
+
 
     <!-- 主 JS（指向 /api/*） -->
   <script type="module" src="assets/js/app.js"></script>
