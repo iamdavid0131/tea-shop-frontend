@@ -6,12 +6,12 @@
 import { api } from "./app.api.js";
 import { $, toast } from "./dom.js";
 import { getCartItems, clearCart } from "./cart.js";
-import { CONFIG } from "./config.js"; // ✅ 一定要引入產品資料
+import { CONFIG } from "./config.js"; // ✅ 取商品名稱用
 
 // ✅ 格式化購物車品項（對應 Sheet 欄位名稱）
 function formatCartItems(rawItems) {
-  return rawItems.map(i => {
-    const product = CONFIG.PRODUCTS.find(p => p.id === i.id);
+  return rawItems.map((i) => {
+    const product = CONFIG.PRODUCTS.find((p) => p.id === i.id);
     return {
       id: i.id,
       name: product?.name || product?.title || i.name || "",
@@ -45,18 +45,25 @@ export async function submitOrder() {
 
     const order = {
       timestamp: new Date().toLocaleString("zh-TW", { hour12: false }),
-      orderId: "O" + Date.now(), // 前端臨時 ID，後端仍會覆寫
+      orderId: "O" + Date.now(), // 前端臨時 ID（後端會自己決定要不要用）
       buyerName: $("name")?.value?.trim() || "",
       buyerPhone: $("phone")?.value?.trim() || "",
       shippingMethod,
-      storeCarrier: shippingMethod === "store" ? $("carrier")?.value || "" : "",
-      storeName: shippingMethod === "store" ? $("storeName")?.value?.trim() || "" : "",
-      codAddress: shippingMethod === "cod" ? $("address")?.value?.trim() || "" : "",
+      storeCarrier:
+        shippingMethod === "store" ? $("carrier")?.value || "" : "",
+      storeName:
+        shippingMethod === "store"
+          ? $("storeName")?.value?.trim() || ""
+          : "",
+      codAddress:
+        shippingMethod === "cod"
+          ? $("address")?.value?.trim() || ""
+          : "",
       promoCode: $("promoCode")?.value?.trim() || "",
       note: $("note")?.value?.trim() || "",
       consent: $("consentAgree")?.checked ? "Y" : "N",
 
-      // 🟢 支付欄位（完全對應你的 Sheet）
+      // 🟢 支付欄位（對應 Sheet）
       paymentMethod: payMethod,
       paymentStatus: "pending",
       paymentTxId: "",
@@ -64,13 +71,14 @@ export async function submitOrder() {
 
       // 🫖 商品與金額區
       items,
-      pricingPolicy: {}, // 後端可補免運/折扣政策
+      pricingPolicy: {}, // 先給空，後端要用可以自己填
       subtotal: 0,
       discount: 0,
       shippingFee: 0,
-      total: Number($("total_s")?.textContent.replace(/[^\d]/g, "") || 0),
+      total: Number(
+        $("total_s")?.textContent.replace(/[^\d]/g, "") || 0
+      ),
 
-      // 狀態追蹤
       status: "created",
     };
 
@@ -80,11 +88,14 @@ export async function submitOrder() {
     const errName = $("err-name");
     const errPhone = $("err-phone");
 
-    // 先清除錯誤樣式
-    [nameInput, phoneInput].forEach((i) => i?.classList.remove("form-error"));
+    // 清除舊錯誤
+    [nameInput, phoneInput].forEach((i) =>
+      i?.classList.remove("form-error")
+    );
     [errName, errPhone].forEach((e) => e?.classList.remove("show"));
 
     let invalidField = null;
+
     if (!order.buyerName) {
       nameInput?.classList.add("form-error");
       errName?.classList.add("show");
@@ -98,9 +109,11 @@ export async function submitOrder() {
     if (invalidField) {
       toast("⚠️ 請完整填寫收件人資料");
       invalidField.scrollIntoView({ behavior: "smooth", block: "center" });
-      // ❌ 不要立即關閉 loading
+      // 🔄 收回 loading / 還原按鈕
       btn.disabled = false;
       btn.textContent = "送出訂單";
+      loadingOverlay?.classList.remove("show");
+      loadingOverlay?.setAttribute("aria-hidden", "true");
       return;
     }
 
@@ -108,6 +121,8 @@ export async function submitOrder() {
       toast("🛒 您的購物車是空的");
       btn.disabled = false;
       btn.textContent = "送出訂單";
+      loadingOverlay?.classList.remove("show");
+      loadingOverlay?.setAttribute("aria-hidden", "true");
       return;
     }
 
@@ -116,27 +131,29 @@ export async function submitOrder() {
     const res = await api.submitOrder(order);
     console.log("🧾 submitOrder response:", res);
 
-   if (res.ok && res.paymentForm) {
-    console.log("✅ 綠界表單回傳成功，準備導向綠界");
-    try {
-      const wrapper = document.createElement("div");
-      wrapper.innerHTML = res.paymentForm.trim();
-      const form = wrapper.querySelector("form");
-      if (!form) throw new Error("綠界表單內容無效");
-      document.body.appendChild(wrapper);
-      form.submit();
-      return;
-    } catch (e) {
-      console.error("⚠️ 綠界表單解析失敗:", e);
-      toast("⚠️ 金流表單異常，請稍後再試");
+    // ✅ 線上支付：後端回傳綠界 HTML form，前端自動 submit（Option 1）
+    if (res.ok && res.paymentForm) {
+      console.log("✅ 綠界表單回傳成功，準備導向綠界");
+      try {
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = res.paymentForm.trim();
+        const form = wrapper.querySelector("form");
+        if (!form) throw new Error("綠界表單內容無效");
+        document.body.appendChild(wrapper);
+        form.submit();
+        // 這裡不清 loading，因為即將跳轉
+        return;
+      } catch (e) {
+        console.error("⚠️ 綠界表單解析失敗:", e);
+        toast("⚠️ 金流表單異常，請稍後再試");
+      }
     }
-  }
 
+    // ✅ 貨到付款 or 後端直接給 orderId
     if (res.ok || res.orderId) {
-      // 貨到付款
       showSuccessModal(res.orderId || "—", order.total);
       clearCart();
-    }else {
+    } else {
       console.warn("❌ 後端回傳錯誤:", res);
       toast("❌ 訂單送出失敗：" + (res?.error || "伺服器未回應"));
     }
@@ -144,15 +161,17 @@ export async function submitOrder() {
     console.error("❌ 送出訂單錯誤:", err);
     toast("⚠️ 網路異常，請稍後再試");
   } finally {
-  // ✅ 若有導向綠界表單，不執行 UI 收尾，避免畫面閃爍
-  const hasECPayForm = !!document.querySelector("form[action*='ecpay']");
-  if (!hasECPayForm) {
-    btn.disabled = false;
-    btn.textContent = "送出訂單";
-    loadingOverlay?.classList.remove("show");
-    loadingOverlay?.setAttribute("aria-hidden", "true");
+    // ✅ 若沒有產生綠界 form（沒跳轉），才還原按鈕與 loading
+    const hasECPayForm = !!document.querySelector(
+      "form[action*='ecpay']"
+    );
+    if (!hasECPayForm) {
+      btn.disabled = false;
+      btn.textContent = "送出訂單";
+      loadingOverlay?.classList.remove("show");
+      loadingOverlay?.setAttribute("aria-hidden", "true");
+    }
   }
-}
 }
 
 // ✅ 顯示成功卡片
@@ -164,7 +183,8 @@ function showSuccessModal(orderId, total, lineUrl) {
   const lineBtn = $("lineBindBtn");
 
   if (idEl) idEl.textContent = orderId || "-";
-  if (totalEl) totalEl.textContent = total?.toLocaleString("zh-TW") || "0";
+  if (totalEl)
+    totalEl.textContent = total?.toLocaleString("zh-TW") || "0";
 
   if (lineUrl) {
     lineBox.hidden = false;
@@ -182,8 +202,12 @@ function showSuccessModal(orderId, total, lineUrl) {
     if (el) el.value = "";
   });
   $("consentAgree")?.removeAttribute("checked");
-  document.querySelectorAll("input[name='ship']").forEach((r) => (r.checked = false));
-  document.querySelectorAll("input[name='payment']").forEach((r) => (r.checked = false));
+  document
+    .querySelectorAll("input[name='ship']")
+    .forEach((r) => (r.checked = false));
+  document
+    .querySelectorAll("input[name='payment']")
+    .forEach((r) => (r.checked = false));
   $("submitOrderBtn")?.setAttribute("disabled", "true");
 }
 
@@ -198,7 +222,6 @@ export function initSubmitOrder() {
   const shipRadios = document.querySelectorAll("input[name='ship']");
   const payRadios = document.querySelectorAll("input[name='payment']");
 
-  // ✅ 動態驗證
   const validate = () => {
     const hasItem = (getCartItems()?.length || 0) > 0;
     const hasName = name?.value.trim().length > 0;
@@ -206,29 +229,30 @@ export function initSubmitOrder() {
     const hasShip = [...shipRadios].some((r) => r.checked);
     const hasPay = [...payRadios].some((r) => r.checked);
     const agreed = consent?.checked;
-
-    btn.disabled = !(hasItem && hasName && hasPhone && hasShip && hasPay && agreed);
+    btn.disabled = !(
+      hasItem &&
+      hasName &&
+      hasPhone &&
+      hasShip &&
+      hasPay &&
+      agreed
+    );
   };
 
-  // ✅ 綁定變更監聽
   [name, phone, consent, ...shipRadios, ...payRadios].forEach((el) => {
     el?.addEventListener("input", validate);
     el?.addEventListener("change", validate);
   });
 
-  // ✅ 每次購物車更新時也重新檢查
   window.addEventListener("cart:update", validate);
 
-  // ✅ 綁定送出
   btn.addEventListener("click", (e) => {
     e.preventDefault();
     if (!btn.disabled) submitOrder();
   });
 
-  // 初始狀態
   validate();
 
-  // ✅ 關閉成功卡片
   $("successClose")?.addEventListener("click", () => {
     const backdrop = $("successBackdrop");
     backdrop.classList.remove("show");
