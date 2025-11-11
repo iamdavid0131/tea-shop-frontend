@@ -129,7 +129,7 @@ export async function submitOrder() {
     // === 傳送到後端 ===
     console.log("🧾 order.items", order.items);
     const res = await api.submitOrder(order);
-    console.log("🧾 submitOrder response:", res);
+    console.log("🧾 submitOrder response:", JSON.stringify(res, null, 2));
 
     // ✅ 線上支付：後端回傳綠界 HTML form，前端自動 submit（Option 1）
     if (res.ok && res.ecpay) {
