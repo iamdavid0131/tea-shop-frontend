@@ -50,22 +50,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       updateTotals();
     });
 
-  let paymentInitialized = false;
+    // ✅ 僅監測 #paymentCard 出現（父層）
+    const paymentObserver = new MutationObserver(() => {
+      const paymentCard = document.getElementById("paymentCard");
+      if (paymentCard) {
+        console.log("✅ 偵測到 #paymentCard 出現，初始化付款 UI");
+        initPaymentUI();
+        paymentObserver.disconnect(); // 偵測到後就關閉，避免重複
+      }
+    });
 
-const paymentObserver = new MutationObserver(() => {
-  const onlineMethods = document.getElementById("onlineMethods");
+    // 監控整個 body（因為付款區塊可能是 renderProducts() 動態插入）
+    paymentObserver.observe(document.body, { childList: true, subtree: true });
 
-  if (onlineMethods && !paymentInitialized) {
-    console.log("✅ 監測到 #onlineMethods 出現，初始化付款 UI");
-    initPaymentUI();
-    paymentInitialized = true;
-  } else if (!onlineMethods && paymentInitialized) {
-    console.log("♻️ #onlineMethods 被移除，下次出現將重新初始化");
-    paymentInitialized = false;
-  }
-});
-
-paymentObserver.observe(document.body, { childList: true, subtree: true });
 
 
     // ✅ 查看明細按鈕事件（唯一綁定）
