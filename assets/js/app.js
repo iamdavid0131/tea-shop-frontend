@@ -15,7 +15,7 @@ import { initShippingUI } from "./shippingUI.js";
 import { initStorePicker } from "./storepicker.js";
 import { initZipAuto } from "./zipcode.js";
 import { initPaymentUI } from "./paymentUI.js";
-import { submitOrder } from "./submitOrder.js"; // ✅ 必須引入！
+//import { submitOrder } from "./submitOrder.js"; // ✅ 必須引入！
 
 window.api = api; // Debug 可留
 
