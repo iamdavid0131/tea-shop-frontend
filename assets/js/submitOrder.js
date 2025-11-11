@@ -116,15 +116,21 @@ export async function submitOrder() {
     const res = await api.submitOrder(order);
     console.log("🧾 submitOrder response:", res);
 
-    if (res.ok && res.paymentForm) {
-      // 線上支付 → 自動送出綠界表單
+   if (res.ok && res.paymentForm) {
+    console.log("✅ 綠界表單回傳成功，準備導向綠界");
+    try {
       const wrapper = document.createElement("div");
-      wrapper.innerHTML = res.paymentForm;
-      document.body.appendChild(wrapper);
+      wrapper.innerHTML = res.paymentForm.trim();
       const form = wrapper.querySelector("form");
+      if (!form) throw new Error("綠界表單內容無效");
+      document.body.appendChild(wrapper);
       form.submit();
       return;
+    } catch (e) {
+      console.error("⚠️ 綠界表單解析失敗:", e);
+      toast("⚠️ 金流表單異常，請稍後再試");
     }
+  }
 
     if (res.ok || res.orderId) {
       // 貨到付款
@@ -138,6 +144,9 @@ export async function submitOrder() {
     console.error("❌ 送出訂單錯誤:", err);
     toast("⚠️ 網路異常，請稍後再試");
   } finally {
+  // ✅ 若有導向綠界表單，不執行 UI 收尾，避免畫面閃爍
+  const hasECPayForm = !!document.querySelector("form[action*='ecpay']");
+  if (!hasECPayForm) {
     btn.disabled = false;
     btn.textContent = "送出訂單";
     loadingOverlay?.classList.remove("show");
