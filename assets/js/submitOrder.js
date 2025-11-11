@@ -10,13 +10,13 @@ import { CONFIG } from "./config.js"; // ✅ 一定要引入產品資料
 
 // ✅ 格式化購物車品項（對應 Sheet 欄位名稱）
 function formatCartItems(rawItems) {
-  return rawItems.map((i) => {
-    const product = CONFIG.PRODUCTS.find((p) => p.id === i.id);
+  return rawItems.map(i => {
+    const product = CONFIG.PRODUCTS.find(p => p.id === i.id);
     return {
       id: i.id,
-      name: product?.name || i.name || "",
+      name: product?.name || product?.title || i.name || "",
       qty: Number(i.qty) || 0,
-      pack: Boolean(i.pack), // ✅ 轉為布林值，方便後端對應「_裝罐」
+      pack: i.pack || false,
     };
   });
 }
@@ -98,19 +98,21 @@ export async function submitOrder() {
     if (invalidField) {
       toast("⚠️ 請完整填寫收件人資料");
       invalidField.scrollIntoView({ behavior: "smooth", block: "center" });
-      loadingOverlay?.classList.remove("show");
-      loadingOverlay?.setAttribute("aria-hidden", "true");
+      // ❌ 不要立即關閉 loading
+      btn.disabled = false;
+      btn.textContent = "送出訂單";
       return;
     }
 
     if (order.items.length === 0) {
       toast("🛒 您的購物車是空的");
-      loadingOverlay?.classList.remove("show");
-      loadingOverlay?.setAttribute("aria-hidden", "true");
+      btn.disabled = false;
+      btn.textContent = "送出訂單";
       return;
     }
 
     // === 傳送到後端 ===
+    console.log("🧾 order.items", order.items);
     const res = await api.submitOrder(order);
     console.log("🧾 submitOrder response:", res);
 
