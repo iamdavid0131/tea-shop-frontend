@@ -2,6 +2,9 @@ import { $, toast } from "./dom.js";
 import { CONFIG } from "./config.js";
 import { api } from "./app.api.js";
 
+// ============================================================
+// 💾 儲存購物車
+// ============================================================
 export function saveCart() {
   const cart = {};
   CONFIG.PRODUCTS.forEach((p) => {
@@ -11,6 +14,9 @@ export function saveCart() {
   localStorage.setItem("teaOrderCart", JSON.stringify(cart));
 }
 
+// ============================================================
+// 🔄 還原購物車
+// ============================================================
 export function restoreCart() {
   try {
     const saved = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
@@ -24,7 +30,7 @@ export function restoreCart() {
 }
 
 // ============================================================
-// 💰 金額試算 + sticky bar 更新（含免運提示與進度條）
+// 💰 金額試算 + Sticky Bar 更新
 // ============================================================
 export async function updateTotals() {
   const items = CONFIG.PRODUCTS.map(p => ({
@@ -35,6 +41,7 @@ export async function updateTotals() {
   const stickyBar = $("StickyBar");
   if (!stickyBar) return;
 
+  // 🪫 若購物車為空
   if (items.length === 0) {
     $("total_s").textContent = "NT$ 0";
     $("sub_s").textContent = "—";
@@ -44,6 +51,9 @@ export async function updateTotals() {
     $("freeProgress").style.display = "none";
     stickyBar.classList.add("hide");
     stickyBar.classList.remove("show");
+
+    // ✅ 仍觸發驗證刷新狀態（例如送出按鈕灰化）
+    window.dispatchEvent(new Event("cart:update"));
     return;
   }
 
@@ -66,14 +76,12 @@ export async function updateTotals() {
     $("ship_s").textContent = fmt(ship);
     $("total_s").textContent = fmt(total);
 
-    // ✅ 金額彈跳動畫
     animateMoney();
 
-    // ✅ 折扣列淡入
     const discWrap = $("disc_wrap");
     if (discWrap) discWrap.style.display = disc > 0 ? "inline" : "none";
 
-    // ✅ 免運門檻進度條
+    // ✅ 免運提示
     const freeThreshold = CONFIG.FREE_SHIPPING_THRESHOLD || 1000;
     const diff = freeThreshold - sub;
     const isFree = sub >= freeThreshold;
@@ -90,7 +98,6 @@ export async function updateTotals() {
     if (progressBar) {
       const progress = Math.min(100, (sub / freeThreshold) * 100);
       progressBar.style.width = `${progress}%`;
-
       progressBar.classList.toggle("flash-free", isFree);
     }
 
@@ -103,25 +110,30 @@ export async function updateTotals() {
   } catch (err) {
     console.error("試算錯誤:", err);
   }
+
+  // ✅ 試算完畢才觸發 cart:update（安全，不再遞迴）
   window.dispatchEvent(new Event("cart:update"));
 }
 
+// ============================================================
+// ✨ 金額動畫
+// ============================================================
 export function animateMoney() {
   const el = $("total_s");
   if (!el) return;
   el.classList.remove("money-pop");
-  void el.offsetWidth; // ✅ reflow 重新觸發動畫
+  void el.offsetWidth;
   el.classList.add("money-pop");
 }
 
 // ============================================================
-// 🛒 取得目前購物車內容（供訂單送出用）
+// 🛒 取得購物車內容（供訂單送出用）
 // ============================================================
 export function getCartItems() {
   try {
     const items = CONFIG.PRODUCTS.map(p => {
       const qty = parseInt($(`qty-${p.id}`)?.textContent || 0);
-      const packEl = $(`pack-${p.id}`); // ✅ 假設裝罐按鈕或 checkbox id 為 pack-xxx
+      const packEl = $(`pack-${p.id}`);
       const pack = packEl?.classList?.contains("active") || packEl?.checked || false;
 
       return {
@@ -132,9 +144,6 @@ export function getCartItems() {
       };
     }).filter(i => i.qty > 0);
 
-    // ✅ 對外觸發更新事件（供驗證用）
-    window.dispatchEvent(new Event("cart:update"));
-
     return items;
   } catch (err) {
     console.error("⚠️ getCartItems 失敗:", err);
@@ -143,22 +152,18 @@ export function getCartItems() {
 }
 
 // ============================================================
-// 🧹 清空購物車（用於訂單送出成功後）
+// 🧹 清空購物車（送出訂單成功後）
 // ============================================================
 export function clearCart() {
   try {
-    // 1️⃣ 清空 localStorage
     localStorage.removeItem("teaOrderCart");
 
-    // 2️⃣ 重設畫面上的數量顯示
     CONFIG.PRODUCTS.forEach(p => {
       const qtyEl = $(`qty-${p.id}`);
       if (qtyEl) qtyEl.textContent = "0";
     });
 
-    // 3️⃣ 更新金額
     updateTotals();
-
     console.log("🧹 購物車已清空");
   } catch (err) {
     console.error("⚠️ clearCart 錯誤:", err);
