@@ -137,6 +137,7 @@ export async function submitOrder() {
     if (res.ok && res.paymentForm) {
       console.log("✅ 綠界表單回傳成功，準備導向綠界");
       try {
+        console.log("🧾 綠界回傳 HTML:", res.paymentForm);
         const wrapper = document.createElement("div");
         wrapper.innerHTML = res.paymentForm.trim();
         const form = wrapper.querySelector("form");
