@@ -153,6 +153,7 @@ export async function submitOrder() {
     loadingOverlay?.setAttribute("aria-hidden", "true");
   }
 }
+}
 
 // ✅ 顯示成功卡片
 function showSuccessModal(orderId, total, lineUrl) {
