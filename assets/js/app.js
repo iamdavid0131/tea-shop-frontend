@@ -50,23 +50,31 @@ document.addEventListener("DOMContentLoaded", async () => {
       updateTotals();
     });
 
-// ✅ 僅監測 #paymentCard 出現（父層）
-    const paymentObserver = new MutationObserver(() => {
-      const paymentCard = document.getElementById("paymentCard");
-      if (paymentCard) {
-        console.log("✅ 偵測到 #paymentCard 出現，排程初始化付款 UI");
 
-        // 🔧 延遲到下一個渲染幀（DOM 真的完成 attach）
-        requestAnimationFrame(() => {
-          console.log("🎬 DOM attach 已完成，執行 initPaymentUI()");
+  const paymentObserver = new MutationObserver(() => {
+    const paymentCard = document.getElementById("paymentCard");
+    if (paymentCard) {
+      console.log("✅ 偵測到 #paymentCard 出現，開始安全延遲初始化付款 UI");
+      paymentObserver.disconnect();
+
+      // 🕒 每 100ms 嘗試一次，最多 50 次（約 5 秒）
+      let tries = 0;
+      const timer = setInterval(() => {
+        const card = document.getElementById("paymentCard");
+        if (card) {
+          clearInterval(timer);
+          console.log("🎬 #paymentCard 已穩定載入，執行 initPaymentUI()");
           initPaymentUI();
-        });
+        } else if (++tries > 50) {
+          clearInterval(timer);
+          console.error("❌ 5 秒內仍找不到 #paymentCard，放棄初始化付款 UI");
+        }
+      }, 100);
+    }
+  });
 
-        paymentObserver.disconnect(); // 只觸發一次
-      }
-    });
+  paymentObserver.observe(document.body, { childList: true, subtree: true });
 
-    paymentObserver.observe(document.body, { childList: true, subtree: true });
 
 
 
