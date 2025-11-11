@@ -8,6 +8,7 @@ import { $, toast } from "./dom.js";
 import { getCartItems, clearCart } from "./cart.js";
 import { CONFIG } from "./config.js"; // ✅ 取商品名稱用
 
+
 // ✅ 格式化購物車品項（對應 Sheet 欄位名稱）
 function formatCartItems(rawItems) {
   return rawItems.map((i) => {
@@ -132,32 +133,20 @@ export async function submitOrder() {
     console.log("🧾 submitOrder response:", JSON.stringify(res, null, 2));
 
     // ✅ 線上支付：後端回傳綠界 HTML form，前端自動 submit（Option 1）
-    if (res.ok && res.ecpay) {
-      console.log("✅ 綠界參數回傳成功，準備導向綠界");
 
-
-      console.log("➡️ 導向綠界", res.ecpay.action, res.ecpay.payload);
+    if (res.ok && res.paymentForm) {
+      console.log("✅ 綠界表單回傳成功，準備導向綠界");
       try {
-        const { action, payload } = res.ecpay;
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = action;
-
-        for (const [k, v] of Object.entries(payload)) {
-          const input = document.createElement("input");
-          input.type = "hidden";
-          input.name = k;
-          input.value = v;
-          form.appendChild(input);
-        }
-
-        document.body.appendChild(form);
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = res.paymentForm.trim();
+        const form = wrapper.querySelector("form");
+        if (!form) throw new Error("綠界表單內容無效");
+        document.body.appendChild(wrapper);
         form.submit();
-
-        // ✅ 不清除 loading，因為頁面即將跳轉
+        // 不清除 loading，因為頁面即將跳轉
         return;
       } catch (e) {
-        console.error("⚠️ 綠界參數解析失敗:", e);
+        console.error("⚠️ 綠界表單解析失敗:", e);
         toast("⚠️ 金流表單異常，請稍後再試");
       }
     }
