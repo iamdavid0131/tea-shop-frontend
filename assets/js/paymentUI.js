@@ -1,7 +1,7 @@
 import { $ } from "./dom.js";
 
 export function initPaymentUI(retry = 0) {
-  const paymentCard = $("#paymentCard");
+  const paymentCard = document.getElementById("paymentCard");
 
   if (!paymentCard) {
     if (retry < 10) {
@@ -21,7 +21,7 @@ export function initPaymentUI(retry = 0) {
     const isOnline = e.target.value === "online";
     console.log("🔥 change 事件觸發", e.target.value, "isOnline =", isOnline);
 
-    const onlineMethods = $("#onlineMethods");
+    const onlineMethods = document.getElementById("onlineMethods");
     if (!onlineMethods) {
       console.warn("⚠️ 找不到 #onlineMethods，略過這次事件");
       return;
