@@ -1013,7 +1013,8 @@ body.modal-open {
 ============================================================ */
 
 /* ✅ 在 sheet 打開時自動啟動茶霧效果 */
-.sheet[data-open="true"]::before {
+/* ✅ 共用的茶霧層 */
+.sheet::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -1025,11 +1026,21 @@ body.modal-open {
   );
   opacity: 0;
   transform: translateY(20px) scale(0.98);
-  animation: teaMistRise 1.2s ease forwards;
   pointer-events: none;
   z-index: 0;
   mix-blend-mode: lighten;
 }
+
+/* ✅ 開啟時：茶霧上升 */
+.sheet[data-open="true"]::before {
+  animation: teaMistRise 1.2s ease forwards;
+}
+
+/* ✅ 關閉時：茶霧下沉 */
+.sheet[data-open="false"]::before {
+  animation: teaMistFade 0.8s ease forwards;
+}
+
 
 /* ✅ 茶霧動畫關鍵幀 */
 @keyframes teaMistRise {
@@ -1050,11 +1061,33 @@ body.modal-open {
   }
 }
 
+@keyframes teaMistFade {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+  60% {
+    opacity: 0.4;
+    transform: translateY(10px) scale(0.99);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+    filter: blur(8px);
+  }
+}
+
 /* ✅ 開啟後，主內容稍微延遲浮出（層次更自然） */
 .sheet[data-open="true"] > * {
   position: relative;
   z-index: 1;
   animation: contentLift 0.6s ease 0.25s both;
+}
+
+.sheet[data-open="false"] > * {
+  animation: contentDrop 0.4s ease both;
 }
 @keyframes contentLift {
   from {
@@ -1067,7 +1100,16 @@ body.modal-open {
   }
 }
 
-
+@keyframes contentDrop {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
 /* === 收件資料區塊（祥興茶系玻璃風格）=== */
 .section {
   box-sizing: border-box;
