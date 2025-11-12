@@ -187,8 +187,7 @@ function showSuccessModal(orderId, total, lineUrl) {
   const lineBtn = $("lineBindBtn");
 
   if (idEl) idEl.textContent = orderId || "-";
-  if (totalEl)
-    totalEl.textContent = total?.toLocaleString("zh-TW") || "0";
+  if (totalEl) totalEl.textContent = `NT$${Number(total).toLocaleString()}`;
 
   if (lineUrl) {
     lineBox.hidden = false;
@@ -197,28 +196,42 @@ function showSuccessModal(orderId, total, lineUrl) {
     lineBox.hidden = true;
   }
 
-  backdrop.classList.add("show");
-  backdrop.setAttribute("aria-hidden", "false");
+  // 先顯示節點，稍後加上動畫 class
+  backdrop.classList.remove("hidden");
+  requestAnimationFrame(() => backdrop.classList.add("show"));
 
-  // ✅ 重設表單
-  ["name", "phone", "address", "note"].forEach((id) => {
-    const el = $(id);
-    if (el) el.value = "";
-  });
+  // 清空表單、購物車
+  clearCart();
+  ["name", "phone", "address", "note"].forEach(id => $(id)?.value = "");
   $("consentAgree")?.removeAttribute("checked");
-  document
-    .querySelectorAll("input[name='ship']")
-    .forEach((r) => (r.checked = false));
-  document
-    .querySelectorAll("input[name='payment']")
-    .forEach((r) => (r.checked = false));
+  document.querySelectorAll("input[name='ship'],input[name='payment']")
+    .forEach(r => r.checked = false);
   $("submitOrderBtn")?.setAttribute("disabled", "true");
+
+  // 🕒 可選：自動 5 秒後關閉
+  setTimeout(() => {
+    if (backdrop.classList.contains("show")) {
+      backdrop.classList.remove("show");
+      backdrop.setAttribute("aria-hidden", "true");
+    }
+  }, 5000);
 }
 
 // ✅ 初始化送出訂單 & 關閉事件
 export function initSubmitOrder() {
   const btn = $("submitOrderBtn");
   if (!btn) return;
+
+    // ✅ 檢查是否為綠界付款導回
+  const params = new URLSearchParams(location.search);
+  if (params.get("paid") === "1") {
+    const orderId = params.get("orderId");
+    const total = params.get("total");
+    showSuccessModal(orderId, total);
+    // 清除網址參數，避免刷新又重彈
+    const cleanUrl = location.origin + location.pathname;
+    history.replaceState({}, document.title, cleanUrl);
+  }
 
   const consent = $("consentAgree");
   const name = $("name");

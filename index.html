@@ -114,12 +114,12 @@
   <div class="ship-options">
     <label class="ship-radio">
       <input type="radio" name="ship" value="store" checked>
-      <span>超商店到店（取貨付款）</span>
+      <span>超商店到店</span>
     </label>
 
     <label class="ship-radio">
       <input type="radio" name="ship" value="cod">
-      <span>宅配（貨到付款）</span>
+      <span>宅配</span>
     </label>
   </div>
 
@@ -172,18 +172,17 @@
       <span>貨到付款</span>
     </label>
 
-    <label class="payment-radio">
-      <input type="radio" name="payment" value="online">
-      <span>線上支付</span>
+    <label class="pay-btn active" data-method="online">
+      <span>線上支付（信用卡/ATM/Apple Pay）</span>
     </label>
   </div>
 
   <!-- ✅ 線上支付展開選項 -->
-  <div id="onlineMethods" class="online-methods">
+  <!-- <div id="onlineMethods" class="online-methods">
     <button class="pay-btn" data-method="credit">💳 信用卡</button>
     <button class="pay-btn apple-pay" data-method="applepay" style="display:none;"> Apple Pay</button>
     <button class="pay-btn" data-method="atm">🏧 網路 ATM</button>
-  </div>
+  </div> -->
 </div>
 
 
@@ -280,7 +279,6 @@
     <button id="closeCartModal" class="btn btn-outline">關閉</button>
   </div>
 </div>
-
 <!-- ✅ 成功卡片 -->
 <div id="successBackdrop" class="modal-backdrop hidden" aria-hidden="true">
   <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="successTitle">
@@ -291,11 +289,11 @@
     <div class="order-summary">
       <div class="summary-item">
         <span class="label">訂單編號</span>
-        <span id="successOrderId" class="value"></span>
+        <span id="successOrderId" class="value">#A24001</span>
       </div>
       <div class="summary-item">
         <span class="label">金額</span>
-        <span id="successTotal" class="value"></span>
+        <span id="successTotal" class="value">NT$1,280</span>
       </div>
     </div>
 
