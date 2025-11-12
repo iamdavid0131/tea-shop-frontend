@@ -282,34 +282,27 @@
     <button id="closeCartModal" class="btn btn-outline">關閉</button>
   </div>
 </div>
-<!-- ✅ 成功卡片 -->
-<div id="successBackdrop" class="modal-backdrop hidden" aria-hidden="true">
-  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="successTitle">
-    <div class="success-icon">✓</div>
-    <h2 id="successTitle" class="big">訂單已送出</h2>
-    <p id="successDetail" class="muted">感謝您的訂購，我們將儘快為您出貨。</p>
+<!-- ✅ 成功提示模組 -->
+<div id="successBackdrop" class="success-backdrop hidden">
+  <div class="success-card">
+    <svg class="success-check" viewBox="0 0 52 52">
+      <circle class="check-circle" cx="26" cy="26" r="25" fill="none"/>
+      <path class="check-mark" fill="none" d="M14 27l7 7 17-17"/>
+    </svg>
 
-    <div class="order-summary">
-      <div class="summary-item">
-        <span class="label">訂單編號</span>
-        <span id="successOrderId" class="value">#A24001</span>
-      </div>
-      <div class="summary-item">
-        <span class="label">金額</span>
-        <span id="successTotal" class="value">NT$1,280</span>
-      </div>
+    <h2 class="success-title">訂單已送出</h2>
+    <p class="success-sub">感謝您的訂購，我們將儘快為您出貨。</p>
+
+    <div class="success-info">
+      <div><strong>訂單編號</strong> <span id="successOrderId">—</span></div>
+      <div><strong>金額</strong> <span id="successTotal">NT$—</span></div>
     </div>
 
-    <div class="line-bind-box" id="lineBindBox" hidden>
-      <div class="line-bind-title">LINE 通知綁定</div>
-      <div class="line-bind-text">點擊下方按鈕即可追蹤訂單進度與出貨狀態。</div>
-      <a id="lineBindBtn" class="line-bind-btn" target="_blank">🔗 前往 LINE 綁定</a>
-      <div class="line-bind-note">若尚未加好友，系統會先跳出加好友畫面。</div>
+    <div id="lineBindBox">
+      <a id="lineBindBtn" href="#" class="line-bind-btn">綁定 LINE 以接收出貨通知</a>
     </div>
 
-    <div class="ok">
-      <button id="successClose" class="btn btn-primary" type="button">回到表單</button>
-    </div>
+    <button id="successClose" class="success-close">回到表單</button>
   </div>
 </div>
 

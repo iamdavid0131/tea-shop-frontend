@@ -162,27 +162,47 @@ export async function submitOrder() {
     loadingOverlay?.setAttribute("aria-hidden", "true");
   }
 }
-
-// ✅ 顯示成功卡片
+// ✅ 顯示成功卡片（茶系浮層動畫版）
 function showSuccessModal(orderId, total, lineUrl) {
   const backdrop = $("successBackdrop");
   const idEl = $("successOrderId");
   const totalEl = $("successTotal");
   const lineBox = $("lineBindBox");
   const lineBtn = $("lineBindBtn");
+  const closeBtn = $("successClose");
 
+  if (!backdrop) {
+    console.error("❌ 未找到 successBackdrop 元素");
+    return;
+  }
+
+  // ✅ 注入訂單資訊
   if (idEl) idEl.textContent = orderId || "-";
   if (totalEl) totalEl.textContent = `NT$${Number(total).toLocaleString()}`;
 
+  // ✅ 顯示 LINE 綁定提示（自動淡入）
   if (lineUrl) {
     lineBox.hidden = false;
     lineBtn.href = lineUrl;
   } else {
-    lineBox.hidden = true;
+    lineBox.hidden = false; // 改為預設顯示（保留 LINE 提示 UI）
   }
 
+  // ✅ 顯示浮層（含動畫）
   backdrop.classList.remove("hidden");
   requestAnimationFrame(() => backdrop.classList.add("show"));
+
+  // ✅ 啟動 SVG 打勾動畫（重置後重新觸發）
+  const checkCircle = backdrop.querySelector(".check-circle");
+  const checkMark = backdrop.querySelector(".check-mark");
+  if (checkCircle && checkMark) {
+    checkCircle.style.animation = "none";
+    checkMark.style.animation = "none";
+    void checkCircle.offsetWidth; // 強制重排
+    void checkMark.offsetWidth;
+    checkCircle.style.animation = "drawCircle 0.6s ease-out forwards";
+    checkMark.style.animation = "drawCheck 0.4s ease-out 0.4s forwards";
+  }
 
   // ✅ 清空表單與購物車
   clearCart();
@@ -192,11 +212,23 @@ function showSuccessModal(orderId, total, lineUrl) {
   });
 
   const agree = $("consentAgree");
-  if (agree) agree.removeAttribute("checked");
-  document.querySelectorAll("input[name='shipping'],input[name='payment']")
+  if (agree) agree.checked = false;
+
+  document.querySelectorAll("input[name='shipping'], input[name='payment']")
     .forEach(r => r.checked = false);
+
   $("submitOrderBtn")?.setAttribute("disabled", "true");
+
+  // ✅ 綁定「回到表單」按鈕
+  if (closeBtn) {
+    closeBtn.onclick = () => {
+      backdrop.classList.remove("show");
+      setTimeout(() => backdrop.classList.add("hidden"), 400);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+  }
 }
+
 
 // ✅ 初始化送出訂單 & 關閉事件
 export function initSubmitOrder() {
