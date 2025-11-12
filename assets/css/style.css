@@ -2,24 +2,41 @@
    ☁️ 祥興茶行 Pure White Glass Theme — Final Animated Build
    Version: 2025-10-30
    ============================================================ */
-
 /* ============================================================
-🍵 祥興台灣茶系列訂購表單 — 高質感 iOS 茶系表頭
+🍃 祥興茶行 Header — 茶霧滑入 + 茶香漂浮特效
 ============================================================ */
-html, body {
-  background: #fff;
-}
 .ios-header {
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 1000;
   background: linear-gradient(180deg, rgba(250, 252, 250, 0.95), rgba(255,255,255,0.85));
   backdrop-filter: blur(14px);
   box-shadow: 0 2px 10px rgba(90, 123, 104, 0.08);
   border-bottom: 1px solid rgba(180, 200, 190, 0.3);
-  padding: 20px 20px 22px;
+  padding: 34px 24px 28px;
   text-align: center;
-  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  border-radius: 0 0 18px 18px;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(28px);
+  animation: teaHeaderEnter 1.2s ease-out forwards;
+}
+
+/* ===== 漂浮茶香粒子背景 ===== */
+.ios-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 30% 120%, rgba(180, 200, 180, 0.25) 0%, transparent 60%),
+                    radial-gradient(circle at 70% -20%, rgba(160, 190, 170, 0.22) 0%, transparent 60%),
+                    radial-gradient(circle at 50% 80%, rgba(180, 210, 190, 0.18) 0%, transparent 70%);
+  background-size: 200% 200%;
+  animation: teaMist 10s ease-in-out infinite alternate;
+  filter: blur(16px);
+  z-index: 0;
+}
+.ios-header > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* ===== 標題 ===== */
@@ -28,7 +45,6 @@ html, body {
   font-size: 22px;
   font-weight: 800;
   letter-spacing: 0.8px;
-  color: #2f4b3c;
   margin: 6px 0 8px;
   background: linear-gradient(90deg, #4e6b58, #8fb79c);
   -webkit-background-clip: text;
@@ -39,7 +55,7 @@ html, body {
 
 /* ===== 副標 ===== */
 .ios-subtitle {
-  font-size: 14.5px;
+  font-size: 14.8px;
   color: #506b58;
   font-weight: 500;
   line-height: 1.6;
@@ -61,7 +77,37 @@ html, body {
   animation: teaLine 1.5s ease-in-out;
 }
 
-/* ===== 動畫 ===== */
+/* ============================================================
+☁️ 茶霧滑入動畫
+============================================================ */
+@keyframes teaHeaderEnter {
+  0% { opacity: 0; transform: translateY(28px); filter: blur(6px); }
+  50% { opacity: 1; transform: translateY(0); filter: blur(3px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+/* ============================================================
+🌫️ 茶香粒子緩慢漂浮
+============================================================ */
+@keyframes teaMist {
+  0% { background-position: 50% 0%; }
+  50% { background-position: 48% 100%; }
+  100% { background-position: 52% 0%; }
+}
+
+/* ============================================================
+🪶 Hover 光影呼吸
+============================================================ */
+@media (hover:hover) {
+  .ios-header:hover {
+    box-shadow: 0 4px 14px rgba(90, 123, 104, 0.12);
+    background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(250,252,250,0.9));
+  }
+}
+
+/* ============================================================
+🎞️ 標題與副標動畫
+============================================================ */
 @keyframes fadeInTitle {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
@@ -74,15 +120,6 @@ html, body {
   0% { width: 0; opacity: 0; }
   60% { width: 72px; opacity: 1; }
   100% { width: 68px; }
-}
-/* ============================================================
-🪶 Hover 光影呼吸
-============================================================ */
-@media (hover:hover) {
-  .ios-header:hover {
-    box-shadow: 0 4px 14px rgba(90, 123, 104, 0.12);
-    background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(250,252,250,0.9));
-  }
 }
 
 /* ============================================================

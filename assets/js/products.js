@@ -140,7 +140,7 @@ export function renderProducts(items) {
         }
 
         <button class="more-btn" aria-expanded="false" data-id="${p.id}">
-          <span class="label">收合詳情</span>
+          <span class="label">詳細說明</span>
           <span class="arrow">▼</span>
         </button>
         ${detailBlock}
@@ -227,14 +227,14 @@ document.addEventListener("click", (e) => {
 
   allBlocks.forEach((b) => (b.hidden = true));
   allBtns.forEach((b) => {
-    b.querySelector(".label").textContent = "收合詳情";
+    b.querySelector(".label").textContent = "詳細說明";
     b.querySelector(".arrow").textContent = "▼";
     b.classList.remove("active");
   });
 
   if (isCurrentlyOpen) return;
 
-  btn.querySelector(".label").textContent = "隱藏詳情";
+  btn.querySelector(".label").textContent = "隱藏說明";
   btn.querySelector(".arrow").textContent = "▲";
   btn.classList.add("active");
   block.hidden = false;
