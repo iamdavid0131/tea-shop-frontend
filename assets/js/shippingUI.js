@@ -3,7 +3,7 @@ import { $ } from "./dom.js";
 import { ZIP_MAP } from "./zipcode.js";
 
 export function initShippingUI() {
-  const radios = document.querySelectorAll('input[name="ship"]');
+  const radios = document.querySelectorAll('input[name="shipping"]');
   const storeFields = $("storeFields");
   const codFields = $("codFields");
 
