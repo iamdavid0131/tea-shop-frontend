@@ -1515,21 +1515,19 @@ textarea {
 .sp-sheet::-webkit-scrollbar-thumb:hover {
   background: rgba(90, 123, 104, 0.4);
 }
-
 /* ============================================================
-🏪 Store / 宅配 Form — 高質感間距舒適整合版（祥興茶行）
+🏪 Store / 宅配 Form — 高級留白版（祥興茶行）
 ============================================================ */
 
 /* === 外層容器 === */
 #storeFields,
 #codFields {
   width: 100%;
-  margin-top: 20px;
-  padding: 22px 20px 26px;
+  margin-top: 28px;
+  padding: 26px 24px 32px;
   border-radius: 16px;
-  background: transparent; /* ✅ 移除多餘白底 */
+  background: transparent;
   backdrop-filter: blur(10px);
-  transition: all 0.35s ease;
   box-sizing: border-box;
 }
 
@@ -1538,7 +1536,7 @@ textarea {
 .delivery-form {
   display: flex;
   flex-direction: column;
-  gap: 22px; /* ✅ 每組欄位間距一致 */
+  gap: 28px; /* ✅ 每組欄位間距更寬鬆 */
   color: #2a2a2a;
   font-family: system-ui, -apple-system, "PingFang TC", "Noto Sans TC", sans-serif;
 }
@@ -1546,51 +1544,45 @@ textarea {
 /* === 標籤 === */
 .sp-label {
   display: block;
-  font-size: 16.5px;
+  font-size: 16.8px;
   font-weight: 700;
   color: #305c46;
-  margin-bottom: 6px; /* ✅ label 與欄位間距 */
-  letter-spacing: 0.3px;
+  margin-bottom: 10px; /* ✅ label 與欄位距離放大 */
+  letter-spacing: 0.35px;
   position: relative;
 }
 
-/* === 第一個標籤底線（漸層）=== */
+/* === 第一個標籤底線 === */
 .store-form .sp-label:first-of-type::after,
 .delivery-form .sp-label:first-of-type::after {
   content: "";
   position: absolute;
   left: 0;
-  bottom: -3px;
-  width: 38px;
+  bottom: -4px;
+  width: 42px;
   height: 2px;
   background: linear-gradient(90deg, #bcd7c6, transparent);
   border-radius: 999px;
 }
 
-/* === 超商下拉＋附近門市同行排版 === */
-.store-row {
-  display: flex;
-  align-items: center;
-  gap: 12px; /* ✅ select 與按鈕間距 */
-}
-
-/* === Input / Select 統一樣式 === */
+/* === Input / Select 統一茶系風格 === */
 .sp-select,
 .sp-input {
   appearance: none;
   -webkit-appearance: none;
-  font-size: 15.5px;
+  font-size: 15.8px;
   font-weight: 500;
-  height: 46px;
-  padding: 0 14px;
+  height: 48px;
+  padding: 0 16px;
   border-radius: 12px;
-  border: 1.5px solid rgba(170, 190, 180, 0.6);
-  background: rgba(255, 255, 255, 0.85);
-  color: #333;
+  border: 1.5px solid rgba(170, 190, 180, 0.55);
+  background: rgba(255, 255, 255, 0.9);
+  color: #2b2b2b;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   transition: all 0.3s ease;
   box-sizing: border-box;
   backdrop-filter: blur(6px);
+  letter-spacing: 0.2px;
 }
 
 /* === 聚焦高亮 === */
@@ -1599,16 +1591,16 @@ textarea {
   border-color: rgba(90, 123, 104, 0.85);
   box-shadow: 0 0 0 4px rgba(90, 123, 104, 0.15);
   outline: none;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.97);
 }
 
 /* === 下拉箭頭 === */
 .sp-select {
   background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%238aa596' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 12px center;
+  background-position: right 14px center;
   background-size: 12px;
-  padding-right: 34px;
+  padding-right: 36px;
 }
 
 /* === Placeholder === */
@@ -1617,19 +1609,26 @@ textarea {
   font-weight: 400;
 }
 
+/* === 超商下拉＋附近門市同行排版 === */
+.store-row {
+  display: flex;
+  align-items: center;
+  gap: 16px; /* ✅ select 與按鈕間距更寬 */
+}
+
 /* === 附近門市按鈕 === */
 .sp-search-title {
   flex-shrink: 0;
-  height: 46px; /* ✅ 與 select 對齊 */
-  padding: 0 20px;
-  font-size: 15.5px;
+  height: 48px;
+  padding: 0 22px;
+  font-size: 15.8px;
   font-weight: 600;
   color: #fff;
   background: linear-gradient(135deg, #8fb89e, #6d9f83);
   border: none;
   border-radius: 12px;
   cursor: pointer;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
 }
 
@@ -1639,19 +1638,13 @@ textarea {
 
 /* === 錯誤訊息 === */
 .error-msg {
-  font-size: 13px;
+  font-size: 13.2px;
   color: #c9544d;
-  margin-top: 4px;
+  margin-top: 6px;
   margin-left: 2px;
 }
 
 
-/* === 單列組件對齊 === */
-.sp-row {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
 
 
 /* === 附近門市按鈕（保留原樣） === */
