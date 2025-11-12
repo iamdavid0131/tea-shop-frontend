@@ -13,6 +13,12 @@ export function initMemberLookup() {
   const recentBox = $("recentBox");
   const recentList = recentBox?.querySelector(".recent-list");
 
+  // 預設隱藏常用收件地區塊
+if (recentBox) {
+recentBox.classList.add("hidden");
+}
+
+
   if (!phoneInput) return;
 
   // 🔍 會員查詢
@@ -40,7 +46,7 @@ export function initMemberLookup() {
           else if (n.includes("hi")) carrierSelect.value = "hilife";
         }
 
-        // ✅ 顯示常用收件地
+        // ✅ 顯示常用收件地址
         renderRecents(d.recentStores || [], d.recentAddresses || []);
         toast(`📦 已載入會員資料：${d.name || ""}`);
       } else {

@@ -17,15 +17,25 @@ export function initShippingUI() {
     r.addEventListener("change", () => {
       const isStore = r.value === "store";
 
-      // ✅ 使用 class 控制顯示＋動畫
-      if (isStore) {
-        storeFields.classList.add("active");
-        codFields.classList.remove("active");
-      } else {
-        codFields.classList.add("active");
-        storeFields.classList.remove("active");
-        initCODAddressPicker(); // ✅ 初始化宅配地址表單
-      }
+
+    // 🫖 茶湯滑入切換控制（防止白屏）
+    if (isStore) {
+    // ✅ 顯示超商
+    storeFields.classList.add("active");
+    codFields.classList.remove("active");
+
+    storeFields.style.display = "block";
+    codFields.style.display = "none";
+    } else {
+    // ✅ 顯示宅配
+    codFields.classList.add("active");
+    storeFields.classList.remove("active");
+
+    codFields.style.display = "block";
+    storeFields.style.display = "none";
+
+    initCODAddressPicker(); // ✅ 初始化宅配地址表單
+    }
     });
   });
 }
