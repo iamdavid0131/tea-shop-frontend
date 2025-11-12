@@ -134,25 +134,24 @@
   </div>
 
   <!-- ✅ 超商店到店 -->
-  <div id="storeFields">
-    <label>選擇超商</label>
-    <div class="store-form">
-      <div class="store-row">
-        <select id="carrier" class="sp-select">
-          <option value="7-11">7-ELEVEN</option>
-          <option value="familymart">全家 FamilyMart</option>
-        </select>
+<div id="storeFields">
+  <label class="sp-label" for="carrier">選擇超商</label>
+  <div class="store-form">
+    <div class="store-row">
+      <select id="carrier" class="sp-select">
+        <option value="7-11">7-ELEVEN</option>
+        <option value="familymart">全家 FamilyMart</option>
+      </select>
 
-        <button id="openStorePicker" class="sp-search-title">附近門市 ▾</button>
-      </div>
-
-      <label for="storeName" class="sp-label">門市店名</label>
-      <input id="storeName" type="text" class="sp-input" placeholder="輸入附近門市名稱或地標…" />
-      <div id="err-store" class="error-msg">請選擇門市或輸入店名</div>
-
-      <div id="storeResults" class="store-results"></div>
+      <button id="openStorePicker" class="sp-search-title">附近門市 ▾</button>
     </div>
-  </div> <!-- ✅ 超商結束 -->
+
+    <label for="storeName" class="sp-label">門市店名</label>
+    <input id="storeName" type="text" class="sp-input" placeholder="輸入附近門市名稱或地標…" />
+    <div id="err-store" class="error-msg">請選擇門市或輸入店名</div>
+  </div>
+</div> <!-- ✅ 超商結束 -->
+
 
   <!-- ✅ 宅配到府 -->
   <div id="codFields" class="delivery-form" style="display:none;">
