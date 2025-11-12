@@ -1372,32 +1372,7 @@ textarea {
   gap: 10px;
 }
 
-.store-results {
-  margin-top: 8px;
-  border-radius: 10px;
-  overflow: hidden;
-  border: 1px solid #eee;
-}
 
-.store-result {
-  padding: 10px;
-  border-bottom: 1px solid #f2f2f2;
-  background: #fff;
-  cursor: pointer;
-}
-
-.store-result:hover {
-  background: #e8f2ff;
-}
-
-.zipcode-box {
-  margin-top: 4px;
-  font-size: 14px;
-  background: #eef4ff;
-  padding: 4px 10px;
-  border-radius: 10px;
-  display: inline-block;
-}
 
 
 /* ============================================================
@@ -1551,10 +1526,10 @@ textarea {
   width: 100%;
   margin-top: 12px;
   padding: 16px 18px 20px;
-  background: rgba(255, 255, 255, 0.65);
+  
   border-radius: 16px;
-  box-shadow: 0 3px 12px rgba(90, 123, 104, 0.06);
-  border: 1px solid rgba(170, 190, 180, 0.35);
+
+
   backdrop-filter: blur(10px);
   transition: all 0.35s ease;
 }
@@ -1569,12 +1544,7 @@ textarea {
   font-family: system-ui, -apple-system, "PingFang TC", "Noto Sans TC", sans-serif;
 }
 
-/* === 橫列：品牌選擇 + 附近門市按鈕 === */
-.store-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+
 
 /* === Label 標籤（茶墨色 + 放大字）=== */
 .sp-label {
