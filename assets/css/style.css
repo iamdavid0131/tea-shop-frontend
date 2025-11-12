@@ -1691,42 +1691,40 @@ input.loading {
 .pay-options {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  margin-top: 12px;
+  gap: 12px;
 }
 
 .pay-btn {
-  display: flex;
-  flex-direction: column;
-  padding: 18px 20px;
-  border-radius: 18px;
-  border: 1.5px solid rgba(100, 149, 237, 0.3);
-  background: rgba(255,255,255,0.7);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 3px 8px rgba(0,0,0,0.05);
-  color: #1e3a8a;
-  text-align: left;
+  width: 100%;
+  padding: 16px;
+  border: 2px solid #d0d8e0;
+  border-radius: 16px;
+  background: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
   cursor: pointer;
   transition: all 0.25s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
+
+.pay-btn .pay-sub {
+  display: block;
+  font-size: 13px;
+  font-weight: 400;
+  color: #888;
+}
+
 .pay-btn:hover {
-  border-color: rgba(30,102,245,0.5);
-  transform: translateY(-1px);
+  background: #f7faff;
+  border-color: #4a90e2;
 }
+
 .pay-btn.active {
-  background: linear-gradient(145deg, #f0f6ff 0%, #e3ecff 100%);
-  border-color: #1e66f5;
-  box-shadow: 0 4px 14px rgba(30,102,245,0.15);
-}
-.pay-title {
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: #1e40af;
-}
-.pay-sub {
-  font-size: 0.9rem;
-  color: #64748b;
-  margin-top: 4px;
+  border-color: #2979ff;
+  background: #e9f2ff;
+  color: #1a3cff;
+  box-shadow: 0 0 0 3px rgba(41, 121, 255, 0.15);
 }
 /* =========================
    🖤 Apple Pay 專屬樣式

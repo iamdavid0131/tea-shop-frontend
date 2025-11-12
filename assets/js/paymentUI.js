@@ -13,51 +13,46 @@ export function initPaymentUI(retry = 0) {
     return;
   }
 
-  console.log("✅ paymentUI 初始化完成（付款卡片已載入）");
+  console.log("✅ paymentUI 初始化完成");
 
-  // ✅ 事件委派監聽付款方式變更
-  paymentCard.addEventListener("change", (e) => {
-    if (e.target.name !== "payment") return;
-    const isOnline = e.target.value === "online";
-    console.log("🔥 change 事件觸發", e.target.value, "isOnline =", isOnline);
-
-    const onlineMethods = document.getElementById("onlineMethods");
-    if (!onlineMethods) {
-      console.warn("⚠️ 找不到 #onlineMethods，略過這次事件");
-      return;
-    }
-
-    if (isOnline) {
-      onlineMethods.classList.add("show");
-      onlineMethods.style.display = "flex";
-      onlineMethods.style.opacity = "1";
-      onlineMethods.style.transform = "translateY(0)";
-    } else {
-      onlineMethods.classList.remove("show");
-      onlineMethods.style.opacity = "0";
-      onlineMethods.style.transform = "translateY(-6px)";
-      setTimeout(() => {
-        if (!onlineMethods.classList.contains("show")) {
-          onlineMethods.style.display = "none";
-        }
-      }, 300);
-    }
-  });
-
-  // 🍎 Apple Pay 顯示（僅 iOS Safari）
-  if (window.ApplePaySession) {
-    const appleBtn = document.querySelector(".apple-pay");
-    if (appleBtn) appleBtn.style.display = "block";
+  // 所有付款方式按鈕
+  const payButtons = paymentCard.querySelectorAll(".pay-btn");
+  if (!payButtons.length) {
+    console.warn("⚠️ 找不到 .pay-btn 按鈕");
+    return;
   }
 
-  // 💳 線上支付按鈕事件
-  paymentCard.addEventListener("click", (e) => {
-    const btn = e.target.closest(".pay-btn");
-    if (!btn) return;
-    const payButtons = paymentCard.querySelectorAll(".pay-btn");
-    payButtons.forEach((b) => b.classList.remove("active"));
-    btn.classList.add("active");
-    sessionStorage.setItem("paymentMethod", btn.dataset.method);
-    console.log("💳 已選擇支付方式：", btn.dataset.method);
+  payButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      // 清除舊的 active 樣式
+      payButtons.forEach((b) => b.classList.remove("active"));
+
+      // 設定新的 active 狀態
+      btn.classList.add("active");
+
+      // 寫入 sessionStorage
+      const method = btn.dataset.method;
+      sessionStorage.setItem("paymentMethod", method);
+      console.log("💳 已選擇付款方式：", method);
+
+      // 🔄 更新送出按鈕可用狀態
+      const submitBtn = document.querySelector("#submitBtn");
+      if (submitBtn) {
+        const allFilled = checkFormComplete();
+        submitBtn.disabled = !allFilled;
+      }
+    });
   });
+}
+
+/**
+ * ✅ 表單完成度檢查（可依實際欄位需求調整）
+ */
+function checkFormComplete() {
+  const name = $("#name")?.value.trim();
+  const phone = $("#phone")?.value.trim();
+  const agree = $("#agree")?.checked;
+  const shipping = document.querySelector("input[name='shipping']:checked")?.value;
+  const payment = sessionStorage.getItem("paymentMethod");
+  return name && phone && agree && shipping && payment;
 }
