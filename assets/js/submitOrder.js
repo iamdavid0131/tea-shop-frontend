@@ -35,7 +35,7 @@ export async function submitOrder() {
 
     // === 組裝訂單資料 ===
     const shippingMethod =
-      document.querySelector("input[name='ship']:checked")?.value || "";
+      document.querySelector("input[name='shipping']:checked")?.value || "";
     const payMethod =
       document.querySelector(".pay-btn.active")?.dataset.method ||
       document.querySelector("input[name='payment']:checked")?.value ||
@@ -193,7 +193,7 @@ function showSuccessModal(orderId, total, lineUrl) {
 
   const agree = $("consentAgree");
   if (agree) agree.removeAttribute("checked");
-  document.querySelectorAll("input[name='ship'],input[name='payment']")
+  document.querySelectorAll("input[name='shipping'],input[name='payment']")
     .forEach(r => r.checked = false);
   $("submitOrderBtn")?.setAttribute("disabled", "true");
 }
@@ -216,7 +216,7 @@ export function initSubmitOrder() {
   const consent = $("consentAgree");
   const name = $("name");
   const phone = $("phone");
-  const shipRadios = document.querySelectorAll("input[name='ship']");
+  const shipRadios = document.querySelectorAll("input[name='shipping']");
   const payRadios = document.querySelectorAll("input[name='payment']");
 
   const validate = () => {
