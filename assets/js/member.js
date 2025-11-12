@@ -122,34 +122,41 @@ export function initMemberLookup() {
             if (citySelect && districtSelect && r.address) {
                 const match = r.address.match(/^(.{2,3}(市|縣))(.{1,4}(區|鄉|鎮))/);
                 if (match) {
-                    const cityFull = match[1]; // 例：台中市
-                    const districtFull = match[3]; // 例：烏日區
+                    const cityFull = match[1];       // 例：花蓮縣
+                    const districtFull = match[3];   // 例：鳳林鎮
                     const cityShort = cityFull.replace(/市|縣/g, "");
                     const districtShort = districtFull.replace(/區|鄉|鎮/g, "");
 
-                    // ✅ 嘗試比對縣市選項
-                    const cityOption = Array.from(citySelect.options).find(
-                    (opt) =>
-                        opt.value === cityFull ||
-                        opt.text.includes(cityFull) ||
-                        opt.value === cityShort ||
-                        opt.text.includes(cityShort)
+                    const normalize = (s) => s.replace("臺", "台").replace(/\s/g, "");
+
+                    // ✅ 改良：先比完整匹配，再允許模糊比對
+                    const cityOption = Array.from(citySelect.options).find((opt) => {
+                    const v = normalize(opt.value);
+                    const t = normalize(opt.text);
+                    return (
+                        v === normalize(cityFull) || t === normalize(cityFull) ||
+                        // 如果完全沒命中才模糊匹配
+                        ((v === normalize(cityShort) || t === normalize(cityShort)) &&
+                        !v.includes("市") && !t.includes("市"))
                     );
+                    });
 
                     if (cityOption) {
                     citySelect.value = cityOption.value;
-                    citySelect.dispatchEvent(new Event("change")); // 觸發行政區載入
+                    citySelect.dispatchEvent(new Event("change"));
                     }
 
-                    // ✅ 延遲一點再選行政區（確保 ZIP_MAP 已更新）
                     setTimeout(() => {
-                    const districtOption = Array.from(districtSelect.options).find(
-                        (opt) =>
-                        opt.value === districtFull ||
-                        opt.text.includes(districtFull) ||
-                        opt.value === districtShort ||
-                        opt.text.includes(districtShort)
-                    );
+                    const districtOption = Array.from(districtSelect.options).find((opt) => {
+                        const v = normalize(opt.value);
+                        const t = normalize(opt.text);
+                        return (
+                        v === normalize(districtFull) ||
+                        t === normalize(districtFull) ||
+                        v === normalize(districtShort) ||
+                        t === normalize(districtShort)
+                        );
+                    });
                     if (districtOption) {
                         districtSelect.value = districtOption.value;
                         districtSelect.dispatchEvent(new Event("change"));
@@ -157,10 +164,10 @@ export function initMemberLookup() {
                     }, 200);
                 }
 
-                // ✂️ 自動裁掉「縣市＋區」，只留下詳細地址
                 const trimmed = r.address.replace(/^.{2,3}(市|縣).{1,4}(區|鄉|鎮)/, "");
                 addressInput.value = trimmed.trim();
                 }
+
 
 
             const shipRadio = document.querySelector("input[value='cod']");
