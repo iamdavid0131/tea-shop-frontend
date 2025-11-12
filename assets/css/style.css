@@ -1874,7 +1874,7 @@ input.loading {
   justify-content: center;
 }
 
-.submit-area .btn {
+.submit-area .submit-btn {
   width: 90%;
   height: 50px;
   font-size: 17px;
@@ -1883,7 +1883,7 @@ input.loading {
   transition: all 0.25s;
 }
 
-.submit-area .btn:disabled {
+.submit-area .submit-btn:disabled {
   background: #ccc;
   color: #fff;
   cursor: not-allowed;
