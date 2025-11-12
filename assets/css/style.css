@@ -1687,37 +1687,47 @@ input.loading {
 
 
 /* ✨ 按鈕通用樣式 */
+
+.pay-options {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 12px;
+}
+
 .pay-btn {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 50px;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  background: #fff;
-  font-size: 16px;
-  font-weight: 600;
-  color: #222;
+  flex-direction: column;
+  padding: 18px 20px;
+  border-radius: 18px;
+  border: 1.5px solid rgba(100, 149, 237, 0.3);
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+  color: #1e3a8a;
+  text-align: left;
   cursor: pointer;
   transition: all 0.25s ease;
-  margin: 8px 0; /* ✅ 統一上下間距 */
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
-
-/* hover 狀態 */
 .pay-btn:hover {
-  border-color: #1e90ff;
-  background: #f0f7ff;
+  border-color: rgba(30,102,245,0.5);
+  transform: translateY(-1px);
 }
-
-/* active 狀態（選中） */
 .pay-btn.active {
-  border-color: #1e90ff;
-  background: #e8f2ff;
-  color: #1e90ff;
-  box-shadow: 0 2px 6px rgba(30,144,255,0.15);
+  background: linear-gradient(145deg, #f0f6ff 0%, #e3ecff 100%);
+  border-color: #1e66f5;
+  box-shadow: 0 4px 14px rgba(30,102,245,0.15);
 }
-
+.pay-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #1e40af;
+}
+.pay-sub {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin-top: 4px;
+}
 /* =========================
    🖤 Apple Pay 專屬樣式
 ========================= */

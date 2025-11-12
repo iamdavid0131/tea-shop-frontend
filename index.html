@@ -172,16 +172,18 @@
 <div class="section" id="paymentCard">
   <h2 class="section-title">付款方式</h2>
 
-  <div class="payment-options">
-    <label class="payment-radio">
-      <input type="radio" name="payment" value="cod" checked>
-      <span>貨到付款</span>
-    </label>
+  <div class="pay-options">
+    <button type="button" class="pay-btn active" data-method="cod">
+      <span class="pay-title">貨到付款</span>
+      <span class="pay-sub">店到店 / 宅配付款</span>
+    </button>
 
-    <label class="pay-btn active" data-method="online">
-      <span>線上支付（信用卡/ATM/Apple Pay）</span>
-    </label>
+    <button type="button" class="pay-btn" data-method="online">
+      <span class="pay-title">線上支付</span>
+      <span class="pay-sub">信用卡 / ATM / Apple Pay</span>
+    </button>
   </div>
+
 
   <!-- ✅ 線上支付展開選項 -->
   <!-- <div id="onlineMethods" class="online-methods">
