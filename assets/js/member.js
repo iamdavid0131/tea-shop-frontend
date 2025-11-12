@@ -116,31 +116,62 @@ export function initMemberLookup() {
 
         toast(`🏪 已套用門市：${r.carrier} ${r.name}`);
       } else {
-        if (addressInput) addressInput.value = r.address;
+            if (addressInput) addressInput.value = r.address;
 
-        // 🏙️ 改進版縣市／行政區自動帶入
-        if (citySelect && districtSelect && r.address) {
-          const match = r.address.match(/^(.{2,3}(市|縣))(.{1,4}(區|鄉|鎮))/);
-          if (match) {
-            const city = match[1].replace(/市|縣/g, "");
-            const district = match[3].replace(/區|鄉|鎮/g, "");
-            citySelect.value = city;
-            districtSelect.value = district;
-            districtSelect.dispatchEvent(new Event("change")); // 🔄 ZIP 連動
-          }
-        }
+            // 🏙️ 改進版縣市／行政區自動帶入
+            if (citySelect && districtSelect && r.address) {
+                const match = r.address.match(/^(.{2,3}(市|縣))(.{1,4}(區|鄉|鎮))/);
+                if (match) {
+                const cityFull = match[1]; // 例：台中市
+                const districtFull = match[3]; // 例：烏日區
+                const cityShort = cityFull.replace(/市|縣/g, "");
+                const districtShort = districtFull.replace(/區|鄉|鎮/g, "");
 
-        const shipRadio = document.querySelector("input[value='cod']");
-        if (shipRadio) {
-          shipRadio.checked = true;
-          shipRadio.dispatchEvent(new Event("change"));
-        }
+                // 嘗試比對 select 的 option
+                const cityOption = Array.from(citySelect.options).find(
+                    (opt) =>
+                    opt.value === cityFull ||
+                    opt.text.includes(cityFull) ||
+                    opt.value === cityShort ||
+                    opt.text.includes(cityShort)
+                );
+                if (cityOption) {
+                    citySelect.value = cityOption.value;
+                    citySelect.dispatchEvent(new Event("change")); // 觸發行政區載入
+                }
 
-        toast(`📦 已套用地址：${r.address}`);
+                // 延遲一點再選行政區（確保 ZIP_MAP 已更新）
+                setTimeout(() => {
+                    const districtOption = Array.from(districtSelect.options).find(
+                    (opt) =>
+                        opt.value === districtFull ||
+                        opt.text.includes(districtFull) ||
+                        opt.value === districtShort ||
+                        opt.text.includes(districtShort)
+                    );
+                    if (districtOption) {
+                    districtSelect.value = districtOption.value;
+                    districtSelect.dispatchEvent(new Event("change"));
+                    }
+                }, 200);
+                }
 
-        // 🚀 自動滾動到宅配區塊
-        addressInput.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
+                // ✂️ 自動裁掉縣市區，只留下詳細地址
+                const trimmed = r.address.replace(/^.{2,3}(市|縣).{1,4}(區|鄉|鎮)/, "");
+                addressInput.value = trimmed.trim();
+            }
+
+            const shipRadio = document.querySelector("input[value='cod']");
+            if (shipRadio) {
+                shipRadio.checked = true;
+                shipRadio.dispatchEvent(new Event("change"));
+            }
+
+            toast(`📦 已套用地址：${r.address}`);
+
+            // 🚀 自動滾動到宅配區塊
+            addressInput.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
     };
 
     // ✅ 只留這一行
