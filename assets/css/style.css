@@ -1421,12 +1421,113 @@ input.loading {
     border-radius: 12px;
   }
 }
+/* === 🫖 Step 4: 付款方式 === */
+#paymentCard {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 20px;
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 16px rgba(90, 123, 104, 0.12);
+  padding: 20px;
+}
+
+#paymentCard .section-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2b2b2b;
+  margin-bottom: 14px;
+  border-bottom: 2px solid rgba(90,123,104,0.2);
+  padding-bottom: 6px;
+}
+
+/* === 付款選項按鈕 === */
+.pay-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pay-btn {
+  position: relative;
+  overflow: hidden;
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 16px;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.5), 0 2px 8px rgba(0,0,0,0.05);
+  transition: all 0.35s ease;
+  color: #2c2c2c;
+  backdrop-filter: blur(10px);
+}
+
+/* Hover 提亮 */
+.pay-btn:hover {
+  background: rgba(255, 255, 255, 0.8);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(90,123,104,0.18);
+}
+
+/* Active 狀態 — 茶靜藍漸層光暈 */
+.pay-btn.active {
+  border-color: #5a7b68;
+  background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(230,240,235,0.75));
+  box-shadow:
+    0 0 12px rgba(90,123,104,0.25),
+    inset 0 0 0 1.5px rgba(90,123,104,0.35);
+}
+
+/* === 茶湯流光動畫層 === */
+.pay-btn.active::after {
+  content: "";
+  position: absolute;
+  top: 0; left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    rgba(255,255,255,0.0) 0%,
+    rgba(255,255,255,0.4) 50%,
+    rgba(255,255,255,0.0) 100%
+  );
+  transform: skewX(-25deg);
+  animation: teaShine 3.5s ease-in-out infinite;
+}
+
+@keyframes teaShine {
+  0% { left: -75%; opacity: 0; }
+  25% { opacity: 1; }
+  50% { left: 120%; opacity: 1; }
+  100% { left: 120%; opacity: 0; }
+}
+
+.pay-title {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  color: #305c46;
+}
+
+.pay-sub {
+  display: block;
+  font-size: 14px;
+  color: #666;
+  margin-top: 4px;
+}
 
 /* === iOS Toggle 樣式 === */
 .consent-row {
-  display: flex;
-  flex-direction: column;
-  margin: 20px 0 48px;
+  margin: 28px 0 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #333;
+  background: rgba(255,255,255,0.4);
+  border-radius: 16px;
+  padding: 16px 18px;
+  border: 1px solid rgba(255,255,255,0.5);
+  box-shadow: 0 2px 10px rgba(90,123,104,0.08);
 }
 
 .sp-toggle {
@@ -1483,15 +1584,17 @@ input.loading {
 }
 
 .sp-toggle-label {
-  font-size: 15px;
-  font-weight: 600;
-  color: #222;
+  font-weight: 700;
+  color: #355c46;
+  display: block;
+
 }
 
 .sp-consent-note {
-  font-size: 13px;
-  color: #777;
-  margin-top: 2px;
+  display: block;
+  font-size: 14px;
+  color: #666;
+  margin-top: 4px;
 }
 
 /* ✅ Safe Area spacing */
@@ -1501,7 +1604,62 @@ input.loading {
   }
 }
 
+/* === 送出訂單 === */
+.submit-area {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+}
 
+.submit-btn {
+  width: 90%;
+  height: 56px;
+  border-radius: 18px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  border: none;
+  background: linear-gradient(135deg, #5a7b68, #7fa38a);
+  box-shadow: 0 5px 14px rgba(90,123,104,0.3);
+  transition: all 0.3s ease;
+}
+/* Hover 微光＋柔和上浮 */
+.submit-btn:not(:disabled):hover {
+  background: linear-gradient(135deg, #6d8f79, #93b29b);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(90,123,104,0.35);
+}
+
+/* === 送出按鈕柔光流動動畫 === */
+.submit-btn:not(:disabled)::after {
+  content: "";
+  position: absolute;
+  top: 0; left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    rgba(255,255,255,0.0) 0%,
+    rgba(255,255,255,0.45) 50%,
+    rgba(255,255,255,0.0) 100%
+  );
+  transform: skewX(-25deg);
+  opacity: 0;
+}
+
+.submit-btn:not(:disabled):hover::after {
+  animation: teaShine 2.8s ease-in-out 1;
+  opacity: 1;
+}
+
+/* Disabled 狀態 */
+.submit-btn:disabled {
+  background: rgba(180,180,180,0.6);
+  color: #eee;
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
 /* ============================================================
 🗺️ 地圖（Store Picker Map）
 ============================================================ */
@@ -1640,113 +1798,7 @@ input.loading {
   }
 }
 
-/* === 付款方式 === */
 
-#paymentCard {
-  margin-top: 24px;
-}
-
-.payment-options {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-
-.payment-radio {
-  display: block;
-  margin: 12px 0;
-}
-
-.payment-radio input {
-  display: none;
-}
-
-.payment-radio span {
-  display: block;
-  padding: 16px 0;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 17px;
-  color: #111;
-  text-align: center;
-  background: rgba(255,255,255,0.4);
-  border: 1px solid rgba(255,255,255,0.4);
-  backdrop-filter: blur(8px);
-  transition: all 0.3s ease;
-}
-
-.payment-radio input:checked + span {
-  background: rgba(30, 136, 229, 0.15);
-  border-color: #1e88e5;
-  color: #1e88e5;
-  font-weight: 700;
-  box-shadow: 0 2px 10px rgba(30,136,229,0.2);
-}
-
-
-
-/* ✨ 按鈕通用樣式 */
-
-.pay-options {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.pay-btn {
-  width: 100%;
-  padding: 16px;
-  border: 2px solid #d0d8e0;
-  border-radius: 16px;
-  background: #fff;
-  font-size: 16px;
-  font-weight: 600;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.pay-btn .pay-sub {
-  display: block;
-  font-size: 13px;
-  font-weight: 400;
-  color: #888;
-}
-
-.pay-btn:hover {
-  background: #f7faff;
-  border-color: #4a90e2;
-}
-
-.pay-btn.active {
-  border-color: #2979ff;
-  background: #e9f2ff;
-  color: #1a3cff;
-  box-shadow: 0 0 0 3px rgba(41, 121, 255, 0.15);
-}
-/* =========================
-   🖤 Apple Pay 專屬樣式
-========================= */
-.pay-btn.apple-pay {
-  background: #000;
-  color: #fff;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-  border: none; /* ✅ 去掉灰框，讓黑底更純粹 */
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-.pay-btn.apple-pay:hover {
-  background: #111;
-}
-
-/* ✅ 若想在點選時仍有獨立按下效果 */
-.pay-btn.apple-pay.active {
-  background: #000;
-  box-shadow: 0 0 0 2px #1e90ff inset;
-}
 
 /* ✅ 成功卡片樣式 */
 
@@ -1868,28 +1920,6 @@ input.loading {
 }
 
 
-.submit-area {
-  margin-top: 24px;
-  display: flex;
-  justify-content: center;
-}
-
-.submit-area .submit-btn {
-  width: 90%;
-  height: 50px;
-  font-size: 17px;
-  font-weight: 600;
-  border-radius: 12px;
-  transition: all 0.25s;
-}
-
-.submit-area .submit-btn:disabled {
-  background: #ccc;
-  color: #fff;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
 /* ======== 全螢幕 Loading Overlay ======== */
 .loading-overlay {
   position: fixed;
@@ -1957,217 +1987,6 @@ input.loading {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* 背景 */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-.modal-backdrop.show {
-  opacity: 1;
-  pointer-events: all;
-}
-
-/* 卡片 */
-.modal-card {
-  background: rgba(255,255,255,0.9);
-  border-radius: 1.25rem;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-  padding: 2rem 1.5rem;
-  width: 90%;
-  max-width: 380px;
-  text-align: center;
-  transform: scale(0.9);
-  opacity: 0;
-  transition: transform 0.25s ease, opacity 0.25s ease;
-}
-.modal-backdrop.show .modal-card {
-  transform: scale(1);
-  opacity: 1;
-}
-
-/* 圖示 */
-.success-icon {
-  font-size: 3rem;
-  color: #22c55e;
-  background: #dcfce7;
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 1rem;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: pop 0.5s ease;
-}
-@keyframes pop {
-  0% { transform: scale(0.6); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-/* 標題與文字 */
-.big {
-  font-size: 1.5rem;
-  margin-bottom: 0.25rem;
-}
-.muted {
-  color: #666;
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
-}
-
-/* 訂單摘要 */
-.order-summary {
-  background: #f9fafb;
-  border-radius: 0.75rem;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  text-align: left;
-}
-.summary-item {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-}
-.summary-item:last-child {
-  margin-bottom: 0;
-}
-.label {
-  color: #666;
-  font-size: 0.9rem;
-}
-.value {
-  font-weight: 600;
-  color: #111;
-}
-
-/* LINE 綁定區 */
-.line-bind-box {
-  border-top: 1px solid #eee;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  text-align: center;
-}
-.line-bind-title {
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-}
-.line-bind-btn {
-  display: inline-block;
-  margin-top: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: #00b900;
-  color: #fff;
-  border-radius: 999px;
-  text-decoration: none;
-}
-.line-bind-note {
-  font-size: 0.8rem;
-  color: #777;
-  margin-top: 0.5rem;
-}
-
-/* 按鈕 */
-.btn-primary {
-  background: #111;
-  color: #fff;
-  border: none;
-  padding: 0.75rem 1.25rem;
-  border-radius: 999px;
-  font-size: 1rem;
-  cursor: pointer;
-  width: 100%;
-}
-.btn-primary:active {
-  background: #333;
-}
-.ok {
-  margin-top: 1rem;
-}
-
-/* 隱藏狀態 */
-.hidden {
-  display: none;
-}
-#successBackdrop {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(6px);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-  z-index: 9999;
-}
-#successBackdrop.show {
-  opacity: 1;
-  pointer-events: all;
-}
-
-#successBackdrop .modal-card {
-  background: rgba(255, 255, 255, 0.92);
-  border-radius: 1.25rem;
-  padding: 2rem 1.5rem;
-  width: 90%;
-  max-width: 380px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-  text-align: center;
-  transform: scale(0.9);
-  opacity: 0;
-  transition: transform 0.25s ease, opacity 0.25s ease;
-}
-#successBackdrop.show .modal-card {
-  transform: scale(1);
-  opacity: 1;
-}
-
-.success-icon {
-  font-size: 3rem;
-  color: #22c55e;
-  background: #dcfce7;
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 1rem;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: pop 0.5s ease;
-}
-
-@keyframes pop {
-  0% { transform: scale(0.6); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-/* 內層卡片 */
-#successBackdrop .modal-card {
-  background: rgba(255, 255, 255, 0.92);
-  border-radius: 1.25rem;
-  padding: 2rem 1.5rem;
-  width: 90%;
-  max-width: 380px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-  text-align: center;
-  transform: scale(0.9);
-  opacity: 0;
-  transition: transform 0.25s ease, opacity 0.25s ease;
-}
-#successBackdrop.show .modal-card {
-  transform: scale(1);
-  opacity: 1;
-}
 .recent-box {
   background: #fdfbf7;
   border-radius: 16px;
