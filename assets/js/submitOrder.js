@@ -6,8 +6,7 @@
 import { api } from "./app.api.js";
 import { $, toast } from "./dom.js";
 import { getCartItems, clearCart } from "./cart.js";
-import { CONFIG } from "./config.js"; // ✅ 取商品名稱用
-
+import { CONFIG } from "./config.js";
 
 // ✅ 格式化購物車品項（對應 Sheet 欄位名稱）
 function formatCartItems(rawItems) {
@@ -46,7 +45,7 @@ export async function submitOrder() {
 
     const order = {
       timestamp: new Date().toLocaleString("zh-TW", { hour12: false }),
-      orderId: "O" + Date.now(), // 前端臨時 ID（後端會自己決定要不要用）
+      orderId: "O" + Date.now(),
       buyerName: $("name")?.value?.trim() || "",
       buyerPhone: $("phone")?.value?.trim() || "",
       shippingMethod,
@@ -64,7 +63,7 @@ export async function submitOrder() {
       note: $("note")?.value?.trim() || "",
       consent: $("consentAgree")?.checked ? "Y" : "N",
 
-      // 🟢 支付欄位（對應 Sheet）
+      // 🟢 支付欄位
       paymentMethod: payMethod,
       paymentStatus: "pending",
       paymentTxId: "",
@@ -72,7 +71,7 @@ export async function submitOrder() {
 
       // 🫖 商品與金額區
       items,
-      pricingPolicy: {}, // 先給空，後端要用可以自己填
+      pricingPolicy: {},
       subtotal: 0,
       discount: 0,
       shippingFee: 0,
@@ -89,7 +88,6 @@ export async function submitOrder() {
     const errName = $("err-name");
     const errPhone = $("err-phone");
 
-    // 清除舊錯誤
     [nameInput, phoneInput].forEach((i) =>
       i?.classList.remove("form-error")
     );
@@ -110,20 +108,13 @@ export async function submitOrder() {
     if (invalidField) {
       toast("⚠️ 請完整填寫收件人資料");
       invalidField.scrollIntoView({ behavior: "smooth", block: "center" });
-      // 🔄 收回 loading / 還原按鈕
-      btn.disabled = false;
-      btn.textContent = "送出訂單";
-      loadingOverlay?.classList.remove("show");
-      loadingOverlay?.setAttribute("aria-hidden", "true");
+      resetUI();
       return;
     }
 
     if (order.items.length === 0) {
       toast("🛒 您的購物車是空的");
-      btn.disabled = false;
-      btn.textContent = "送出訂單";
-      loadingOverlay?.classList.remove("show");
-      loadingOverlay?.setAttribute("aria-hidden", "true");
+      resetUI();
       return;
     }
 
@@ -132,49 +123,43 @@ export async function submitOrder() {
     const res = await api.submitOrder(order);
     console.log("🧾 submitOrder response:", JSON.stringify(res, null, 2));
 
-    // ✅ 線上支付：後端回傳綠界 HTML form，前端自動 submit（Option 1）
-
-    if (res.ok && res.paymentForm) {
-      console.log("✅ 綠界表單回傳成功，準備導向綠界");
-      try {
-        console.log("🧾 綠界回傳 HTML:", res.paymentForm);
-        const wrapper = document.createElement("div");
-        wrapper.innerHTML = res.paymentForm.trim();
-        const form = wrapper.querySelector("form");
-        if (!form) throw new Error("綠界表單內容無效");
-        document.body.appendChild(wrapper);
-        form.submit();
-        // 不清除 loading，因為頁面即將跳轉
-        return;
-      } catch (e) {
-        console.error("⚠️ 綠界表單解析失敗:", e);
-        toast("⚠️ 金流表單異常，請稍後再試");
-      }
-    }
-
-
-    // ✅ 貨到付款 or 後端直接給 orderId
-    if (res.ok || res.orderId) {
-      showSuccessModal(res.orderId || "—", order.total);
+    // ✅ 後端成功
+    if (res.ok && res.orderId) {
+      showSuccessModal(res.orderId, order.total);
       clearCart();
-    } else {
-      console.warn("❌ 後端回傳錯誤:", res);
-      toast("❌ 訂單送出失敗：" + (res?.error || "伺服器未回應"));
+
+      // ✅ 同步更新會員紀錄
+      try {
+        await api.memberOrder({
+          phone: order.buyerPhone,
+          orderTotal: order.total,
+          method: order.shippingMethod,
+          carrier: order.storeCarrier,
+          storeName: order.storeName,
+          address: order.codAddress,
+          orderId: res.orderId,
+        });
+      } catch (err) {
+        console.warn("⚠️ 更新會員資料失敗:", err);
+      }
+
+      return;
     }
+
+    console.warn("❌ 後端回傳錯誤:", res);
+    toast("❌ 訂單送出失敗：" + (res?.error || "伺服器未回應"));
   } catch (err) {
     console.error("❌ 送出訂單錯誤:", err);
     toast("⚠️ 網路異常，請稍後再試");
   } finally {
-    // ✅ 若沒有產生綠界 form（沒跳轉），才還原按鈕與 loading
-    const hasECPayForm = !!document.querySelector(
-      "form[action*='ecpay']"
-    );
-    if (!hasECPayForm) {
-      btn.disabled = false;
-      btn.textContent = "送出訂單";
-      loadingOverlay?.classList.remove("show");
-      loadingOverlay?.setAttribute("aria-hidden", "true");
-    }
+    resetUI();
+  }
+
+  function resetUI() {
+    btn.disabled = false;
+    btn.textContent = "送出訂單";
+    loadingOverlay?.classList.remove("show");
+    loadingOverlay?.setAttribute("aria-hidden", "true");
   }
 }
 
@@ -196,25 +181,16 @@ function showSuccessModal(orderId, total, lineUrl) {
     lineBox.hidden = true;
   }
 
-  // 先顯示節點，稍後加上動畫 class
   backdrop.classList.remove("hidden");
   requestAnimationFrame(() => backdrop.classList.add("show"));
 
-  // 清空表單、購物車
+  // ✅ 清空表單與購物車
   clearCart();
   ["name", "phone", "address", "note"].forEach(id => $(id)?.value = "");
   $("consentAgree")?.removeAttribute("checked");
   document.querySelectorAll("input[name='ship'],input[name='payment']")
     .forEach(r => r.checked = false);
   $("submitOrderBtn")?.setAttribute("disabled", "true");
-
-  // 🕒 可選：自動 5 秒後關閉
-  setTimeout(() => {
-    if (backdrop.classList.contains("show")) {
-      backdrop.classList.remove("show");
-      backdrop.setAttribute("aria-hidden", "true");
-    }
-  }, 5000);
 }
 
 // ✅ 初始化送出訂單 & 關閉事件
@@ -222,13 +198,12 @@ export function initSubmitOrder() {
   const btn = $("submitOrderBtn");
   if (!btn) return;
 
-    // ✅ 檢查是否為綠界付款導回
+  // ✅ 若 URL 帶 ?paid=1 → 顯示成功畫面
   const params = new URLSearchParams(location.search);
   if (params.get("paid") === "1") {
     const orderId = params.get("orderId");
     const total = params.get("total");
     showSuccessModal(orderId, total);
-    // 清除網址參數，避免刷新又重彈
     const cleanUrl = location.origin + location.pathname;
     history.replaceState({}, document.title, cleanUrl);
   }
@@ -275,5 +250,6 @@ export function initSubmitOrder() {
     backdrop.classList.remove("show");
     backdrop.setAttribute("aria-hidden", "true");
     window.scrollTo({ top: 0, behavior: "smooth" });
+    clearCart();
   });
 }
