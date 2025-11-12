@@ -105,14 +105,4 @@ document.addEventListener("DOMContentLoaded", async () => {
     $("loading")?.style && ($("loading").style.display = "none");
   }
 
-  // ✅ Header 滾動縮小效果（放在 finally 外層是對的）
-  window.addEventListener("scroll", () => {
-    const header = document.querySelector(".ios-header");
-    if (!header) return;
-    if (window.scrollY > 40) {
-      header.classList.add("scrolled");
-    } else {
-      header.classList.remove("scrolled");
-    }
-  });
 });
