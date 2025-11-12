@@ -150,22 +150,30 @@
 
 
   <!-- ✅ 宅配到府 -->
-  <div id="codFields" class="delivery-form" style="display:none;">
-    <label class="sp-label">縣市</label>
-    <select id="city" class="sp-select">
-      <option value="">請選擇縣市</option>
-    </select>
+<div id="codFields" class="delivery-form" style="display:none;">
+  <div class="delivery-row">
+    <div class="delivery-col">
+      <label class="sp-label">縣市</label>
+      <select id="city" class="sp-select">
+        <option value="">請選擇縣市</option>
+      </select>
+    </div>
 
-    <label class="sp-label">行政區</label>
-    <select id="district" class="sp-select">
-      <option value="">請選擇行政區</option>
-    </select>
+    <div class="delivery-col">
+      <label class="sp-label">行政區</label>
+      <select id="district" class="sp-select">
+        <option value="">請選擇行政區</option>
+      </select>
+    </div>
+  </div>
 
+  <div class="delivery-full">
     <label class="sp-label">詳細地址</label>
     <input id="address" type="text" class="sp-input" placeholder="請填入路段、巷弄、門牌…" />
     <div id="err-address" class="error-msg">請填寫完整宅配地址</div>
-  </div> <!-- ✅ 宅配結束 -->
-</div> <!-- ✅ shippingCard 結束 -->
+  </div>
+</div>
+
 
 <!-- ✅ Step 4: 付款方式 -->
 <div class="section" id="paymentCard">

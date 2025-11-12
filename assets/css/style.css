@@ -1644,6 +1644,47 @@ textarea {
   margin-left: 2px;
 }
 
+/* === iOS風格分隔線（縣市 + 行政區）=== */
+.delivery-row {
+  display: flex;
+  gap: 0; /* 以細線作為視覺分隔，不再留明顯間距 */
+  align-items: flex-end;
+  border: 1px solid rgba(170, 190, 180, 0.4);
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  backdrop-filter: blur(6px);
+}
+
+.delivery-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px 18px;
+  position: relative;
+}
+
+/* === 中間分隔線 === */
+.delivery-col:first-child::after {
+  content: "";
+  position: absolute;
+  top: 12%;
+  right: 0;
+  width: 1px;
+  height: 76%;
+  background: rgba(160, 180, 165, 0.35); /* ✅ 茶灰分隔線 */
+}
+
+/* === Label 微調以貼合邊界 === */
+.delivery-col .sp-label {
+  margin-bottom: 8px;
+}
+
+/* === 下方詳細地址保持原來留白 === */
+.delivery-full {
+  margin-top: 26px;
+}
 
 
 
