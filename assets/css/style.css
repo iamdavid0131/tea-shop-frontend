@@ -1417,8 +1417,13 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  touch-action: none; /* ✅ 防止與地圖拖曳衝突 */
+  touch-action: pan-y; /* ✅ 防止與地圖拖曳衝突 */
   user-select: none;
+}
+.sp-sheet .leaflet-container {
+  touch-action: auto !important; /* ✅ 讓地圖恢復多指操作 */
+  pointer-events: auto !important;
+  user-select: auto !important;
 }
 .sp-sheet.sp-open {
   transform: translateY(0);
@@ -2214,6 +2219,7 @@ textarea {
     height: 180px;
   }
 }
+
 
 /* === 成功浮層背景 === */
 .success-backdrop {
