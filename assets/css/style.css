@@ -2170,3 +2170,34 @@ input.loading {
   transform: scale(1);
   opacity: 1;
 }
+
+.recent-box {
+  background: #f9fafb;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  margin-top: 0.75rem;
+}
+.recent-title {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.recent-item {
+  padding: 0.5rem 0.75rem;
+  background: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.recent-item:hover {
+  background: #eef2ff;
+}
+.hidden {
+  display: none;
+}
