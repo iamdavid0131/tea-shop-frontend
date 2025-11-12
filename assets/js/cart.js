@@ -41,7 +41,7 @@ export async function updateTotals() {
   const stickyBar = $("StickyBar");
   if (!stickyBar) return;
 
-  // 🪫 若購物車為空
+  // 🪫 購物車為空
   if (items.length === 0) {
     $("total_s").textContent = "NT$ 0";
     $("sub_s").textContent = "—";
@@ -51,8 +51,6 @@ export async function updateTotals() {
     $("freeProgress").style.display = "none";
     stickyBar.classList.add("hide");
     stickyBar.classList.remove("show");
-
-    // ✅ 仍觸發驗證刷新狀態（例如送出按鈕灰化）
     window.dispatchEvent(new Event("cart:update"));
     return;
   }
@@ -70,18 +68,16 @@ export async function updateTotals() {
     const total = sub - disc + ship;
 
     const fmt = n => `NT$ ${Number(n || 0).toLocaleString("zh-TW")}`;
-
     $("sub_s").textContent = fmt(sub);
     $("disc_s").textContent = fmt(disc);
     $("ship_s").textContent = fmt(ship);
     $("total_s").textContent = fmt(total);
-
     animateMoney();
 
     const discWrap = $("disc_wrap");
     if (discWrap) discWrap.style.display = disc > 0 ? "inline" : "none";
 
-    // ✅ 免運提示
+    // ✅ 免運提示強化區塊
     const freeThreshold = CONFIG.FREE_SHIPPING_THRESHOLD || 1000;
     const diff = freeThreshold - sub;
     const isFree = sub >= freeThreshold;
@@ -89,10 +85,11 @@ export async function updateTotals() {
     const progressWrap = $("freeProgress");
     const progressBar = $("freeProgressBar");
     const freeTip = $("free_tip_s");
+    const freeHint = $("freeHint"); // 🌿 新增免運浮出提示元素
 
     if (progressWrap) {
       progressWrap.classList.remove("hidden");
-      progressWrap.style.display = isFree ? "none" : "block";
+      progressWrap.style.display = "block";
     }
 
     if (progressBar) {
@@ -107,11 +104,22 @@ export async function updateTotals() {
         : `再消費 NT$${diff.toLocaleString("zh-TW")} 即可免運`;
     }
 
+    // 🌿 高質感免運浮出提示控制
+    if (freeHint) {
+      if (isFree) {
+        freeHint.textContent = randomTeaQuote(); // 💬 隨機茶語
+        freeHint.classList.add("show");
+        freeHint.classList.remove("hide");
+      } else {
+        freeHint.classList.remove("show");
+        freeHint.classList.add("hide");
+      }
+    }
+
   } catch (err) {
     console.error("試算錯誤:", err);
   }
 
-  // ✅ 試算完畢才觸發 cart:update（安全，不再遞迴）
   window.dispatchEvent(new Event("cart:update"));
 }
 
@@ -168,4 +176,16 @@ export function clearCart() {
   } catch (err) {
     console.error("⚠️ clearCart 錯誤:", err);
   }
+}
+
+// 🌿 動態茶語隨機顯示（免運提示）
+function randomTeaQuote() {
+  const quotes = [
+    "🌿 已達免運門檻，香氣隨風入心。",
+    "🍃 茶香已備，免運送到家。",
+    "☕ 一壺好茶，一路好運！",
+    "🫖 已達免運，再添一份茶香更圓滿～",
+    "🌸 香氣滿溢，免運已成！",
+  ];
+  return quotes[Math.floor(Math.random() * quotes.length)];
 }
