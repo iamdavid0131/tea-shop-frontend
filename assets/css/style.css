@@ -2227,3 +2227,12 @@ input.loading {
   color: #3e3a37;
   letter-spacing: 0.3px;
 }
+
+.recent-item.active {
+  background: #f0e7d8;
+  border-color: #d1bfa2;
+  font-weight: 600;
+}
+.recent-item:active {
+  transform: scale(0.99);
+}
