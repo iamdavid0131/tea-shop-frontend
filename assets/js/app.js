@@ -23,45 +23,47 @@ document.addEventListener("DOMContentLoaded", async () => {
   try {
     $("loading")?.style && ($("loading").style.display = "block");
 
-
+    // ✅ 載入商品設定
     const cfg = await api.getConfig();
     CONFIG.PRODUCTS = (cfg.data || []).map(p => ({
       ...p,
       profile: p.profile || null
     }));
 
-    // ✅ 渲染商品 UI
+    // ✅ 渲染商品區
     renderProducts(CONFIG.PRODUCTS);
-    // 🟢 裝罐按鈕監聽（放在商品渲染之後）
-   document.querySelectorAll(".pack-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      btn.classList.toggle("active");
-      updateTotals(); // 🟢 即時重新計算金額
-      window.dispatchEvent(new Event("cart:update")); // 🟢 觸發送出驗證更新
-    });
-  });
 
-    // ✅ 還原購物車 & 初始化控制
+    // 🟢 「裝罐」按鈕事件
+    document.querySelectorAll(".pack-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        btn.classList.toggle("active");
+        updateTotals();
+        window.dispatchEvent(new Event("cart:update"));
+      });
+    });
+
+    // ✅ 初始化購物邏輯
     restoreCart();
     initQtyControls();
 
-    // ✅ 各模組初始化
-    enableSmartSheetControl(); // 購物明細 BottomSheet
+    // ✅ 初始化各模組
+    enableSmartSheetControl(); // BottomSheet 明細
     initShippingUI();          // 運送方式
     initStorePicker();         // 門市選擇器
     initZipAuto();             // 郵遞區號自動推斷
     initMemberLookup();        // 會員查詢
 
+    // ✅ 延遲更新 UI
     requestAnimationFrame(() => {
       CONFIG.PRODUCTS.forEach(p => updatePackUI(p.id));
       updateTotals();
     });
 
-    // ✅ 延遲監測付款卡片載入
+    // ✅ 安全偵測付款 UI 是否載入完成
     const paymentObserver = new MutationObserver(() => {
       const paymentCard = document.getElementById("paymentCard");
       if (paymentCard) {
-        console.log("✅ 偵測到 #paymentCard 出現，開始安全延遲初始化付款 UI");
+        console.log("✅ 偵測到 #paymentCard 出現，開始延遲初始化付款 UI");
         paymentObserver.disconnect();
 
         let tries = 0;
@@ -80,10 +82,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     paymentObserver.observe(document.body, { childList: true, subtree: true });
 
-    // ✅ 查看明細按鈕
+    // ✅ 查看購物明細
     $("viewCartBtn")?.addEventListener("click", showCartSheet);
 
-    // ✅ StickyBar 自動隱藏
+    // ✅ StickyBar 滾動隱藏
     let lastScrollY = window.scrollY;
     window.addEventListener("scroll", () => {
       const bar = $("StickyBar");
@@ -92,14 +94,25 @@ document.addEventListener("DOMContentLoaded", async () => {
       else bar.classList.remove("hide");
       lastScrollY = window.scrollY;
     });
-    initSubmitOrder();
 
+    // ✅ 初始化訂單送出功能
+    initSubmitOrder();
 
   } catch (err) {
     console.error("初始化錯誤:", err);
     toast("⚠️ 載入失敗，請稍後再試");
   } finally {
     $("loading")?.style && ($("loading").style.display = "none");
-
   }
+
+  // ✅ Header 滾動縮小效果（放在 finally 外層是對的）
+  window.addEventListener("scroll", () => {
+    const header = document.querySelector(".ios-header");
+    if (!header) return;
+    if (window.scrollY > 40) {
+      header.classList.add("scrolled");
+    } else {
+      header.classList.remove("scrolled");
+    }
+  });
 });
