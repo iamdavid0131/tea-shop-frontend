@@ -15,6 +15,7 @@ export function initMemberLookup() {
 
   if (!phoneInput) return;
 
+  // 🔍 會員查詢
   async function lookup() {
     const phone = phoneInput.value.trim();
     if (!phone || phone.length < 8) return;
@@ -55,6 +56,7 @@ export function initMemberLookup() {
     phoneInput.classList.remove("loading");
   }
 
+  // 📦 渲染常用地區
   function renderRecents(stores, addresses) {
     if (!recentBox || !recentList) return;
     recentList.innerHTML = "";
@@ -65,54 +67,67 @@ export function initMemberLookup() {
 
     recentBox.classList.remove("hidden");
 
-    if (stores.length > 0) {
-      const title = document.createElement("div");
-      title.className = "recent-subtitle";
-      title.textContent = "🏪 常用超商";
-      recentList.appendChild(title);
-      stores.forEach((r) => renderRecentItem(r, "store"));
-    }
+    // 預設顯示「超商」
+    let currentType = "store";
+    renderList(currentType);
 
-    if (addresses.length > 0) {
-      const title = document.createElement("div");
-      title.className = "recent-subtitle";
-      title.textContent = "📦 常用宅配地址";
-      recentList.appendChild(title);
-      addresses.forEach((r) => renderRecentItem(r, "address"));
+    const tabBtns = recentBox.querySelectorAll(".recent-tab");
+    tabBtns.forEach((btn) => {
+      btn.onclick = () => {
+        tabBtns.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentType = btn.dataset.type;
+        renderList(currentType);
+      };
+    });
+
+    function renderList(type) {
+      recentList.innerHTML = "";
+      const list = type === "store" ? stores : addresses;
+      if (list.length === 0) {
+        recentList.innerHTML = `<div class="empty-tip">尚無常用${type === "store" ? "門市" : "地址"} ☕</div>`;
+        return;
+      }
+      list.forEach((r) => renderRecentItem(r, type));
     }
   }
 
+  // 🏪 單筆項目渲染
   function renderRecentItem(r, type) {
     const div = document.createElement("div");
     div.className = "recent-item";
     div.innerHTML = `
       <span class="icon">${type === "store" ? "🏪" : "📦"}</span>
-      <span class="text">${type === "store"
-        ? `${r.carrier?.toUpperCase()} ${r.name}`
-        : r.address}</span>
+      <span class="text">${
+        type === "store" ? `${r.carrier?.toUpperCase()} ${r.name}` : r.address
+      }</span>
     `;
 
     div.onclick = () => {
       if (type === "store") {
         if (carrierSelect) carrierSelect.value = r.carrier.toLowerCase();
         if (storeNameInput) storeNameInput.value = r.name;
+
         const shipRadio = document.querySelector("input[value='store']");
         if (shipRadio) {
           shipRadio.checked = true;
           shipRadio.dispatchEvent(new Event("change"));
         }
+
         toast(`🏪 已套用門市：${r.carrier} ${r.name}`);
       } else {
         if (addressInput) addressInput.value = r.address;
 
-        // 🏙️ 自動帶入縣市區
-        if (citySelect && districtSelect) {
-          const city = r.address.slice(0, 3).replace(/市|縣/g, "");
-          const district = r.address.match(/區|鄉|鎮/)
-            ? r.address.split(/市|縣/)[1].split(/[路街]/)[0]
-            : "";
-          citySelect.value = city;
-          districtSelect.value = district;
+        // 🏙️ 改進版縣市／行政區自動帶入
+        if (citySelect && districtSelect && r.address) {
+          const match = r.address.match(/^(.{2,3}(市|縣))(.{1,4}(區|鄉|鎮))/);
+          if (match) {
+            const city = match[1].replace(/市|縣/g, "");
+            const district = match[3].replace(/區|鄉|鎮/g, "");
+            citySelect.value = city;
+            districtSelect.value = district;
+            districtSelect.dispatchEvent(new Event("change")); // 🔄 ZIP 連動
+          }
         }
 
         const shipRadio = document.querySelector("input[value='cod']");
@@ -120,13 +135,19 @@ export function initMemberLookup() {
           shipRadio.checked = true;
           shipRadio.dispatchEvent(new Event("change"));
         }
+
         toast(`📦 已套用地址：${r.address}`);
+
+        // 🚀 自動滾動到宅配區塊
+        addressInput.scrollIntoView({ behavior: "smooth", block: "center" });
       }
     };
 
+    // ✅ 只留這一行
     recentList.appendChild(div);
   }
 
+  // ✅ 綁定事件
   phoneInput.addEventListener("blur", lookup);
   phoneInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {

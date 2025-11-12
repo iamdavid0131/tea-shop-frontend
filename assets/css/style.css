@@ -2236,3 +2236,37 @@ input.loading {
 .recent-item:active {
   transform: scale(0.99);
 }
+
+.recent-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.recent-tab {
+  flex: 1;
+  background: #f5ede3;
+  border: 1px solid #e0d8cb;
+  border-radius: 8px;
+  padding: 8px 0;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  color: #6b604f;
+}
+
+.recent-tab.active {
+  background: #d9cdbb;
+  border-color: #c6b79d;
+  color: #3e3a37;
+}
+
+.empty-tip {
+  color: #9a8e7c;
+  text-align: center;
+  font-size: 0.9rem;
+  padding: 8px;
+  font-style: italic;
+}
+
