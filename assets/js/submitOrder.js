@@ -224,7 +224,9 @@ export function initSubmitOrder() {
     const hasName = name?.value.trim().length > 0;
     const hasPhone = phone?.value.trim().length >= 8;
     const hasShip = [...shipRadios].some((r) => r.checked);
-    const hasPay = [...payRadios].some((r) => r.checked);
+    const hasPay =
+      [...payRadios].some((r) => r.checked) ||
+      document.querySelector(".pay-btn.active") !== null;
     const agreed = consent?.checked;
     btn.disabled = !(
       hasItem &&

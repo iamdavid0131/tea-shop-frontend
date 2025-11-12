@@ -35,15 +35,12 @@ export function initPaymentUI(retry = 0) {
       sessionStorage.setItem("paymentMethod", method);
       console.log("💳 已選擇付款方式：", method);
 
-      // 🔄 更新送出按鈕可用狀態
-      const submitBtn = document.querySelector("#submitBtn");
-      if (submitBtn) {
-        const allFilled = checkFormComplete();
-        submitBtn.disabled = !allFilled;
-      }
+      // 🔄 觸發全局事件（讓 submitOrder.js 重新驗證）
+      window.dispatchEvent(new Event("cart:update"));
     });
   });
 }
+
 
 /**
  * ✅ 表單完成度檢查（可依實際欄位需求調整）
