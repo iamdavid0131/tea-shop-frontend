@@ -186,8 +186,13 @@ function showSuccessModal(orderId, total, lineUrl) {
 
   // ✅ 清空表單與購物車
   clearCart();
-  ["name", "phone", "address", "note"].forEach(id => $(id)?.value = "");
-  $("consentAgree")?.removeAttribute("checked");
+  ["name", "phone", "address", "note"].forEach(id => {
+    const el = $(id);
+    if (el) el.value = "";
+  });
+
+  const agree = $("consentAgree");
+  if (agree) agree.removeAttribute("checked");
   document.querySelectorAll("input[name='ship'],input[name='payment']")
     .forEach(r => r.checked = false);
   $("submitOrderBtn")?.setAttribute("disabled", "true");
