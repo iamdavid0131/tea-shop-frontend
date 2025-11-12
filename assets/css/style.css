@@ -1741,18 +1741,7 @@ input.loading {
 }
 
 /* ✅ 成功卡片樣式 */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.45);
-  z-index: 9999;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
+
 .modal-backdrop.show {
   opacity: 1;
   pointer-events: all;
@@ -2100,8 +2089,6 @@ input.loading {
 .hidden {
   display: none;
 }
-
-/* modal-backdrop 初始狀態 */
 #successBackdrop {
   display: flex;
   align-items: center;
@@ -2118,6 +2105,42 @@ input.loading {
 #successBackdrop.show {
   opacity: 1;
   pointer-events: all;
+}
+
+#successBackdrop .modal-card {
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 1.25rem;
+  padding: 2rem 1.5rem;
+  width: 90%;
+  max-width: 380px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  transform: scale(0.9);
+  opacity: 0;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+#successBackdrop.show .modal-card {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.success-icon {
+  font-size: 3rem;
+  color: #22c55e;
+  background: #dcfce7;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pop 0.5s ease;
+}
+
+@keyframes pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 /* 內層卡片 */
