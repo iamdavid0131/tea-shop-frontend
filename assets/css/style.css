@@ -1517,44 +1517,44 @@ textarea {
 }
 
 /* ============================================================
-🏪 Store / 宅配 Form — 精緻間距 + 玻璃質感優化版（祥興茶行）
+🏪 Store / 宅配 Form — 高質感間距舒適整合版（祥興茶行）
 ============================================================ */
 
 /* === 外層容器 === */
 #storeFields,
 #codFields {
   width: 100%;
-  margin-top: 16px;
-  padding: 0 2px;
+  margin-top: 20px;
+  padding: 22px 20px 26px;
   border-radius: 16px;
+  background: transparent; /* ✅ 移除多餘白底 */
   backdrop-filter: blur(10px);
   transition: all 0.35s ease;
-  background: transparent; /* ✅ 移除多餘白底 */
+  box-sizing: border-box;
 }
 
-/* === Form 區塊 === */
+/* === 主要表單結構 === */
 .store-form,
 .delivery-form {
   display: flex;
   flex-direction: column;
-  gap: 20px; /* ✅ 元素之間間距更緊湊 */
+  gap: 22px; /* ✅ 每組欄位間距一致 */
   color: #2a2a2a;
   font-family: system-ui, -apple-system, "PingFang TC", "Noto Sans TC", sans-serif;
-  padding-bottom: 8px;
 }
 
-/* === Label 標籤 === */
+/* === 標籤 === */
 .sp-label {
   display: block;
-  font-size: 16px;
+  font-size: 16.5px;
   font-weight: 700;
   color: #305c46;
-  margin: 2px 0 4px;
-  letter-spacing: 0.25px;
+  margin-bottom: 6px; /* ✅ label 與欄位間距 */
+  letter-spacing: 0.3px;
   position: relative;
 }
 
-/* === 第一個標籤底線 === */
+/* === 第一個標籤底線（漸層）=== */
 .store-form .sp-label:first-of-type::after,
 .delivery-form .sp-label:first-of-type::after {
   content: "";
@@ -1565,21 +1565,27 @@ textarea {
   height: 2px;
   background: linear-gradient(90deg, #bcd7c6, transparent);
   border-radius: 999px;
-  animation: teaUnderline 1.2s ease-out;
 }
 
-/* === Input / Select 統一茶系風格 === */
+/* === 超商下拉＋附近門市同行排版 === */
+.store-row {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* ✅ select 與按鈕間距 */
+}
+
+/* === Input / Select 統一樣式 === */
 .sp-select,
 .sp-input {
   appearance: none;
   -webkit-appearance: none;
   font-size: 15.5px;
   font-weight: 500;
-  height: 42px;
-  padding: 0 13px;
-  border-radius: 10px;
-  border: 1.3px solid rgba(170, 190, 180, 0.6);
-  background: rgba(255, 255, 255, 0.7);
+  height: 46px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(170, 190, 180, 0.6);
+  background: rgba(255, 255, 255, 0.85);
   color: #333;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   transition: all 0.3s ease;
@@ -1591,7 +1597,7 @@ textarea {
 .sp-select:focus,
 .sp-input:focus {
   border-color: rgba(90, 123, 104, 0.85);
-  box-shadow: 0 0 0 3px rgba(90, 123, 104, 0.15);
+  box-shadow: 0 0 0 4px rgba(90, 123, 104, 0.15);
   outline: none;
   background: rgba(255, 255, 255, 0.95);
 }
@@ -1602,7 +1608,7 @@ textarea {
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 12px;
-  padding-right: 32px;
+  padding-right: 34px;
 }
 
 /* === Placeholder === */
@@ -1610,6 +1616,35 @@ textarea {
   color: #aaa;
   font-weight: 400;
 }
+
+/* === 附近門市按鈕 === */
+.sp-search-title {
+  flex-shrink: 0;
+  height: 46px; /* ✅ 與 select 對齊 */
+  padding: 0 20px;
+  font-size: 15.5px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #8fb89e, #6d9f83);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.sp-search-title:hover {
+  background: linear-gradient(135deg, #7cae90, #5b8e76);
+}
+
+/* === 錯誤訊息 === */
+.error-msg {
+  font-size: 13px;
+  color: #c9544d;
+  margin-top: 4px;
+  margin-left: 2px;
+}
+
 
 /* === 單列組件對齊 === */
 .sp-row {
