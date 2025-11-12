@@ -1517,102 +1517,158 @@ textarea {
 }
 
 /* ============================================================
-🏪 Store / 宅配 Form 高質感整合最終版（祥興茶行）
+🍃 祥興茶行 Form 極簡高質感最終版
 ============================================================ */
 
 /* === 外層容器 === */
 #storeFields,
 #codFields {
   width: 100%;
-  margin-top: 12px;
-  padding: 16px 18px 20px;
-  
-  border-radius: 16px;
-
-
-  backdrop-filter: blur(10px);
-  transition: all 0.35s ease;
+  margin-top: 22px;
+  padding: 22px 20px 26px;
+  background: rgba(255, 255, 255, 0.45);
+  border-radius: 18px;
+  border: 1px solid rgba(150, 170, 160, 0.25);
+  box-shadow:
+    0 4px 16px rgba(60, 80, 70, 0.06),
+    inset 0 1px 1px rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(18px);
+  transition: all 0.4s ease;
 }
 
-/* === Form 區塊 === */
+/* === Form 主體 === */
 .store-form,
 .delivery-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  color: #2a2a2a;
+  gap: 22px;
   font-family: system-ui, -apple-system, "PingFang TC", "Noto Sans TC", sans-serif;
+  color: #243e33;
+  line-height: 1.5;
 }
 
+/* === 每一組欄位 === */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 
-
-/* === Label 標籤（茶墨色 + 放大字）=== */
+/* === 標題 === */
 .sp-label {
-  display: block;
-  font-size: 16.5px;
+  font-size: 16px;
   font-weight: 700;
-  color: #305c46;
-  margin: 6px 0 4px;
-  letter-spacing: 0.3px;
+  color: #365945;
+  letter-spacing: 0.4px;
+  margin-bottom: 2px;
   position: relative;
 }
-
-/* === 第一個標籤加底線（茶湯漸層）=== */
-.store-form .sp-label:first-of-type::after,
-.delivery-form .sp-label:first-of-type::after {
+.sp-label::after {
   content: "";
   position: absolute;
-  left: 0;
   bottom: -3px;
-  width: 38px;
+  left: 0;
+  width: 36px;
   height: 2px;
-  background: linear-gradient(90deg, #bcd7c6, transparent);
+  background: linear-gradient(90deg, #b8d2c4, transparent);
   border-radius: 999px;
-  animation: teaUnderline 1.2s ease-out;
+  opacity: 0.9;
 }
 
-/* === Input / Select 統一茶系風格 === */
-.sp-select,
-.sp-input {
-  appearance: none;
-  -webkit-appearance: none;
+/* === Input / Select === */
+.sp-input,
+.sp-select {
   font-size: 15.5px;
   font-weight: 500;
-  height: 44px;
+  height: 46px;
   padding: 0 14px;
   border-radius: 12px;
-  border: 1.5px solid rgba(170, 190, 180, 0.6);
-  background: rgba(255, 255, 255, 0.85);
+  border: 1.5px solid rgba(160, 180, 170, 0.55);
+  background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(250,250,250,0.85));
   color: #333;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   transition: all 0.3s ease;
   box-sizing: border-box;
-  backdrop-filter: blur(6px);
+  box-shadow: inset 0 1px 3px rgba(90, 110, 95, 0.05);
 }
 
-/* === 聚焦高亮 — 茶光柔亮 === */
-.sp-select:focus,
-.sp-input:focus {
-  border-color: rgba(90, 123, 104, 0.85);
-  box-shadow: 0 0 0 4px rgba(90, 123, 104, 0.15);
+/* === Focus 狀態（茶光柔亮） === */
+.sp-input:focus,
+.sp-select:focus {
+  border-color: rgba(90, 123, 104, 0.9);
+  box-shadow: 0 0 0 5px rgba(90, 123, 104, 0.15);
+  background: rgba(255, 255, 255, 0.98);
   outline: none;
-  background: rgba(255, 255, 255, 0.95);
-}
-
-/* === 下拉箭頭 === */
-.sp-select {
-  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%238aa596' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 12px;
-  padding-right: 34px;
+  transition: all 0.25s ease;
 }
 
 /* === Placeholder === */
 .sp-input::placeholder {
-  color: #aaa;
+  color: #999;
   font-weight: 400;
+  letter-spacing: 0.2px;
 }
+
+/* === 下拉箭頭 === */
+.sp-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath fill='%23688679' d='M1 1l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 12px;
+  padding-right: 34px;
+}
+
+/* === 間距與層次調整 === */
+.delivery-form select,
+.delivery-form input {
+  margin-top: 2px;
+}
+.delivery-form {
+  gap: 24px;
+}
+
+/* === 切換動畫（滑入 + 淡入） === */
+#storeFields,
+#codFields {
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+#storeFields.active,
+#codFields.active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* === 手機版調整 === */
+@media (max-width: 768px) {
+  #storeFields,
+  #codFields {
+    padding: 20px 16px 24px;
+    border-radius: 20px;
+  }
+  .sp-input,
+  .sp-select {
+    font-size: 15px;
+  }
+  .sp-label {
+    font-size: 15.5px;
+  }
+}
+
+/* === 微動畫：聚焦柔光脈動 === */
+@keyframes teaPulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(90, 123, 104, 0.12); }
+  50% { box-shadow: 0 0 0 6px rgba(90, 123, 104, 0.22); }
+}
+.sp-input:focus,
+.sp-select:focus {
+  animation: teaPulse 2s ease-in-out infinite;
+}
+
 
 /* === 附近門市按鈕（保留原樣） === */
 .sp-search-title {
@@ -1637,25 +1693,6 @@ textarea {
   transform: scale(0.97);
 }
 
-/* === 聚焦動畫：柔茶波光 === */
-@keyframes teaPulse {
-  0%,100% { box-shadow: 0 0 0 4px rgba(90, 123, 104, 0.12); }
-  50% { box-shadow: 0 0 0 6px rgba(90, 123, 104, 0.22); }
-}
-.sp-input:focus,
-.sp-select:focus {
-  animation: teaPulse 2s ease-in-out infinite;
-}
-
-/* === 宅配樣式微調 === */
-.delivery-form .sp-input,
-.delivery-form .sp-select {
-  border-color: rgba(180, 200, 190, 0.6);
-  background: rgba(255, 255, 255, 0.85);
-}
-.delivery-form {
-  gap: 18px;
-}
 
 /* ============================================================
 🍵 切換動畫 — 茶湯滑入
