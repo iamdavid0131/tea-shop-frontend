@@ -6,7 +6,7 @@
 import { api } from "./app.api.js";
 import { $, $$, toast } from "./dom.js";
 import { CONFIG } from "./config.js";
-import { renderProducts } from "./products.js";
+import { renderProducts,initTeaModal } from "./products.js";
 import { restoreCart, updateTotals, animateMoney } from "./cart.js";
 import { initQtyControls, updatePackUI } from "./qty.js";
 import { enableSmartSheetControl, showCartSheet } from "./sheetModal.js";
@@ -32,6 +32,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // ✅ 渲染商品區
     renderProducts(CONFIG.PRODUCTS);
+    initTeaModal(CONFIG.PRODUCTS);
 
     // 🟢 「裝罐」按鈕事件
     document.querySelectorAll(".pack-btn").forEach(btn => {

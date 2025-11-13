@@ -67,10 +67,19 @@
 </header>
 
 <!-- ✅ Step 1: 商品步驟 -->
-<div class="card stepcard" id="itemsCard">
-  <h2 class="section-title">選購商品</h2>
-  <div id="categoryList" class="itemlist"></div>
+<main id="teaScenes" class="tea-scenes"></main>
+
+<div id="teaModal" class="tea-modal" aria-hidden="true">
+  <div class="tea-modal-bg"></div>
+  <div class="tea-modal-content">
+    <header class="tea-modal-header">
+      <h2 id="modalTitle"></h2>
+      <button id="closeModalBtn" class="close-btn">✕</button>
+    </header>
+    <div id="teaCollection" class="tea-collection"></div>
+  </div>
 </div>
+
 
 <!-- ✅ Step 2: 收件資料 -->
 <div class="section">

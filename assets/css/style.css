@@ -132,326 +132,270 @@ html,body{
   100% { width: 68px; }
 }
 /* ============================================================
-🍵 祥興茶行 — 商品展示區（高質感茶系玻璃風）
+🍃 祥興自然霧・Warm Mist Serenity Theme
+設計概念：茶霧、柔光、慢節奏
 ============================================================ */
 
-/* === 商品區 Grid === */
-.itemlist {
-display: grid;
-grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-gap: 24px;
-padding: 12px 4px;
-}
-@media (max-width: 900px) {
-.itemlist { grid-template-columns: 1fr; gap: 20px; }
+/* === 基礎色彩系統 === */
+:root {
+--mist-bg: linear-gradient(180deg, #faf8f4, #f2f0eb);
+--tea-green: #6b947a;
+--tea-gold: rgba(255, 215, 150, 0.3);
+--tea-text: #2f3e32;
+--glass-white: rgba(255, 255, 255, 0.85);
+--shadow-soft: 0 8px 24px rgba(90, 123, 104, 0.08);
+--radius-lg: 18px;
+--transition: all 0.35s cubic-bezier(0.25, 1, 0.4, 1);
+--blur-bg: blur(10px) saturate(120%);
 }
 
-/* === 單一卡片 === */
-.itemcard {
-position: relative;
-padding: 26px 22px 30px;
-border-radius: 18px;
-background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.82)) padding-box,
-linear-gradient(180deg, rgba(160,185,165,0.35), rgba(190,210,195,0.1)) border-box;
-border: 1px solid transparent;
-box-shadow: 0 6px 18px rgba(80,110,90,0.08);
+/* === 頁面背景 === */
+body {
+background: var(--mist-bg);
+color: var(--tea-text);
+font-family: system-ui, "PingFang TC", "Noto Sans TC", sans-serif;
+margin: 0;
+padding: 0;
+overscroll-behavior: none;
+}
+
+/* ============================================================
+🏞️ 茶系展示層（Scenes）
+============================================================ */
+.tea-scenes {
 display: flex;
 flex-direction: column;
-gap: 12px;
-transition: all 0.35s cubic-bezier(.25,1,.4,1);
-animation: cardFadeIn .8s ease both;
-backdrop-filter: blur(10px);
-overflow: visible;
+gap: 36px;
+padding: 20px 14px 60px;
 }
-.itemcard:hover {
-transform: translateY(-4px);
-box-shadow: 0 10px 22px rgba(80,110,90,0.12);
-border-color: rgba(120,150,130,0.35);
-background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.88));
-}
-.itemcard::after {
-content: "";
-position: absolute;
-top: 0; left: -60%;
-width: 50%; height: 100%;
-background: linear-gradient(120deg, rgba(255,255,255,0.2), rgba(255,255,255,0));
-transform: skewX(-25deg);
-transition: transform 0.8s ease;
-pointer-events: none;
-}
-.itemcard:hover::after { transform: translateX(250%) skewX(-25deg); }
 
-/* === 標題（普通 / Sticky 狀態）=== */
-.itemcard .title:not(.stuck) {
-font-family: "Noto Serif TC","PingFang TC",serif;
+/* 每個茶類場景 */
+.tea-scene {
+display: flex;
+flex-direction: column;
+gap: 16px;
+}
+
+/* 茶類標題 */
+.tea-scene-header {
+display: flex;
+align-items: center;
+justify-content: space-between;
 font-weight: 800;
-font-size: 22px;
-letter-spacing: .4px;
-background: linear-gradient(90deg,#476b55,#8aa691);
+font-size: 1.3rem;
+color: var(--tea-text);
+padding: 0 4px;
+}
+
+/* 橫向滾動容器 */
+.tea-scroll {
+display: flex;
+overflow-x: auto;
+gap: 14px;
+scroll-snap-type: x mandatory;
+scroll-padding: 16px;
+-webkit-overflow-scrolling: touch;
+}
+.tea-scroll::-webkit-scrollbar {
+display: none;
+}
+
+/* 單一卡片（沿用茶系玻璃風格） */
+.tea-card {
+min-width: 220px;
+flex-shrink: 0;
+scroll-snap-align: start;
+background: var(--glass-white);
+backdrop-filter: var(--blur-bg);
+border-radius: var(--radius-lg);
+box-shadow: var(--shadow-soft);
+border: 1px solid rgba(170, 190, 180, 0.3);
+padding: 16px 14px 18px;
+display: flex;
+flex-direction: column;
+gap: 8px;
+transition: var(--transition);
+}
+.tea-card:hover {
+transform: translateY(-2px);
+box-shadow: 0 10px 28px rgba(90, 123, 104, 0.15);
+}
+
+/* 卡片文字 */
+.tea-card .title {
+font-family: "Noto Serif TC", "PingFang TC", serif;
+font-weight: 700;
+font-size: 1.15rem;
+background: linear-gradient(90deg, #486b52, #8ea897);
 -webkit-background-clip: text;
 -webkit-text-fill-color: transparent;
-color: #2f4b3c;
 }
-.itemcard .title.stuck {
-  position: sticky;
-  top: 114px;
-  z-index: 5;
-  padding: 10px 14px;
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: #245c3c;
-  background: rgba(255,255,255,0.92);
-  border-bottom: 1px solid rgba(170,190,180,0.25);
-  backdrop-filter: blur(8px) saturate(140%);
-  text-shadow: 0 1px 3px rgba(255,255,255,0.8);
-  letter-spacing: 0.5px;
-}
-
-/* === 子標題／描述 === */
-.itemcard .meta {
-color: #556b5f;
-font-size: 15.5px;
-line-height: 1.6;
+.tea-card .meta {
+font-size: 0.9rem;
 opacity: 0.85;
 }
 
-/* === 數量控制區 === */
-.qty {
+/* 「查看更多」卡 */
+.view-more-card {
+min-width: 160px;
+flex-shrink: 0;
+scroll-snap-align: start;
 display: flex;
 align-items: center;
-gap: 12px;
-margin-top: 8px;
-}
-.qty-btn {
-width: 38px; height: 38px;
-border-radius: 50%;
-border: 1.5px solid rgba(170,190,175,0.4);
-background: linear-gradient(145deg,#fafcfb,#f0f3f1);
-font-size: 22px; font-weight: 600;
-color: #305c46;
-display: flex; align-items: center; justify-content: center;
+justify-content: center;
+border-radius: var(--radius-lg);
+border: 1px dashed rgba(150,170,160,0.5);
+background: rgba(255,255,255,0.5);
+color: var(--tea-green);
+font-weight: 600;
 cursor: pointer;
-transition: all 0.2s ease;
-box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+transition: var(--transition);
 }
-.qty-btn:hover {
-background: linear-gradient(145deg,#f8faf9,#e8edea);
-transform: translateY(-1px);
-}
-.qty-btn:active {
-transform: scale(0.9);
-box-shadow: inset 0 2px 6px rgba(0,0,0,0.1);
-}
-.qty-value {
-width: 26px; text-align: center;
-font-size: 18px; font-weight: 700; color: #2f4b3c;
+.view-more-card:hover {
+background: rgba(255,255,255,0.7);
+border-color: var(--tea-green);
 }
 
 /* ============================================================
-🫖 裝罐區塊
+🍵 茶系 Modal（柔霧浮層）
 ============================================================ */
-.pack-row {
-margin-top: 14px;
-display: flex; align-items: center; justify-content: space-between;
-gap: 12px;
-padding: 12px 10px;
-border-radius: 14px;
-background: linear-gradient(145deg,rgba(255,255,255,0.92),rgba(250,250,250,0.75));
-box-shadow: 0 3px 12px rgba(90,123,104,0.08);
-border: 1px solid rgba(170,190,180,0.25);
-backdrop-filter: blur(8px);
-transition: all 0.25s ease;
+.tea-modal {
+position: fixed;
+inset: 0;
+display: flex;
+align-items: flex-end;
+justify-content: center;
+visibility: hidden;
+opacity: 0;
+transition: opacity 0.4s ease;
+z-index: 100;
 }
-.pack-row:hover {
-background: linear-gradient(145deg,rgba(255,255,255,0.96),rgba(250,250,250,0.9));
-box-shadow: 0 6px 16px rgba(90,123,104,0.12);
-transform: translateY(-2px);
+.tea-modal.show {
+visibility: visible;
+opacity: 1;
 }
-.pack-toggle {
-display: flex; align-items: center; gap: 10px;
-font-weight: 700; font-size: 16px;
-color: #305c46; cursor: pointer; transition: color 0.3s ease;
+.tea-modal-bg {
+position: absolute;
+inset: 0;
+background: rgba(250, 248, 244, 0.7);
+backdrop-filter: blur(12px);
 }
-.pack-toggle:hover { color: #4c7c63; }
-.pack-row input[type="checkbox"] {
-transform: scale(1.3);
-accent-color: #6f8f7c;
+.tea-modal-content {
+position: relative;
+background: var(--glass-white);
+border-radius: 20px 20px 0 0;
+box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.1);
+width: 100%;
+max-height: 88vh;
+overflow-y: auto;
+animation: modalRise 0.5s cubic-bezier(0.25,1,0.4,1);
+}
+@keyframes modalRise {
+from { transform: translateY(80px); opacity: 0; }
+to { transform: translateY(0); opacity: 1; }
+}
+
+/* Modal header */
+.tea-modal-header {
+position: sticky;
+top: 0;
+background: rgba(255,255,255,0.9);
+backdrop-filter: blur(12px);
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 16px 20px;
+border-bottom: 1px solid rgba(170,190,180,0.3);
+}
+.tea-modal-header h2 {
+font-size: 1.2rem;
+font-weight: 700;
+color: var(--tea-text);
+}
+.close-btn {
+background: none;
+border: none;
+font-size: 1.3rem;
+color: var(--tea-green);
 cursor: pointer;
 }
 
-/* === 裝罐數量 === */
-.pack-qty {
-display: flex; align-items: center; gap: 10px;
-background: rgba(255,255,255,0.6);
-padding: 6px 10px;
-border-radius: 999px;
-box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
-transition: all 0.2s ease;
-}
-.pack-qty.hidden { display: none; }
-.pack-qty .step {
-width: 36px; height: 36px;
-border-radius: 50%;
-border: 1px solid rgba(160,180,170,0.4);
-background: linear-gradient(145deg,#fafcfb,#eef3ef);
-font-size: 22px; font-weight: 700; color: #305c46;
-display: flex; align-items: center; justify-content: center;
-cursor: pointer; transition: all 0.2s ease;
-box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-}
-.pack-qty .step:hover {
-background: linear-gradient(145deg,#f8faf9,#e8edea);
-transform: translateY(-1px);
-box-shadow: 0 3px 8px rgba(90,123,104,0.12);
-}
-.pack-qty .step:active {
-transform: scale(0.9);
-background: #e8ebe8;
-box-shadow: inset 0 2px 6px rgba(0,0,0,0.1);
-}
-.pack-qty input {
-width: 34px; text-align: center;
-font-size: 18px; font-weight: 700; color: #305c46;
-background: transparent; border: none;
-}
-.pack-qty input:focus { outline: none; color: #4a7b5e; }
-.pack-row.active {
-border-color: rgba(90,123,104,0.5);
-box-shadow: 0 6px 18px rgba(90,123,104,0.15);
-animation: teaGlow 2s ease-in-out infinite;
-}
-@keyframes teaGlow {
-0%,100% { box-shadow: 0 6px 18px rgba(90,123,104,0.15); }
-50% { box-shadow: 0 6px 24px rgba(120,160,130,0.3); }
+/* Modal 內容列表 */
+.tea-collection {
+display: flex;
+flex-direction: column;
+gap: 20px;
+padding: 18px 16px 40px;
 }
 
 /* ============================================================
-🌿 茶霧流動系統（分類 / 詳情 / Profile）
+🌿 詳情與 Profile 區塊
 ============================================================ */
+.detailblock {
+background: #f9f8f5;
+border-radius: 12px;
+padding: 12px 14px;
+line-height: 1.6;
+font-size: 14px;
+color: #333;
+border-top: 1px dashed rgba(0,0,0,0.1);
+transition: var(--transition);
+opacity: 0;
+max-height: 0;
+overflow: hidden;
+}
+.detailblock.open {
+opacity: 1;
+max-height: 1000px;
+}
 
-/* === Profile 條 === */
+/* Profile 條 */
 .profile-blocks {
-margin: 8px 0 12px;
-display: flex; flex-direction: column; gap: 12px;
+margin-top: 8px;
+display: flex;
+flex-direction: column;
+gap: 10px;
 }
-.bar { display: flex; align-items: center; justify-content: space-between; }
-.bar b { font-size: 15px; min-width: 48px; color: #222; }
-.profile-bar { display: flex; gap: 6px; flex: 1; justify-content: flex-start; }
+.profile-bar {
+display: flex;
+gap: 6px;
+}
 .profile-bar .blk {
-width: 14px; height: 18px;
-background: #eee; border-radius: 5px;
-opacity: 0.5; transition: opacity .25s ease, transform .25s ease;
-box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+width: 14px;
+height: 18px;
+background: #eee;
+border-radius: 5px;
+opacity: 0.4;
 }
 .profile-bar .blk.on {
-background: var(--bar-color);
+background: var(--tea-green);
 opacity: 1;
-background-size: 200% auto;
-background-image: linear-gradient(90deg,rgba(255,255,255,0.2) 0%,var(--bar-color) 40%,var(--bar-color) 60%,rgba(255,255,255,0.2) 100%);
 animation: teaFlow 2.5s linear infinite;
 }
-@keyframes teaFlow { 0%{background-position:-200% center;}100%{background-position:200% center;} }
-
-/* === 詳情區塊 === */
-.detailblock {
-background:#fafafa;
-border-radius:12px;
-padding:10px 12px;
-margin-top:8px;
-line-height:1.6; font-size:14px; color:#333;
-border-top:1px dashed rgba(0,0,0,.1);
-transition: all .35s cubic-bezier(.25,1,.4,1);
-opacity:0; max-height:0; overflow:hidden; transform: translateY(8px);
-}
-.detailblock.open { opacity:1; max-height:1000px; transform:translateY(0); }
-.detailblock[hidden]{ display:block!important; opacity:0; max-height:0; padding:0; overflow:hidden; transform:translateY(8px); }
-.detailblock > *:not(:first-child){ margin-top:14px; padding-top:14px; border-top:1px dashed #ececec; }
-.detailblock hr{ border:none; border-top:1.5px solid rgba(0,0,0,0.08); margin:12px 0; }
-
-/* === 詳情按鈕 === */
-.more-btn {
-width:100%; margin-top:8px;
-border:1px solid #ddd; background:#fff; color:#333;
-border-radius:8px; padding:8px 10px;
-font-size:16px; font-weight:600;
-display:flex; justify-content:center; align-items:center; gap:6px;
-transition: all .25s ease;
-}
-.more-btn.active {
-background:#e9f7ef; color:#0a7a45; border-color:#bce4c8;
-box-shadow:0 2px 6px rgba(0,128,0,0.08);
-}
-.more-btn .arrow { transition: transform .25s ease; }
-.more-btn.active .arrow { transform: rotate(180deg); }
-.more-btn:active { filter: brightness(1.05); }
-
-/* === 分類標題區（Sticky Header + 茶霧流動） === */
-.category-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 18px;
-  border-radius: 14px;
-  background: rgba(255,255,255,0.8);
-  border: 1px solid rgba(170,190,180,0.3);
-  box-shadow: 0 2px 10px rgba(90,120,100,0.06);
-  font-size: 20px;
-  font-weight: 700;
-  color: #2f3d34;
-  cursor: pointer;
-  backdrop-filter: blur(12px) saturate(130%);
-  transition: all 0.35s cubic-bezier(.25,1,.4,1);
-}
-.category-header:hover {
-  background: rgba(255,255,255,0.92);
-  box-shadow: 0 3px 12px rgba(90,120,100,0.12);
-}
-.category-header.open {
-  background: linear-gradient(145deg, rgba(235,250,240,0.92), rgba(240,255,245,0.88));
-  color: #0a7a45;
-  border-color: rgba(150,200,165,0.45);
-  box-shadow: 0 4px 16px rgba(90,123,104,0.15);
-}
-.category-header .chev {
-  transition: transform 0.3s ease;
-}
-.category-header.open .chev {
-  transform: rotate(180deg);
+@keyframes teaFlow {
+0% { filter: brightness(1.3); }
+50% { filter: brightness(0.9); }
+100% { filter: brightness(1.3); }
 }
 
-/* === 分類內容展開 === */
-.category-body {
-  overflow: hidden;
-  opacity: 0;
-  max-height: 0;
-  transform: translateY(-6px);
-  transition:
-    opacity .45s cubic-bezier(.25,1,.4,1),
-    max-height .45s cubic-bezier(.25,1,.4,1),
-    transform .45s cubic-bezier(.25,1,.4,1);
+/* ============================================================
+📱 手機特化
+============================================================ */
+@media (max-width: 600px) {
+.tea-card {
+min-width: 180px;
+padding: 14px 12px;
 }
-.category-body.open {
-  opacity: 1;
-  max-height: 9999px;
-  transform: translateY(0);
-  transition-delay: 0.05s;
+.tea-scenes {
+gap: 28px;
 }
-
-/* === 通用動畫 === */
-@keyframes cardFadeIn {
-from{opacity:0;transform:translateY(16px) scale(.98);filter:blur(2px);}
-60%{opacity:1;transform:translateY(0) scale(1.02);filter:blur(0);}
-to{opacity:1;transform:translateY(0) scale(1);}
+.tea-scene-header {
+font-size: 1.2rem;
 }
-.fade-in{opacity:0;animation:fadeSlideIn .5s ease forwards;}
-@keyframes fadeSlideIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-
-/* === 互動反饋 === */
-.category-header:active, .more-btn:active {
-filter: brightness(1.05);
-transition: filter .15s ease;
+.tea-modal-content {
+border-radius: 16px 16px 0 0;
 }
-
+}
 
 /* ============================================================
 🫖 StickyBar 高質感茶系玻璃風格（祥興茶行）
