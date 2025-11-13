@@ -60,7 +60,10 @@ export function renderProducts(items) {
       <span class="cat-title">${cat}</span>
       <span class="chev">▼</span>
     `;
-    if (i === 0) header.classList.add("open");
+    if (i === 0) {
+      header.classList.add("open");
+      body.classList.add("open");
+    }
 
     const body = document.createElement("div");
     body.className = "category-body";
@@ -103,7 +106,7 @@ export function renderProducts(items) {
       const card = document.createElement("div");
       card.className = "itemcard";
       card.innerHTML = `
-        <div class="title">${p.title}</div>
+        <div class="title stuck">${p.title}</div>
         <div class="quickblock">
           <span class="tagline">${p.tagline || ""}</span>
           <div class="tags">${tags}</div>
@@ -237,6 +240,7 @@ document.addEventListener("click", (e) => {
   }
 
   if (!isOpen) {
+    block.removeAttribute('hidden');
     block.classList.add("open");
     btn.classList.add("active");
     btn.querySelector(".label").textContent = "隱藏說明";
