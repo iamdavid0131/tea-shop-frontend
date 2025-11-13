@@ -9,7 +9,8 @@ import { CONFIG } from "./config.js";
 // ============================================================
 // 🌌 Aurora Mist Engine — 極光茶霧動畫
 // ============================================================
-import gsap from "https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js";
+import gsap from "https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js?module";
+
 
 const AURORA = {
   layers: [],
