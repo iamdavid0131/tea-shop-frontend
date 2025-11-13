@@ -107,15 +107,14 @@
 <div class="section" id="shippingCard">
   <h2 class="section-title">運送方式</h2>
 
-  <div id="recentBox" class="recent-box">
+  <div id="recentBox" class="recent-box none">
     <div class="recent-title">常用收件地址</div>
     <div class="recent-tabs">
       <button class="recent-tab active" data-type="store">🏪 超商</button>
       <button class="recent-tab" data-type="address">📦 宅配</button>
     </div>
     <div class="recent-list"></div>
-  
-
+  </div>
 
   <div class="ship-options">
     <label class="ship-radio">
@@ -130,50 +129,53 @@
   </div>
 
   <!-- ✅ 超商店到店 -->
-<div id="storeFields">
-  <label class="sp-label" for="carrier">選擇超商</label>
-  <div class="store-form">
-    <div class="store-row">
-      <select id="carrier" class="sp-select">
-        <option value="7-11">7-ELEVEN</option>
-        <option value="familymart">全家 FamilyMart</option>
-      </select>
+  <div id="storeFields">
+    <label class="sp-label" for="carrier">選擇超商</label>
+    <div class="store-form">
+      <div class="store-row">
+        <select id="carrier" class="sp-select">
+          <option value="7-11">7-ELEVEN</option>
+          <option value="familymart">全家 FamilyMart</option>
+        </select>
 
-      <button id="openStorePicker" class="sp-search-title">附近門市 ▾</button>
-    </div>
+        <button id="openStorePicker" class="sp-search-title">附近門市 ▾</button>
+    
 
-    <label for="storeName" class="sp-label">門市店名</label>
-    <input id="storeName" type="text" class="sp-input" placeholder="輸入附近門市名稱或地標…" />
-    <div id="err-store" class="error-msg">請選擇門市或輸入店名</div>
-  </div>
-</div> <!-- ✅ 超商結束 -->
-
-
-  <!-- ✅ 宅配到府 -->
-<div id="codFields" class="delivery-form" style="display:none;">
-  <div class="delivery-row">
-    <div class="delivery-col">
-      <label class="sp-label">縣市</label>
-      <select id="city" class="sp-select">
-        <option value="">請選擇縣市</option>
-      </select>
-    </div>
-
-    <div class="delivery-col">
-      <label class="sp-label">行政區</label>
-      <select id="district" class="sp-select">
-        <option value="">請選擇行政區</option>
-      </select>
+        <label for="storeName" class="sp-label">門市店名</label>
+        <input id="storeName" type="text" class="sp-input" placeholder="輸入附近門市名稱或地標…" />
+        <div id="err-store" class="error-msg">請選擇門市或輸入店名</div>
+      </div>
     </div>
   </div>
+ <!-- ✅ 超商結束 -->
 
-  <div class="delivery-full">
-    <label class="sp-label">詳細地址</label>
-    <input id="address" type="text" class="sp-input" placeholder="請填入路段、巷弄、門牌…" />
-    <div id="err-address" class="error-msg">請填寫完整宅配地址</div>
-  </div>
+
+<!-- ✅ 宅配到府 -->
+  <div id="codFields" class="delivery-form" style="display:none;">
+    <div class="delivery-row">
+      <div class="delivery-col">
+        <label class="sp-label">縣市</label>
+        <select id="city" class="sp-select">
+          <option value="">請選擇縣市</option>
+        </select>
+      </div>
+
+      <div class="delivery-col">
+        <label class="sp-label">行政區</label>
+        <select id="district" class="sp-select">
+          <option value="">請選擇行政區</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="delivery-full">
+      <label class="sp-label">詳細地址</label>
+      <input id="address" type="text" class="sp-input" placeholder="請填入路段、巷弄、門牌…" />
+      <div id="err-address" class="error-msg">請填寫完整宅配地址</div>
+    </div>
   </div>
 </div>
+
 
 
 <!-- ✅ Step 4: 付款方式 -->
