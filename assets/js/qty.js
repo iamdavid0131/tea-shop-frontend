@@ -7,6 +7,11 @@ function getQtyEl(id) {
   return document.getElementById(`qty-${id}`);
 }
 
+/* ============================================================
+✨ 防止多次綁定事件（最重要）
+============================================================ */
+let qtyEventsBound = false;
+
 /** ➕➖ 數量更新 */
 export function handleQtyClick(btn) {
   const id = btn.dataset.id;
@@ -96,8 +101,14 @@ export function updatePackUI(id) {
   }
 }
 
-/** 初始化 qty + pack 控制器 */
+/* ============================================================
+✨ 初始化：永遠只會綁一次事件（解決 +2 問題）
+============================================================ */
 export function initQtyControls() {
+  if (qtyEventsBound) return;  // ⭐ 防止重複綁定
+
+  qtyEventsBound = true;
+
   document.addEventListener("click", (e) => {
     const btn = e.target.closest(".qty-btn");
     if (btn) return handleQtyClick(btn);
