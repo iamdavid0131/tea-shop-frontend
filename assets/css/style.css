@@ -1558,8 +1558,8 @@ textarea {
 }
 
 /* === 第一個標籤底線 === */
-.store-form .sp-label:first-of-type::after,
-.delivery-form .sp-label:first-of-type::after {
+.store-form .sp-label::after,
+.delivery-form .sp-label::after {
   content: "";
   position: absolute;
   left: 0;
