@@ -2428,6 +2428,7 @@ textarea {
 }
 
 .recent-box {
+  display: none;
   background: #fdfbf7;
   border-radius: 16px;
   padding: 18px;
