@@ -185,32 +185,34 @@ export function renderProducts(items) {
   });
 }
 // ============================================================
-// 分類展開收合（修正版：避免重複宣告 body）
+// 分類展開收合（最終穩定版）
 // ============================================================
 document.addEventListener("click", (e) => {
   const header = e.target.closest(".category-header");
   if (!header) return;
 
-  const sectionBody = header.nextElementSibling; // 改名避免與其他衝突
+  const section = header.closest(".category-section");
+  const sectionBody = section.querySelector(".category-body");
   const isOpen = header.classList.contains("open");
 
   // 關閉其他分類
-  document.querySelectorAll(".category-header").forEach((h) => {
-    if (h !== header) h.classList.remove("open");
-  });
-  document.querySelectorAll(".category-body").forEach((b) => {
-    if (b !== sectionBody) b.classList.remove("open");
-  });
+  document.querySelectorAll(".category-header").forEach((h) => h.classList.remove("open"));
+  document.querySelectorAll(".category-body").forEach((b) => b.classList.remove("open"));
 
-  // 開關目前分類
+  // 開啟當前分類
   if (!isOpen) {
     header.classList.add("open");
+    // 觸發瀏覽器重繪避免 transition 卡住
+    sectionBody.offsetHeight;
     sectionBody.classList.add("open");
-  } else {
-    header.classList.remove("open");
-    sectionBody.classList.remove("open");
+
+    // 若內容在視窗下方，滑動到可見區
+    setTimeout(() => {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 180);
   }
 });
+
 
 // ============================================================
 // 商品詳情收合（同分類可多開 / 穩定滑動）

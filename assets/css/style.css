@@ -5,6 +5,9 @@
 /* ============================================================
 🍃 祥興茶行 Header — 茶霧滑入 + 茶香漂浮特效
 ============================================================ */
+html,body{
+  background: #fff;
+}
 .ios-header {
   position: relative;
   z-index: 100;
@@ -190,14 +193,18 @@ background: linear-gradient(90deg,#476b55,#8aa691);
 color: #2f4b3c;
 }
 .itemcard .title.stuck {
-  background: rgba(255,255,255,0.45);
-  backdrop-filter: blur(3px);
-  z-index: 2;
-  border-bottom: 1px solid rgba(200,200,200,0.2);
-  -webkit-background-clip: initial;
-  -webkit-text-fill-color: currentColor;
-  color: #2e3e35;
-  pointer-events: none;
+  position: sticky;
+  top: 114px;
+  z-index: 5;
+  padding: 10px 14px;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #245c3c;
+  background: rgba(255,255,255,0.92);
+  border-bottom: 1px solid rgba(170,190,180,0.25);
+  backdrop-filter: blur(8px) saturate(140%);
+  text-shadow: 0 1px 3px rgba(255,255,255,0.8);
+  letter-spacing: 0.5px;
 }
 
 /* === 子標題／描述 === */
@@ -380,30 +387,27 @@ box-shadow:0 2px 6px rgba(0,128,0,0.08);
 
 /* === 分類標題區（Sticky Header + 茶霧流動） === */
 .category-header {
-  width: 100%;
-  padding: 14px 18px;
-  border-radius: 14px;
-  font-size: 20px;
-  font-weight: 700;
-  color: #2f3d34;
-  background: rgba(255,255,255,0.8);
-  border: 1px solid rgba(180,195,185,0.3);
-  backdrop-filter: blur(12px) saturate(120%);
-  box-shadow: 0 2px 10px rgba(100,120,110,0.06);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.8);
+  border: 1px solid rgba(170,190,180,0.3);
+  box-shadow: 0 2px 10px rgba(90,120,100,0.06);
+  font-size: 20px;
+  font-weight: 700;
+  color: #2f3d34;
   cursor: pointer;
+  backdrop-filter: blur(12px) saturate(130%);
   transition: all 0.35s cubic-bezier(.25,1,.4,1);
-  position: relative;
-  z-index: 5;
 }
 .category-header:hover {
   background: rgba(255,255,255,0.92);
   box-shadow: 0 3px 12px rgba(90,120,100,0.12);
 }
 .category-header.open {
-  background: linear-gradient(145deg, rgba(235,250,240,0.9), rgba(240,255,245,0.85));
+  background: linear-gradient(145deg, rgba(235,250,240,0.92), rgba(240,255,245,0.88));
   color: #0a7a45;
   border-color: rgba(150,200,165,0.45);
   box-shadow: 0 4px 16px rgba(90,123,104,0.15);
