@@ -232,7 +232,9 @@ body {
 ============================================================ */
 .tea-scenes {
   display: flex;
-  overflow-x: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  flex-direction: column;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
 
@@ -248,6 +250,7 @@ body {
 .tea-scene {
   flex: 0 0 92%;
   scroll-snap-align: start;
+  margin-bottom: 42px;
 
   padding: 18px;
   border-radius: var(--radius-lg);
@@ -393,7 +396,7 @@ body {
   overflow-x: auto;
   gap: 14px;
   padding-bottom: 6px;
-  scroll-snap-type: x proximity;
+  scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
 }
 
