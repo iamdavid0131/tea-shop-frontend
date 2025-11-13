@@ -107,7 +107,7 @@
 <div class="section" id="shippingCard">
   <h2 class="section-title">運送方式</h2>
 
-  <div id="recentBox" class="recent-box none">
+  <div id="recentBox" class="recent-box hidden">
     <div class="recent-title">常用收件地址</div>
     <div class="recent-tabs">
       <button class="recent-tab active" data-type="store">🏪 超商</button>
@@ -130,8 +130,9 @@
 
   <!-- ✅ 超商店到店 -->
   <div id="storeFields">
-    <label class="sp-label" for="carrier">選擇超商</label>
+    
     <div class="store-form">
+      <label class="sp-label" for="carrier">選擇超商</label>
       <div class="store-row">
         <select id="carrier" class="sp-select">
           <option value="7-11">7-ELEVEN</option>
