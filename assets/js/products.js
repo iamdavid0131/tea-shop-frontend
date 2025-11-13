@@ -60,14 +60,16 @@ export function renderProducts(items) {
       <span class="cat-title">${cat}</span>
       <span class="chev">▼</span>
     `;
-    if (i === 0) {
-      header.classList.add("open");
-      body.classList.add("open");
-    }
-
     const body = document.createElement("div");
     body.className = "category-body";
-    body.style.maxHeight = i === 0 ? "none" : "0";
+
+    if (i === 0) {
+    header.classList.add("open");
+    body.classList.add("open");
+    } else {
+    body.style.maxHeight = "0";
+    }
+
 
     list.forEach((p) => {
       const tags = (p.tags || [])
