@@ -181,7 +181,7 @@ export function renderProducts(items) {
 }
 
 // ============================================================
-// 分類展開收合
+// 分類展開收合（柔和模式 / 茶霧流動動畫）
 // ============================================================
 document.addEventListener("click", (e) => {
   const header = e.target.closest(".category-header");
@@ -190,59 +190,75 @@ document.addEventListener("click", (e) => {
   const body = header.nextElementSibling;
   const isOpen = header.classList.contains("open");
 
+  // 收起其他分類
   document.querySelectorAll(".category-header").forEach((h) => {
-    h.classList.remove("open");
-    h.querySelector(".chev").textContent = "▼";
+    if (h !== header) h.classList.remove("open");
   });
-  document
-    .querySelectorAll(".category-body")
-    .forEach((b) => (b.style.maxHeight = "0"));
+  document.querySelectorAll(".category-body").forEach((b) => {
+    if (b !== body) b.classList.remove("open");
+  });
 
+  // 開關目前分類
   if (!isOpen) {
     header.classList.add("open");
-    header.querySelector(".chev").textContent = "▲";
-    body.style.maxHeight = "none";
-    setTimeout(
-      () => body.scrollIntoView({ behavior: "smooth", block: "start" }),
-      100
-    );
+    body.classList.add("open");
+  } else {
+    header.classList.remove("open");
+    body.classList.remove("open");
   }
 });
 
+
 // ============================================================
-// 商品詳情收合（同分類只開一個）
+// 商品詳情收合（同分類可多開 / 穩定滑動）
 // ============================================================
 document.addEventListener("click", (e) => {
   const btn = e.target.closest(".more-btn");
   if (!btn) return;
+
   const id = btn.dataset.id;
   const block = document.getElementById(`detail-${id}`);
   if (!block) return;
 
-  const isCurrentlyOpen = !block.hidden;
+  const isOpen = block.classList.contains("open");
 
+  // 關閉所有詳情（同分類）
   const categoryBody = btn.closest(".category-body");
   const allBlocks = categoryBody.querySelectorAll(".detailblock");
   const allBtns = categoryBody.querySelectorAll(".more-btn");
 
-  allBlocks.forEach((b) => (b.hidden = true));
-  allBtns.forEach((b) => {
-    b.querySelector(".label").textContent = "詳細說明";
-    b.querySelector(".arrow").textContent = "▼";
-    b.classList.remove("active");
-  });
+  if (!e.shiftKey) { // Shift + click 可保留多開
+    allBlocks.forEach((b) => b.classList.remove("open"));
+    allBtns.forEach((b) => {
+      b.classList.remove("active");
+      b.querySelector(".label").textContent = "詳細說明";
+      b.querySelector(".arrow").textContent = "▼";
+    });
+  }
 
-  if (isCurrentlyOpen) return;
+  if (!isOpen) {
+    block.classList.add("open");
+    btn.classList.add("active");
+    btn.querySelector(".label").textContent = "隱藏說明";
+    btn.querySelector(".arrow").textContent = "▲";
 
-  btn.querySelector(".label").textContent = "隱藏說明";
-  btn.querySelector(".arrow").textContent = "▲";
-  btn.classList.add("active");
-  block.hidden = false;
+    // Profile 條動畫觸發
+    block.querySelectorAll(".fade-in").forEach((el, i) => {
+      el.style.animation = `fadeSlideIn 0.5s ease forwards ${i * 0.1}s`;
+    });
 
-  block.querySelectorAll(".fade-in").forEach((el, i) => {
-    el.style.animation = `fadeSlideIn 0.5s ease forwards ${i * 0.1}s`;
-  });
-
-  const offset = block.getBoundingClientRect().top + window.scrollY - 80;
-  window.scrollTo({ top: offset, behavior: "smooth" });
+    // 智慧對齊視窗（若超出可視範圍才滑動）
+    const rect = block.getBoundingClientRect();
+    if (rect.bottom > window.innerHeight - 80) {
+      window.scrollBy({
+        top: rect.bottom - window.innerHeight + 100,
+        behavior: "smooth",
+      });
+    }
+  } else {
+    block.classList.remove("open");
+    btn.classList.remove("active");
+    btn.querySelector(".label").textContent = "詳細說明";
+    btn.querySelector(".arrow").textContent = "▼";
+  }
 });
