@@ -67,24 +67,28 @@
 </header>
 
 <!-- ✅ Step 1: 商品步驟 -->
-<div class="tea-bg-mist"></div>
+ <!-- 🌫️ 極光茶霧背景 -->
+<div class="aurora-bg">
+  <div class="aurora-layer layer-1"></div>
+  <div class="aurora-layer layer-2"></div>
+  <div class="aurora-layer layer-3"></div>
+</div>
+
 <main id="teaScenes" class="tea-scenes"></main>
 
-<!-- Modal 詳情 -->
-<div class="tea-bg-mist"></div>
-<main id="teaScenes" class="tea-scenes"></main>
-
-<!-- Modal 詳情 -->
 <div id="teaModal" class="tea-modal" aria-hidden="true">
   <div class="tea-modal-bg"></div>
   <div class="tea-modal-content">
     <header class="tea-modal-header">
-      <h2 id="modalTitle">茶品詳情</h2>
+      <h2 id="modalTitle"></h2>
       <button id="closeModalBtn" class="close-btn">✕</button>
     </header>
     <div id="teaCollection" class="tea-collection"></div>
   </div>
 </div>
+
+<!-- 霧層背景 -->
+<div class="tea-bg-mist"></div>
 
 
 
@@ -341,5 +345,19 @@
 
     <!-- 主 JS（指向 /api/*） -->
   <script type="module" src="assets/js/app.js"></script>
+  <!-- GSAP -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js"></script>
+
+  <!-- Embla Carousel -->
+  <script src="https://cdn.jsdelivr.net/npm/embla-carousel@8.0.0/embla.carousel.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/embla-carousel-autoplay@8.0.0/embla.carousel.autoplay.umd.js"></script>
+
+  <!-- iOS Modal（可選，已整合） -->
+  <script src="https://cdn.jsdelivr.net/npm/body-scroll-lock/lib/bodyScrollLock.min.js"></script>
+
+
+
+
 </body>
 </html>

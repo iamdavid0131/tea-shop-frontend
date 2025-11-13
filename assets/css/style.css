@@ -131,282 +131,628 @@ html,body{
   60% { width: 72px; opacity: 1; }
   100% { width: 68px; }
 }
-/* ============================================================
-🍵 tea.css — 祥興自然霧設計系統（固定漸變版）
-============================================================ */
 
-/* === 全域設定 === */
-:root {
-  --mist-green: #8edcb1;
-  --mist-gold: #f5be46;
-  --mist-warm: #f3ba69;
-  --mist-red: #f7987e;
-  --mist-white: #f4f2e6;
-  --mist-honey: #f8ddab;
-  --transition-smooth: cubic-bezier(0.25, 1, 0.4, 1);
-  --radius-lg: 18px;
-  --shadow-soft: 0 6px 20px rgba(90,123,104,0.08);
-  --blur-bg: blur(18px) saturate(140%);
-  --text-dark: #2e3e35;
-  --accent-green: #305c46;
-  font-family: system-ui, "PingFang TC", "Noto Sans TC", sans-serif;
+/* ============================================================
+🌿 祥興自然霧・Apple Design System — 基礎樣式
+============================================================ */
+/* ============================================================
+🌌 祥興自然霧 Aurora Mist — 極光茶霧系統
+============================================================ */
+.aurora-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: #f6f5f2;
 }
 
-/* === 背景柔霧層 === */
+/* ✨ 三層極光光霧 */
+.aurora-layer {
+  position: absolute;
+  width: 160%;
+  height: 160%;
+  top: -30%;
+  left: -30%;
+  opacity: 0.38;
+  filter: blur(120px);
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(255,255,255,0.4),
+    rgba(0,0,0,0)
+  );
+  mix-blend-mode: screen;
+  transform: translate3d(0,0,0);
+}
+
+/* 三層不同起點 */
+.layer-1 { opacity: 0.32; }
+.layer-2 { opacity: 0.28; }
+.layer-3 { opacity: 0.24; }
+
+/* iOS 阻止縮放抖動 */
+@supports (-webkit-touch-callout: none) {
+  .aurora-layer {
+    will-change: transform;
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
+  }
+}
+
+/* ---- 全域變數 ---- */
+:root {
+  --mist-glass: rgba(255,255,255,0.65);
+  --mist-border: rgba(180,195,185,0.35);
+  --mist-shadow: rgba(80,110,90,0.10);
+
+  --tea-green-light: #e8f3ed;
+  --tea-green-deep: #cfe7db;
+  --tea-gold-soft: #f3e7c6;
+  --tea-rose: #f2e6e4;
+
+  --radius-lg: 20px;
+  --radius-md: 14px;
+
+  --blur-lg: blur(18px);
+  --blur-md: blur(12px);
+
+  --ease-soft: cubic-bezier(.25,1,.4,1);
+}
+
+/* ---- 頁面底層 ---- */
+body {
+  background: #f7f8f7;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, "PingFang TC", "Noto Sans TC", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ============================================================
+🌫️ 自然霧背景（會隨分類切換）
+============================================================ */
 .tea-bg-mist {
   position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: linear-gradient(135deg, var(--mist-green), var(--mist-gold));
-  opacity: 0.85;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
   z-index: -1;
-  filter: blur(60px);
-  transition: background 1.2s var(--transition-smooth);
+
+  background: linear-gradient(135deg, #e8f3ed, #f7f2e7);
+  transition: background 0.8s var(--ease-soft);
+
+  /* Apple 霧面 */
+  backdrop-filter: blur(18px) saturate(140%);
+  pointer-events: none;
 }
 
-/* === Scroll Scene 主區 === */
+/* ============================================================
+🏞️ 主場景：橫向 scroll-snap 分類
+============================================================ */
 .tea-scenes {
   display: flex;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+
   gap: 24px;
-  padding: 16px;
-  scroll-behavior: smooth;
+  padding: 24px 20px;
 }
+
+.tea-scenes::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---- 單一分類場景 ---- */
 .tea-scene {
-  flex: 0 0 90%;
-  scroll-snap-align: center;
-  background: rgba(255,255,255,0.8);
-  backdrop-filter: var(--blur-bg);
+  flex: 0 0 92%;
+  scroll-snap-align: start;
+
+  padding: 18px;
   border-radius: var(--radius-lg);
-  padding: 20px 16px 32px;
-  box-shadow: var(--shadow-soft);
-  transition: all 0.4s var(--transition-smooth);
+
+  background: var(--mist-glass);
+  border: 1px solid var(--mist-border);
+  box-shadow: 0 6px 18px var(--mist-shadow);
+  backdrop-filter: blur(16px) saturate(135%);
+
+  transition: transform 0.4s var(--ease-soft);
 }
+
+.tea-scene:active {
+  transform: scale(0.985);
+}
+
+/* ============================================================
+📌 分類 Header（zh + en）
+============================================================ */
 .tea-scene-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 1.25rem;
+
+  margin-bottom: 14px;
+  padding: 6px 2px;
+}
+
+.tea-scene-header .title-zh {
+  font-size: 22px;
   font-weight: 700;
-  color: var(--accent-green);
-  margin-bottom: 12px;
+  letter-spacing: 0.5px;
+  color: #2f4b3c;
 }
-.tea-scene-header .see-all {
-  font-size: 0.9rem;
-  color: #6c8778;
+
+.tea-scene-header .title-en {
+  font-size: 13px;
+  opacity: 0.6;
+  letter-spacing: 0.4px;
+}
+
+/* ---- 查看更多 ---- */
+.see-all {
+  font-size: 14px;
+  color: #0a7a45;
+  font-weight: 600;
   cursor: pointer;
-  transition: color 0.2s ease;
+  user-select: none;
+  transition: opacity .25s ease;
 }
-.tea-scene-header .see-all:hover { color: var(--accent-green); }
+.see-all:hover {
+  opacity: 0.7;
+}
+/* ============================================================
+🍵 茶卡片（tea-card）
+============================================================ */
+
+.tea-card {
+  width: 180px;
+  flex: 0 0 auto;
+  padding: 18px 16px;
+  border-radius: var(--radius-md);
+
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(170,190,180,0.28);
+  box-shadow: 0 6px 16px rgba(90,123,104,0.06);
+  backdrop-filter: blur(14px);
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  cursor: pointer;
+  transition: transform .35s var(--ease-soft),
+              box-shadow .35s var(--ease-soft),
+              background .35s var(--ease-soft);
+}
+
+.tea-card:active {
+  transform: scale(0.97);
+}
+
+.tea-card:hover {
+  transform: translateY(-4px);
+  background: rgba(255,255,255,0.92);
+  box-shadow: 0 10px 24px rgba(90,123,104,0.10);
+}
+
+/* ---- 茶名 ---- */
+.tea-card .title {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #2f4b3c;
+}
+
+/* ---- 副標、描述 ---- */
+.tea-card .meta {
+  font-size: 13px;
+  opacity: 0.65;
+}
+
+/* ============================================================
+📜 查看更多卡片（view-more-card）
+============================================================ */
+
+.view-more-card {
+  width: 120px;
+  flex: 0 0 auto;
+
+  padding: 20px 12px;
+  text-align: center;
+
+  border-radius: var(--radius-md);
+  background: rgba(255,255,255,0.65);
+  border: 1px dashed rgba(150,170,160,0.35);
+  color: #305c46;
+
+  font-weight: 600;
+  letter-spacing: 1px;
+
+  backdrop-filter: blur(14px);
+  cursor: pointer;
+
+  transition: background .25s, transform .25s;
+}
+
+.view-more-card:hover {
+  background: rgba(255,255,255,0.8);
+  transform: translateY(-2px);
+}
+
+.view-more-card:active {
+  transform: scale(0.96);
+}
+
+/* ============================================================
+↔️ 橫向 scroll 區域（tea-scroll）
+============================================================ */
 
 .tea-scroll {
   display: flex;
-  gap: 16px;
   overflow-x: auto;
+  gap: 14px;
+  padding-bottom: 6px;
   scroll-snap-type: x proximity;
-  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* === 卡片 === */
+.tea-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+.tea-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.15);
+  border-radius: 8px;
+}
+
+/* ============================================================
+🌫️ 卡片的自然霧光效果（hover 時滑動亮片）
+============================================================ */
+
+.tea-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background: linear-gradient(
+    115deg,
+    rgba(255,255,255,0.25) 0%,
+    rgba(255,255,255,0) 60%
+  );
+  opacity: 0;
+
+  transition: opacity .4s var(--ease-soft),
+              transform .7s var(--ease-soft);
+  transform: translateX(-20%);
+  pointer-events: none;
+}
+
+.tea-card:hover::after {
+  opacity: 1;
+  transform: translateX(40%);
+}
+
+/* ============================================================
+📌 卡片動畫（進場）
+============================================================ */
+
+@keyframes cardFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .tea-card {
-  flex: 0 0 180px;
-  background: rgba(255,255,255,0.9);
-  backdrop-filter: blur(8px);
-  border-radius: 16px;
-  padding: 14px 12px;
-  box-shadow: 0 3px 10px rgba(80,110,90,0.1);
-  transition: all 0.25s ease;
-  scroll-snap-align: start;
+  animation: cardFadeUp .6s var(--ease-soft) both;
 }
-.tea-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 18px rgba(80,110,90,0.15);
-}
-.tea-card .title {
-  font-weight: 700;
-  font-size: 1rem;
-  color: var(--text-dark);
-}
-.tea-card .meta {
-  font-size: 0.9rem;
-  color: #667e6c;
-  margin-top: 4px;
-}
+/* ============================================================
+📱 TEA MODAL（iOS Card Sheet）
+============================================================ */
 
-/* === Modal === */
 .tea-modal {
   position: fixed;
   inset: 0;
   display: flex;
   justify-content: center;
-  align-items: center;
-  visibility: hidden;
+  align-items: flex-end;
+
+  pointer-events: none;
   opacity: 0;
-  transition: all 0.35s var(--transition-smooth);
-  z-index: 200;
+
+  transition: opacity .35s ease;
+  z-index: 1000;
 }
+
 .tea-modal.show {
-  visibility: visible;
+  pointer-events: auto;
   opacity: 1;
 }
+
+/* 背景半透明 */
 .tea-modal-bg {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.25);
-  backdrop-filter: blur(6px);
+  background: rgba(0,0,0,0.28);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity .35s ease;
 }
+.tea-modal.show .tea-modal-bg {
+  opacity: 1;
+}
+
+/* ---- 內容（iOS 上滑 card） ---- */
 .tea-modal-content {
-  position: relative;
-  width: min(680px, 90%);
-  max-height: 80vh;
-  overflow-y: auto;
-  background: rgba(255,255,255,0.9);
-  backdrop-filter: blur(16px);
-  border-radius: 18px;
-  box-shadow: 0 8px 28px rgba(0,0,0,0.15);
-  animation: modalSlide 0.6s var(--transition-smooth);
+  width: 100%;
+  max-height: 88%;
+  background: rgba(255,255,255,0.88);
+  border-radius: 24px 24px 0 0;
+  padding-bottom: 30px;
+
+  backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: 0 -6px 24px rgba(0,0,0,0.12);
+
+  transform: translateY(100%);
+  transition: transform .45s var(--ease-soft);
 }
-@keyframes modalSlide {
-  from { transform: translateY(40px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+
+.tea-modal.show .tea-modal-content {
+  transform: translateY(0);
 }
+
+/* Header */
 .tea-modal-header {
+  padding: 18px 22px 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 18px;
-  border-bottom: 1px solid rgba(150,150,150,0.1);
-}
-.close-btn {
-  border: none;
-  background: transparent;
-  font-size: 1.5rem;
-  color: #666;
-  cursor: pointer;
-}
-.tea-collection {
-  padding: 20px 16px 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
+
+  border-bottom: 1px solid rgba(0,0,0,0.08);
 }
 
-/* === ItemCard === */
-.itemcard {
-  background: rgba(255,255,255,0.85);
-  border-radius: 16px;
-  padding: 18px 16px;
-  box-shadow: 0 3px 10px rgba(90,123,104,0.08);
-  transition: all 0.25s ease;
-}
-.itemcard .title {
+#modalTitle {
+  font-size: 20px;
   font-weight: 700;
-  font-size: 1.1rem;
-  color: var(--text-dark);
+  color: #2f4b3c;
 }
+
+.close-btn {
+  font-size: 24px;
+  opacity: 0.6;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: opacity .2s;
+}
+.close-btn:hover { opacity: 0.9; }
+/* ============================================================
+🛍️ TEA COLLECTION（Modal 商品列表）
+============================================================ */
+
+.tea-collection {
+  padding: 18px 16px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+/* ============================================================
+📦 ITEMCARD（Modal 版本）
+============================================================ */
+
+.itemcard {
+  background: rgba(255,255,255,0.82);
+  border: 1px solid rgba(160,180,165,0.25);
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: 0 6px 16px rgba(80,110,90,0.06);
+  backdrop-filter: blur(10px);
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  position: relative;
+  animation: fadeSlideIn .45s var(--ease-soft);
+}
+
+.itemcard .title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2f4b3c;
+}
+
+.itemcard .meta {
+  font-size: 14px;
+  opacity: 0.75;
+}
+/* ============================================================
+➕➖ 數量控制（plus / minus + input）
+============================================================ */
+
 .qty-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 12px;
+  margin-top: 4px;
 }
-.qty-input {
-  width: 50px;
-  text-align: center;
-  font-size: 1rem;
-  border: none;
-  border-radius: 8px;
-  background: rgba(240,240,240,0.6);
-  padding: 4px;
-  font-weight: 600;
-}
-.qty-btn {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  border: 1px solid rgba(160,180,170,0.4);
-  background: #fff;
-  cursor: pointer;
-  font-size: 1.2rem;
-  color: var(--accent-green);
-  transition: all 0.2s ease;
-}
-.qty-btn:hover { background: #f4f8f5; }
 
-/* === Pack Row === */
-.pack-row {
+.qty-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+
+  background: linear-gradient(145deg,#fafcfa,#eef3ef);
+  border: 1.5px solid rgba(160,180,165,0.4);
+
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-top: 12px;
-  padding: 8px 10px;
-  border-radius: 14px;
-  background: rgba(255,255,255,0.6);
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+  justify-content: center;
+
+  font-size: 20px;
+  font-weight: 600;
+  color: #2f4b3c;
+
+  cursor: pointer;
+  transition: all .2s ease;
 }
+
+.qty-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 6px rgba(90,123,104,0.15);
+}
+
+.qty-btn:active {
+  transform: scale(.9);
+}
+
+.qty-input {
+  width: 48px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #2f4b3c;
+
+  padding: 6px 4px;
+  border-radius: 8px;
+  border: 1px solid rgba(170,190,180,0.4);
+  background: rgba(255,255,255,0.75);
+
+  text-align: center;
+}
+.qty-input:focus { outline: none; border-color: #659f80; }
+/* ============================================================
+🫖 裝罐區（Pack Row）
+============================================================ */
+
+.pack-row {
+  margin-top: 6px;
+  padding: 10px 12px;
+
+  border-radius: 14px;
+  background: rgba(255,255,255,0.75);
+  border: 1px solid rgba(170,190,180,0.28);
+  box-shadow: 0 3px 10px rgba(80,110,90,0.05);
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  transition: background .3s ease, box-shadow .3s ease;
+}
+
+.pack-row:hover {
+  background: rgba(255,255,255,0.88);
+  box-shadow: 0 6px 16px rgba(90,123,104,0.1);
+}
+
+.pack-toggle {
+  font-weight: 700;
+  color: #305c46;
+}
+
+/* +/- */
 .pack-qty {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 .pack-qty.hidden { display: none; }
-.pack-qty .step {
-  width: 32px; height: 32px;
-  border-radius: 50%;
-  border: 1px solid rgba(160,180,170,0.4);
-  background: #fff;
-  font-size: 1rem;
-  color: var(--accent-green);
-  cursor: pointer;
-}
 
-/* === 詳細說明 === */
+.pack-qty input {
+  width: 40px;
+  text-align: center;
+  border-radius: 8px;
+  border: 1px solid rgba(170,190,180,0.4);
+}
+/* ============================================================
+📘 詳細說明（Detail Block）
+============================================================ */
+
 .detailblock {
-  margin-top: 12px;
-  border-top: 1px dashed rgba(0,0,0,0.1);
-  padding-top: 10px;
-  line-height: 1.6;
-  font-size: 0.95rem;
-  color: #444;
+  overflow: hidden;
   max-height: 0;
   opacity: 0;
-  overflow: hidden;
-  transition: all 0.3s var(--transition-smooth);
+
+  background: #fafafa;
+  border-radius: 12px;
+  padding: 0 14px;
+
+  border: 1px dashed rgba(0,0,0,0.08);
+
+  transform: translateY(6px);
+  transition: all .35s var(--ease-soft);
 }
+
 .detailblock.open {
-  max-height: 500px;
+  padding: 14px;
+  opacity: 1;
+  max-height: 700px;
+  transform: translateY(0);
+}
+
+.detailblock p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #333;
+}
+/* ============================================================
+🌈 Profile 五格茶性格條
+============================================================ */
+
+.profile-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.profile-bar {
+  display: flex;
+  gap: 6px;
+}
+
+.profile-bar .blk {
+  width: 14px;
+  height: 18px;
+  border-radius: 5px;
+  background: #e5e5e5;
+  opacity: 0.5;
+  transition: opacity .25s, transform .25s;
+}
+
+.profile-bar .blk.on {
+  background: linear-gradient(90deg,#8dd3a4,#4dac7f);
   opacity: 1;
 }
 .more-btn {
   margin-top: 10px;
-  border: 1px solid rgba(170,190,175,0.4);
+  padding: 10px 14px;
+
+  width: 100%;
+  border-radius: 8px;
+
   background: #fff;
-  border-radius: 10px;
-  padding: 6px 10px;
+  border: 1px solid #ddd;
+
+  font-size: 15px;
   font-weight: 600;
-  font-size: 0.95rem;
-  color: var(--accent-green);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.more-btn.active {
-  background: rgba(232,243,237,0.8);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+
+  transition: all .25s ease;
 }
 
-/* === Profile 條 === */
-.profile-blocks { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
-.bar { display: flex; align-items: center; justify-content: space-between; }
-.bar b { min-width: 48px; color: #333; font-size: 0.9rem; }
-.profile-bar { display: flex; gap: 4px; }
-.blk {
-  width: 14px; height: 16px;
-  background: #e1e1e1;
-  border-radius: 4px;
-  transition: all 0.3s ease;
-}
-.blk.on {
-  background: linear-gradient(90deg,#8fd0a4,#4fa372);
-  box-shadow: 0 0 6px rgba(90,160,120,0.4);
+.more-btn.active {
+  background: #e9f7ef;
+  border-color: #bce4c8;
+  color: #0a7a45;
 }
 
 
