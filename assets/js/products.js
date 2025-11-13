@@ -220,11 +220,12 @@ function renderSingleProduct(p, container) {
           裝罐
         </label>
         <div class="pack-qty hidden" id="packQtyWrap-${p.id}">
-          <button class="step" data-pack="${p.id}" data-dir="minus">−</button>
+          <button class="step" data-dir="minus" data-pack="${p.id}">−</button>
           <input type="number" id="packQty-${p.id}" value="0" min="0">
-          <button class="step" data-pack="${p.id}" data-dir="plus">＋</button>
+          <button class="step" data-dir="plus" data-pack="${p.id}">＋</button>
         </div>
-      </div>`
+      </div>
+    `
     : "";
 
   item.innerHTML = `
@@ -234,27 +235,25 @@ function renderSingleProduct(p, container) {
 
       <div class="qty-row">
         <button class="qty-btn" data-id="${p.id}" data-dir="minus">−</button>
-        <input type="number" id="qty-${p.id}" class="qty-input" value="0" min="0">
+        <input class="qty-input" id="qty-${p.id}" type="number" value="0" min="0">
         <button class="qty-btn" data-id="${p.id}" data-dir="plus">＋</button>
       </div>
 
       ${packHtml}
 
-      <button class="more-btn" data-id="${p.id}">
-        <span>詳細說明</span>
-        <span class="arrow">▾</span>
-      </button>
-
-      <div class="detailblock" id="detail-${p.id}">
+      <!-- 🔥 正確的 detailblock（只有一層） -->
+      <div class="detailblock open" id="detail-${p.id}">
         ${p.story ? `<p>${p.story}</p>` : ""}
         ${renderProfileGroup(p)}
       </div>
-    `;
+  `;
 
   container.appendChild(item);
 
+  // 初始化裝罐狀態
   setTimeout(() => updatePackUI(p.id), 30);
 }
+
 
 // ============================================================
 // 🟩 Profile 條
