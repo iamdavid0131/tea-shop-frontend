@@ -182,35 +182,33 @@ export function renderProducts(items) {
     el.style.setProperty("--delay", `${i * 0.1}s`);
   });
 }
-
 // ============================================================
-// 分類展開收合（柔和模式 / 茶霧流動動畫）
+// 分類展開收合（修正版：避免重複宣告 body）
 // ============================================================
 document.addEventListener("click", (e) => {
   const header = e.target.closest(".category-header");
   if (!header) return;
 
-  const body = header.nextElementSibling;
+  const sectionBody = header.nextElementSibling; // 改名避免與其他衝突
   const isOpen = header.classList.contains("open");
 
-  // 收起其他分類
+  // 關閉其他分類
   document.querySelectorAll(".category-header").forEach((h) => {
     if (h !== header) h.classList.remove("open");
   });
   document.querySelectorAll(".category-body").forEach((b) => {
-    if (b !== body) b.classList.remove("open");
+    if (b !== sectionBody) b.classList.remove("open");
   });
 
   // 開關目前分類
   if (!isOpen) {
     header.classList.add("open");
-    body.classList.add("open");
+    sectionBody.classList.add("open");
   } else {
     header.classList.remove("open");
-    body.classList.remove("open");
+    sectionBody.classList.remove("open");
   }
 });
-
 
 // ============================================================
 // 商品詳情收合（同分類可多開 / 穩定滑動）
