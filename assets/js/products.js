@@ -443,7 +443,7 @@ document.addEventListener("click", (e) => {
 // ============================================================
 // 🫧 Brew Guide（泡法）
 // ============================================================
-function renderBrewSection(p) {
+function renderBrewGuide(p) {
   const hot = [
     ["茶葉量", p.brew_hot_grams ? `${p.brew_hot_grams} g` : null],
     ["熱水量", p.brew_hot_water_ml ? `${p.brew_hot_water_ml} ml` : null],
