@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // ✅ 渲染商品區
     renderTeaScenes();
-    initTeaModal();
+    initTeaModal(CONFIG.PRODUCTS);
 
     // 🟢 「裝罐」按鈕事件
     document.querySelectorAll(".pack-btn").forEach(btn => {

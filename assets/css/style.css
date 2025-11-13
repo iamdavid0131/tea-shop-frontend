@@ -231,9 +231,10 @@ body {
 🏞️ 主場景：橫向 scroll-snap 分類
 ============================================================ */
 .tea-scenes {
+  position: relative;
   display: flex;
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: visible;
   flex-direction: column;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
