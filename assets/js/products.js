@@ -1,6 +1,7 @@
 // ============================================================
-// 🍃 products.js — Aurora Mist（極光茶霧）版（修正版）
+// 🍃 products.js — Aurora Mist（極光茶霧）完整版（Final）
 // ============================================================
+
 import { $, $$ } from "./dom.js";
 import { updatePackUI, initQtyControls } from "./qty.js";
 import { CATEGORY_MAP } from "./category-map.js";
@@ -20,11 +21,12 @@ const AURORA = {
 
     if (!window.gsap || this.layers.length === 0) return;
 
+    // 🌫️ 基礎漂浮（超慢 + 平滑）
     this.layers.forEach((layer, i) => {
       gsap.to(layer, {
-        x: "+=80",
-        y: "+=40",
-        duration: 24 + i * 6,
+        x: "+=90",
+        y: "+=50",
+        duration: 26 + i * 6,
         repeat: -1,
         yoyo: true,
         ease: "sine.inOut",
@@ -32,25 +34,26 @@ const AURORA = {
     });
   },
 
-  /** 分類切換時的光霧推動效果 */
-  push(colorA, colorB) {
+  /** 依分類切換極光色系 */
+  setColor(colorA, colorB) {
     if (!window.gsap || this.layers.length === 0) return;
 
     this.layers.forEach((layer, i) => {
       gsap.to(layer, {
-        background: `radial-gradient(circle at 30% 30%, ${colorA}, transparent 70%)`,
-        duration: 1.6,
+        background: `radial-gradient(circle at 30% 30%, ${colorA}, ${colorB}, transparent 70%)`,
+        duration: 1.8,
         ease: "sine.out",
       });
 
+      // 小幅度推動
       gsap.to(layer, {
-        x: "+=120",
+        x: "+=100",
         duration: 2 + i * 0.2,
         ease: "power1.out",
       });
 
       gsap.to(layer, {
-        x: "-=90",
+        x: "-=70",
         delay: 2,
         duration: 3 + i * 0.3,
         ease: "power2.out",
@@ -60,12 +63,13 @@ const AURORA = {
 };
 
 // ============================================================
-// 🟩 主畫面渲染（直向分類 + 橫向卡片）
+// 🟩 主畫面渲染（縱向分類 + 橫向卡片）
 // ============================================================
 export function renderTeaScenes() {
   const items = CONFIG.PRODUCTS || [];
   const container = $("teaScenes");
   if (!container) return;
+
   container.innerHTML = "";
 
   // 分類分組
@@ -75,7 +79,7 @@ export function renderTeaScenes() {
     categories[p.category].push(p);
   });
 
-  // 依 CATEGORY_MAP 排序 & 套詩意名稱
+  // 排序 & 加上詩意分類名稱
   const sortedCats = CATEGORY_MAP
     .map((c) => ({
       ...c,
@@ -87,7 +91,6 @@ export function renderTeaScenes() {
   // 初始化極光
   AURORA.init();
 
-  // 每一個分類一個 section（縱向排）
   sortedCats.forEach((cat) => {
     const sec = document.createElement("section");
     sec.className = "tea-scene";
@@ -97,15 +100,13 @@ export function renderTeaScenes() {
       <header class="tea-scene-header">
         <div class="cat-zh">${cat.title_zh}</div>
         <div class="cat-en">${cat.title_en}</div>
-        <button class="see-all" data-cat="${cat.key}">查看全部 ▸</button>
       </header>
 
       <div class="tea-scroll">
         ${cat.list
-          .slice(0, 8)
           .map(
             (p) => `
-          <article class="tea-card">
+          <article class="tea-card" data-id="${p.id}" data-cat="${cat.key}">
             <div class="title">${p.title}</div>
             <div class="meta">${p.tagline || ""}</div>
             <div class="meta price-line">NT$ ${p.price} / ${p.unit || ""}</div>
@@ -113,98 +114,106 @@ export function renderTeaScenes() {
         `
           )
           .join("")}
-        <button class="view-more-card see-all" data-cat="${cat.key}">
-          更多
-        </button>
       </div>
     `;
 
     container.appendChild(sec);
   });
 
-  // 🟢 改用「視窗捲動」偵測目前分類 → Aurora 變色
+  // 🔥 捲動分類 → 更新霧光
   const scenes = $$(".tea-scene");
-  if (scenes.length === 0) return;
 
-  const updateAuroraByScroll = () => {
-    let activeCatKey = null;
-    let minOffset = Infinity;
+  const updateAurora = () => {
+    let best = null;
+    let minDist = Infinity;
 
     scenes.forEach((sec) => {
       const rect = sec.getBoundingClientRect();
-      const centerOffset = Math.abs(rect.top + rect.height / 2 - window.innerHeight / 2);
-      if (centerOffset < minOffset) {
-        minOffset = centerOffset;
-        activeCatKey = sec.dataset.cat;
+      const mid = rect.top + rect.height / 2;
+      const dist = Math.abs(mid - window.innerHeight / 2);
+
+      if (dist < minDist) {
+        minDist = dist;
+        best = sec.dataset.cat;
       }
     });
 
-    const cfg = CATEGORY_MAP.find((c) => c.key === activeCatKey);
-    if (cfg && cfg.colorA && cfg.colorB) {
-      AURORA.push(cfg.colorA, cfg.colorB);
-    }
+    const cfg = CATEGORY_MAP.find((c) => c.key === best);
+    if (cfg) AURORA.setColor(cfg.colorA, cfg.colorB);
   };
 
-  // 初始觸發一次
-  updateAuroraByScroll();
-  window.addEventListener("scroll", updateAuroraByScroll, { passive: true });
+  updateAurora();
+  window.addEventListener("scroll", updateAurora, { passive: true });
 }
 
 // ============================================================
-// 🟩 Modal（查看全部）
+// 🟩 單品 Modal（點茶卡開啟）
 // ============================================================
-export function initTeaModal(items) {
+export function initTeaModal() {
   const modal = $("teaModal");
-  const modalContent = $("teaCollection");
+  const modalC = $("teaCollection");
   const modalTitle = $("modalTitle");
   const closeBtn = $("closeModalBtn");
   const modalBg = $(".tea-modal-bg");
 
-  if (!modal || !modalContent || !modalTitle) return;
+  if (!modal || !modalC) return;
 
+  // —— 打開 Modal：點單一個商品卡 ——
   document.addEventListener("click", (e) => {
-    const trigger = e.target.closest(".see-all");
-    if (!trigger) return;
+    const card = e.target.closest(".tea-card");
+    if (!card) return;
 
-    const cat = trigger.dataset.cat;
-    const list = (items || []).filter((p) => p.category === cat);
+    const id = card.dataset.id;
+    const product = CONFIG.PRODUCTS.find((p) => p.id == id);
+    if (!product) return;
+
+    const catInfo = CATEGORY_MAP.find((c) => c.key === card.dataset.cat);
 
     modal.classList.add("show");
     modal.setAttribute("aria-hidden", "false");
 
-    const catInfo = CATEGORY_MAP.find((c) => c.key === cat);
     modalTitle.textContent =
-      `${catInfo?.title_zh || cat}` +
-      (catInfo?.title_en ? ` ｜ ${catInfo.title_en}` : "");
+      `${product.title}｜${catInfo?.title_zh || ""}`;
 
-    renderTeaCollection(list, modalContent);
+    renderSingleProduct(product, modalC);
 
-    // 初始化 qty + pack
+    // 初始化 qty / pack
     setTimeout(() => initQtyControls(), 50);
+
+    // 自動展開詳細說明
+    const detail = modalC.querySelector(".detailblock");
+    const btn = modalC.querySelector(".more-btn");
+    if (detail && btn) {
+      detail.classList.add("open");
+      btn.classList.add("active");
+    }
+
+    // Aurora 變色
+    AURORA.setColor(catInfo?.colorA, catInfo?.colorB);
   });
 
+  // —— 關閉 Modal ——
   const close = () => {
     modal.classList.remove("show");
     modal.setAttribute("aria-hidden", "true");
-    modalContent.innerHTML = "";
+    modalC.innerHTML = "";
     modalTitle.textContent = "";
   };
 
-  [closeBtn, modalBg].forEach((el) => el && el.addEventListener("click", close));
+  [modalBg, closeBtn].forEach((el) => el?.addEventListener("click", close));
 }
 
 // ============================================================
-// 🟩 Modal 內商品渲染
+// 🟩 Modal 內單品渲染
 // ============================================================
-function renderTeaCollection(list, container) {
+function renderSingleProduct(p, container) {
   container.innerHTML = "";
 
-  (list || []).forEach((p) => {
-    const item = document.createElement("article");
-    item.className = "itemcard";
+  const item = document.createElement("article");
+  item.className = "itemcard";
 
-    const packHtml = p.packable
-      ? `
+  const packHtml = p.packable
+    ? `
       <div class="pack-row">
         <label class="pack-toggle">
           <input type="checkbox" id="pack-${p.id}">
@@ -216,12 +225,12 @@ function renderTeaCollection(list, container) {
           <button class="step" data-pack="${p.id}" data-dir="plus">＋</button>
         </div>
       </div>`
-      : "";
+    : "";
 
-    item.innerHTML = `
+  item.innerHTML = `
       <div class="title">${p.title}</div>
       <div class="meta">${p.tagline || ""}</div>
-      <div class="meta price-line">NT$ ${p.price} / ${p.unit || ""}</div>
+      <div class="meta price-line">NT$ ${p.price} / ${p.unit}</div>
 
       <div class="qty-row">
         <button class="qty-btn" data-id="${p.id}" data-dir="minus">−</button>
@@ -242,9 +251,9 @@ function renderTeaCollection(list, container) {
       </div>
     `;
 
-    container.appendChild(item);
-    setTimeout(() => updatePackUI(p.id), 50);
-  });
+  container.appendChild(item);
+
+  setTimeout(() => updatePackUI(p.id), 30);
 }
 
 // ============================================================
@@ -260,7 +269,7 @@ function renderProfileGroup(p) {
     p.profile_finish,
   ];
 
-  if (!values.some((v) => v != null && v !== "")) return "";
+  if (!values.some((v) => v)) return "";
 
   return `
     <div class="profile-blocks">
@@ -297,11 +306,115 @@ document.addEventListener("click", (e) => {
 
   const isOpen = block.classList.contains("open");
 
-  $$(".detailblock").forEach((el) => el.classList.remove("open"));
-  $$(".more-btn").forEach((el) => el.classList.remove("active"));
+  // 只閉合其它項目的，不關自己的
+  $$(".detailblock").forEach((el) => {
+    if (el !== block) el.classList.remove("open");
+  });
+
+  $$(".more-btn").forEach((el) => {
+    if (el !== btn) el.classList.remove("active");
+  });
 
   if (!isOpen) {
     btn.classList.add("active");
     block.classList.add("open");
   }
 });
+
+// ============================================================
+// 👆 Aurora Modal 手勢關閉（iOS 阻尼 + 背景淡出 + 霧層位移）
+// ============================================================
+
+(function initModalSwipeClose() {
+  const modal = document.getElementById("teaModal");
+  const content = document.querySelector(".tea-modal-content");
+  const bg = document.querySelector(".tea-modal-bg");
+  const auroraLayers = [
+    document.querySelector(".layer-1"),
+    document.querySelector(".layer-2"),
+    document.querySelector(".layer-3"),
+  ].filter(Boolean);
+
+  if (!modal || !content) return;
+
+  let startY = 0;
+  let currentY = 0;
+  let dragging = false;
+  let threshold = 80;
+
+  // —— iOS 阻尼曲線 —— //
+  const rubber = (dy) => {
+    const limit = 180; // 最高阻尼距離
+    return (dy * 0.5 * limit) / (dy + limit);
+  };
+
+  // 開始
+  content.addEventListener("touchstart", (e) => {
+    if (content.scrollTop <= 0) {
+      dragging = true;
+      startY = e.touches[0].clientY;
+      content.style.transition = "none";
+      if (bg) bg.style.transition = "none";
+
+      auroraLayers.forEach((l) => (l.style.transition = "none"));
+    }
+  });
+
+  // 移動
+  content.addEventListener("touchmove", (e) => {
+    if (!dragging) return;
+    const dy = e.touches[0].clientY - startY;
+
+    if (dy > 0) {
+      currentY = rubber(dy);
+
+      // Content panel 下移
+      content.style.transform = `translateY(${currentY}px)`;
+
+      // 背景淡出
+      if (bg) {
+        const opacity = Math.max(0, 0.7 - currentY / 300);
+        bg.style.opacity = opacity;
+      }
+
+      // Aurora Mist 位移（更高級感）
+      auroraLayers.forEach((layer, i) => {
+        const offset = currentY * (0.05 + i * 0.03);
+        layer.style.transform = `translateY(${offset}px)`;
+      });
+
+      e.preventDefault();
+    }
+  });
+
+  // 結束
+  content.addEventListener("touchend", () => {
+    if (!dragging) return;
+    dragging = false;
+
+    content.style.transition = "transform 0.25s ease";
+    if (bg) bg.style.transition = "opacity 0.25s ease";
+    auroraLayers.forEach((l) => (l.style.transition = "transform 0.3s ease"));
+
+    if (currentY > threshold) {
+      // 👉 關閉 Modal
+      modal.classList.remove("show");
+      modal.setAttribute("aria-hidden", "true");
+      document.getElementById("teaCollection").innerHTML = "";
+      document.getElementById("modalTitle").textContent = "";
+
+      // Reset
+      content.style.transform = "translateY(0)";
+      if (bg) bg.style.opacity = "0";
+      auroraLayers.forEach((l) => (l.style.transform = "translateY(0)"));
+    } else {
+      // 👉 回彈
+      content.style.transform = "translateY(0)";
+      if (bg) bg.style.opacity = "0.7";
+      auroraLayers.forEach((l) => (l.style.transform = "translateY(0)"));
+    }
+
+    currentY = 0;
+  });
+})();
+

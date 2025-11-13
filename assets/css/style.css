@@ -163,6 +163,7 @@ html,body{
   );
   mix-blend-mode: screen;
   transform: translate3d(0,0,0);
+  pointer-events: none;
 }
 
 /* 三層不同起點 */
@@ -209,23 +210,6 @@ body {
   overflow-x: hidden;
 }
 
-/* ============================================================
-🌫️ 自然霧背景（會隨分類切換）
-============================================================ */
-.tea-bg-mist {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: -1;
-
-  background: linear-gradient(135deg, #e8f3ed, #f7f2e7);
-  transition: background 0.8s var(--ease-soft);
-
-  /* Apple 霧面 */
-  backdrop-filter: blur(18px) saturate(140%);
-  pointer-events: none;
-}
 
 /* ============================================================
 🏞️ 主場景：橫向 scroll-snap 分類
@@ -236,7 +220,6 @@ body {
   overflow-x: hidden;
   overflow-y: visible;
   flex-direction: column;
-  scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
 
   gap: 24px;
@@ -249,7 +232,6 @@ body {
 
 /* ---- 單一分類場景 ---- */
 .tea-scene {
-  flex: 0 0 92%;
   scroll-snap-align: start;
   margin-bottom: 42px;
 
@@ -496,13 +478,15 @@ body {
   max-height: 88%;
   background: rgba(255,255,255,0.88);
   border-radius: 24px 24px 0 0;
-  padding-bottom: 30px;
+  padding-bottom: calc(32px + env(safe-area-inset-bottom));
 
   backdrop-filter: blur(18px) saturate(140%);
   box-shadow: 0 -6px 24px rgba(0,0,0,0.12);
 
   transform: translateY(100%);
   transition: transform .45s var(--ease-soft);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .tea-modal.show .tea-modal-content {
