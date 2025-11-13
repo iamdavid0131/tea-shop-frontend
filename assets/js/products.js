@@ -64,10 +64,10 @@ export function renderProducts(items) {
     body.className = "category-body";
 
     if (i === 0) {
-    header.classList.add("open");
-    body.classList.add("open");
-    } else {
-    body.style.maxHeight = "0";
+        header.classList.add("open");
+        body.classList.add("open");
+        } else {
+        body.style.maxHeight = "0";
     }
 
 
