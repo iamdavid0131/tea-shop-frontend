@@ -715,6 +715,9 @@ body {
 
 .profile-bar .blk.on {
   animation: profileBlink .4s ease-out forwards;
+  background: linear-gradient(90deg, var(--pcolor), color-mix(in srgb, var(--pcolor) 70%, #ffffff));
+  opacity: 1;
+
 }
 
 @keyframes profileBlink {

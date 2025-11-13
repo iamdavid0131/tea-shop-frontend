@@ -28,12 +28,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     CONFIG.PRODUCTS = (cfg.data || []).map(p => ({
       ...p,
       story: p.story || "",
-      profile_sweetness: p.profile?.sweetness || 0,
-      profile_aroma: p.profile?.aroma || 0,
-      profile_roast: p.profile?.roast || 0,
-      profile_body: p.profile?.body || 0,
-      profile_finish: p.profile?.finish || 0,
+
+      // ------- PROFILE 五項 -------
+      profile_sweetness: p.profile?.sweetness ?? p.profile_sweetness ?? 0,
+      profile_aroma:     p.profile?.aroma     ?? p.profile_aroma     ?? 0,
+      profile_roast:     p.profile?.roast     ?? p.profile_roast     ?? 0,
+      profile_body:      p.profile?.body      ?? p.profile_body      ?? 0,
+      profile_finish:    p.profile?.finish    ?? p.profile_finish    ?? 0,
+
+      // ------- 熱泡 Hot Brew -------
+      brew_hot_grams:      p.brew_hot_grams      || "",
+      brew_hot_water_ml:   p.brew_hot_water_ml   || "",
+      brew_hot_temp_c:     p.brew_hot_temp_c     || "",
+      brew_hot_time_s:     p.brew_hot_time_s     || "",
+      brew_hot_infusions:  p.brew_hot_infusions  || "",
+
+      // ------- 冷泡 Cold Brew -------
+      brew_cold_grams:     p.brew_cold_grams     || "",
+      brew_cold_water_ml:  p.brew_cold_water_ml  || "",
+      brew_cold_hours:     p.brew_cold_hours     || "",
     }));
+
 
     // ✅ 渲染商品區
     renderTeaScenes();

@@ -243,7 +243,7 @@ function renderSingleProduct(p, container) {
 
       <div class="detailblock open" id="detail-${p.id}">
         ${p.story ? `<p>${p.story}</p>` : ""}
-        ${renderProfileGroup(p)}
+        ${renderProfileGroup(p, catInfo?.profileColor || "#78cfa8")}
         ${renderBrewGuide(p)}
       </div>
   `;
@@ -281,7 +281,7 @@ function renderSingleProduct(p, container) {
 // ============================================================
 // 🟩 Profile 條
 // ============================================================
-function renderProfileGroup(p) {
+function renderProfileGroup(p, color) {
   const labels = ["甜度", "香氣", "焙火", "厚度", "餘韻"];
   const values = [
     p.profile_sweetness,
@@ -294,26 +294,24 @@ function renderProfileGroup(p) {
   if (!values.some((v) => v)) return "";
 
   return `
-    <div class="profile-blocks">
-      ${labels
-        .map(
-          (label, i) => `
+    <div class="profile-blocks" data-color="${color}">
+      ${labels.map((label, i) => `
         <div class="bar">
           <b>${label}</b>
           <div class="profile-bar">
             ${Array.from({ length: 5 })
-              .map(
-                (_, j) =>
-                  `<div class="blk ${j < (values[i] || 0) ? "on" : ""}"></div>`
+              .map((_, j) =>
+                `<div class="blk ${j < (values[i] || 0) ? "on" : ""}"
+                      style="--pcolor:${color};"></div>`
               )
               .join("")}
           </div>
-        </div>`
-        )
-        .join("")}
+        </div>
+      `).join("")}
     </div>
   `;
 }
+
 
 // ============================================================
 // 🟩 詳細說明切換（Modal 內）
