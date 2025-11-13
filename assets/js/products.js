@@ -175,7 +175,7 @@ export function initTeaModal() {
     modalTitle.textContent =
       `${product.title}｜${catInfo?.title_zh || ""}`;
 
-    renderSingleProduct(product, modalC);
+    renderSingleProduct(product, modalC, catInfo);
 
     // 初始化 qty / pack
     setTimeout(() => initQtyControls(), 50);
@@ -206,7 +206,7 @@ export function initTeaModal() {
 // ============================================================
 // 🟩 Modal 內單品渲染
 // ============================================================
-function renderSingleProduct(p, container) {
+function renderSingleProduct(p, container, catInfo) {
   container.innerHTML = "";
 
   const item = document.createElement("article");
