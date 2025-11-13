@@ -244,23 +244,37 @@ function renderSingleProduct(p, container) {
       <div class="detailblock open" id="detail-${p.id}">
         ${p.story ? `<p>${p.story}</p>` : ""}
         ${renderProfileGroup(p)}
+        ${renderBrewGuide(p)}
       </div>
   `;
 
-  // ⭐ 先插入 DOM
+  // ⭐ 插入 DOM
   container.appendChild(item);
 
-  // 🟩 Profile 條動畫（Stagger 動態進場）
-  setTimeout(() => {
-    const blocks = container.querySelectorAll(".profile-bar .blk.on");
-    blocks.forEach((blk, i) => {
-      blk.style.animationDelay = `${i * 0.08}s`;
-    });
-  }, 30);
+  // ⭐ 初始化裝罐
+  setTimeout(() => updatePackUI(p.id), 20);
 
-  // 初始化裝罐狀態
-  setTimeout(() => updatePackUI(p.id), 30);
+  // ⭐ Profile + Brew Stagger（單一版本，不重複）
+  setTimeout(() => {
+    const animateEls = container.querySelectorAll(
+      "#detail-" + p.id + " .profile-bar .blk.on, #detail-" + p.id + " .brew-row"
+    );
+
+    animateEls.forEach((el, i) => {
+      el.style.opacity = 0;
+      el.style.transform = "translateY(8px)";
+
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          el.style.transition = "opacity .35s var(--ease-soft), transform .35s var(--ease-soft)";
+          el.style.opacity = 1;
+          el.style.transform = "translateY(0)";
+        }, i * 40);
+      });
+    });
+  }, 60);
 }
+
 
 
 
@@ -425,4 +439,67 @@ document.addEventListener("click", (e) => {
     currentY = 0;
   });
 })();
+
+// ============================================================
+// 🫧 Brew Guide（泡法）
+// ============================================================
+function renderBrewSection(p) {
+  const hot = [
+    ["茶葉量", p.brew_hot_grams ? `${p.brew_hot_grams} g` : null],
+    ["熱水量", p.brew_hot_water_ml ? `${p.brew_hot_water_ml} ml` : null],
+    ["水溫", p.brew_hot_temp_c ? `${p.brew_hot_temp_c} °C` : null],
+    ["浸泡時間", p.brew_hot_time_s ? `${p.brew_hot_time_s} 秒` : null],
+    ["可回沖", p.brew_hot_infusions ? `${p.brew_hot_infusions} 次` : null],
+  ].filter((x) => x[1]);
+
+  const cold = [
+    ["茶葉量", p.brew_cold_grams ? `${p.brew_cold_grams} g` : null],
+    ["冷水量", p.brew_cold_water_ml ? `${p.brew_cold_water_ml} ml` : null],
+    ["冷泡時間", p.brew_cold_hours ? `${p.brew_cold_hours} 小時` : null],
+  ].filter((x) => x[1]);
+
+  if (hot.length === 0 && cold.length === 0) return "";
+
+  return `
+    <div class="brew-section open" id="brew-${p.id}">
+
+      <!-- 🔥 熱泡 -->
+      <div class="brew-title">
+        ♨️ 熱泡 Hot Brew
+      </div>
+      ${hot
+        .map(
+          (h) => `
+        <div class="brew-row">
+          <span>${h[0]}</span>
+          <span>${h[1]}</span>
+        </div>
+      `
+        )
+        .join("")}
+
+      <!-- ❄️ 冷泡 -->
+      ${
+        cold.length
+          ? `
+      <div class="brew-title" style="margin-top:12px;">
+        🧊 冷泡 Cold Brew
+      </div>
+      ${cold
+        .map(
+          (c) => `
+        <div class="brew-row">
+          <span>${c[0]}</span>
+          <span>${c[1]}</span>
+        </div>
+      `
+        )
+        .join("")}
+      `
+          : ""
+      }
+
+    </div>
+  `;
+}
 

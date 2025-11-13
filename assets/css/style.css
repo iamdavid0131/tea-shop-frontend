@@ -817,6 +817,64 @@ body {
   color: #0a7a45;
 }
 
+/* ============================================================
+🫖 泡法資訊（Brew Section）
+============================================================ */
+
+.brew-section {
+  background: #fafafa;
+  border-radius: 14px;
+  padding: 0 14px;
+  margin-top: 10px;
+  border: 1px dashed rgba(0,0,0,0.08);
+  overflow: hidden;
+
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: all .35s var(--ease-soft);
+}
+
+.brew-section.open {
+  padding: 14px;
+  max-height: 600px;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.brew-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #226850;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.brew-row {
+  font-size: 14px;
+  line-height: 1.55;
+  padding: 6px 0;
+  display: flex;
+  justify-content: space-between;
+  color: #333;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+
+.brew-row:last-child {
+  border-bottom: none;
+}
+
+/* 冷泡冰塊 Icon */
+.ice-icon {
+  font-size: 15px;
+  display: inline-block;
+  margin-left: 4px;
+  opacity: 0.8;
+}
+
+
 
 /* ============================================================
 🫖 StickyBar 高質感茶系玻璃風格（祥興茶行）
