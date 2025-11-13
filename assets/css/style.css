@@ -128,523 +128,304 @@
   60% { width: 72px; opacity: 1; }
   100% { width: 68px; }
 }
-
 /* ============================================================
 🍵 祥興茶行 — 商品展示區（高質感茶系玻璃風）
 ============================================================ */
 
 /* === 商品區 Grid === */
 .itemlist {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 24px; /* ✅ 增加卡片間距 */
-  padding: 12px 4px;
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+gap: 24px;
+padding: 12px 4px;
 }
 @media (max-width: 900px) {
-  .itemlist {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
+.itemlist { grid-template-columns: 1fr; gap: 20px; }
 }
 
 /* === 單一卡片 === */
 .itemcard {
-  position: relative;
-  padding: 26px 22px 30px;
-  border-radius: 18px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.82))
-      padding-box,
-    linear-gradient(180deg, rgba(160,185,165,0.35), rgba(190,210,195,0.1))
-      border-box;
-  border: 1px solid transparent;
-  box-shadow: 0 6px 18px rgba(80, 110, 90, 0.08);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
-  animation: cardFadeIn 0.8s ease both;
-  backdrop-filter: blur(10px);
-  overflow: visible;
+position: relative;
+padding: 26px 22px 30px;
+border-radius: 18px;
+background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.82)) padding-box,
+linear-gradient(180deg, rgba(160,185,165,0.35), rgba(190,210,195,0.1)) border-box;
+border: 1px solid transparent;
+box-shadow: 0 6px 18px rgba(80,110,90,0.08);
+display: flex;
+flex-direction: column;
+gap: 12px;
+transition: all 0.35s cubic-bezier(.25,1,.4,1);
+animation: cardFadeIn .8s ease both;
+backdrop-filter: blur(10px);
+overflow: visible;
 }
-
-/* === Hover 效果 — 茶光柔亮浮動 === */
 .itemcard:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 22px rgba(80, 110, 90, 0.12);
-  border-color: rgba(120,150,130,0.35);
-  background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.88));
+transform: translateY(-4px);
+box-shadow: 0 10px 22px rgba(80,110,90,0.12);
+border-color: rgba(120,150,130,0.35);
+background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.88));
 }
-
-/* === 茶香滑入閃光 === */
 .itemcard::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -60%;
-  width: 50%;
-  height: 100%;
-  background: linear-gradient(120deg, rgba(255,255,255,0.2), rgba(255,255,255,0));
-  transform: skewX(-25deg);
-  transition: transform 0.8s ease;
-  pointer-events: none;
+content: "";
+position: absolute;
+top: 0; left: -60%;
+width: 50%; height: 100%;
+background: linear-gradient(120deg, rgba(255,255,255,0.2), rgba(255,255,255,0));
+transform: skewX(-25deg);
+transition: transform 0.8s ease;
+pointer-events: none;
 }
-.itemcard:hover::after {
-  transform: translateX(250%) skewX(-25deg);
-}
+.itemcard:hover::after { transform: translateX(250%) skewX(-25deg); }
 
-/* === 標題 === */
-.itemcard .title {
-  font-family: "Noto Serif TC", "PingFang TC", serif;
-  font-weight: 800;
-  font-size: 22px;
-  color: #2f4b3c;
-  letter-spacing: 0.4px;
-  margin-bottom: 4px;
-  background: linear-gradient(90deg, #476b55, #8aa691);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* === 標題（普通 / Sticky 狀態）=== */
+.itemcard .title:not(.stuck) {
+font-family: "Noto Serif TC","PingFang TC",serif;
+font-weight: 800;
+font-size: 22px;
+letter-spacing: .4px;
+background: linear-gradient(90deg,#476b55,#8aa691);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+color: #2f4b3c;
+}
+.itemcard .title.stuck {
+position: sticky;
+top: 114px;
+z-index: 10;
+padding: 8px 12px;
+background: rgba(255,255,255,.86);
+backdrop-filter: blur(10px);
+border-bottom: 1px solid rgba(200,200,200,.25);
+-webkit-background-clip: initial;
+-webkit-text-fill-color: currentColor;
+color: #2e3e35;
+font-weight: 700;
+font-size: 1.1rem;
+pointer-events: none;
 }
 
 /* === 子標題／描述 === */
 .itemcard .meta {
-  color: #556b5f;
-  font-size: 15.5px;
-  line-height: 1.6;
-  opacity: 0.85;
+color: #556b5f;
+font-size: 15.5px;
+line-height: 1.6;
+opacity: 0.85;
 }
 
 /* === 數量控制區 === */
 .qty {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 12px;
-  margin-top: 8px;
+display: flex;
+align-items: center;
+gap: 12px;
+margin-top: 8px;
 }
-
 .qty-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  border: 1.5px solid rgba(170,190,175,0.4);
-  background: linear-gradient(145deg, #fafcfb, #f0f3f1);
-  font-size: 22px;
-  font-weight: 600;
-  color: #305c46;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+width: 38px; height: 38px;
+border-radius: 50%;
+border: 1.5px solid rgba(170,190,175,0.4);
+background: linear-gradient(145deg,#fafcfb,#f0f3f1);
+font-size: 22px; font-weight: 600;
+color: #305c46;
+display: flex; align-items: center; justify-content: center;
+cursor: pointer;
+transition: all 0.2s ease;
+box-shadow: 0 2px 4px rgba(0,0,0,0.04);
 }
 .qty-btn:hover {
-  background: linear-gradient(145deg, #f8faf9, #e8edea);
-  transform: translateY(-1px);
+background: linear-gradient(145deg,#f8faf9,#e8edea);
+transform: translateY(-1px);
 }
 .qty-btn:active {
-  transform: scale(0.9);
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.1);
+transform: scale(0.9);
+box-shadow: inset 0 2px 6px rgba(0,0,0,0.1);
 }
-.qty-btn.disabled {
-  opacity: 0.3;
-  pointer-events: none;
-}
-
 .qty-value {
-  width: 26px;
-  text-align: center;
-  font-size: 18px;
-  font-weight: 700;
-  color: #2f4b3c;
+width: 26px; text-align: center;
+font-size: 18px; font-weight: 700; color: #2f4b3c;
 }
 
 /* ============================================================
-🫖 祥興茶行 — 裝罐區塊高質感版
+🫖 裝罐區塊
 ============================================================ */
-
-/* === 外層區塊 === */
 .pack-row {
-  margin-top: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 10px;
-  border-radius: 14px;
-  background: linear-gradient(145deg, rgba(255,255,255,0.92), rgba(250,250,250,0.75));
-  box-shadow: 0 3px 12px rgba(90, 123, 104, 0.08);
-  border: 1px solid rgba(170,190,180,0.25);
-  backdrop-filter: blur(8px);
-  transition: all 0.25s ease;
+margin-top: 14px;
+display: flex; align-items: center; justify-content: space-between;
+gap: 12px;
+padding: 12px 10px;
+border-radius: 14px;
+background: linear-gradient(145deg,rgba(255,255,255,0.92),rgba(250,250,250,0.75));
+box-shadow: 0 3px 12px rgba(90,123,104,0.08);
+border: 1px solid rgba(170,190,180,0.25);
+backdrop-filter: blur(8px);
+transition: all 0.25s ease;
 }
 .pack-row:hover {
-  background: linear-gradient(145deg, rgba(255,255,255,0.96), rgba(250,250,250,0.9));
-  box-shadow: 0 6px 16px rgba(90, 123, 104, 0.12);
-  transform: translateY(-2px);
+background: linear-gradient(145deg,rgba(255,255,255,0.96),rgba(250,250,250,0.9));
+box-shadow: 0 6px 16px rgba(90,123,104,0.12);
+transform: translateY(-2px);
 }
-
-/* === 裝罐文字與開關 === */
 .pack-toggle {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 700;
-  font-size: 16px;
-  color: #305c46;
-  cursor: pointer;
-  transition: color 0.3s ease;
+display: flex; align-items: center; gap: 10px;
+font-weight: 700; font-size: 16px;
+color: #305c46; cursor: pointer; transition: color 0.3s ease;
 }
-.pack-toggle:hover {
-  color: #4c7c63;
-}
-
-/* Checkbox 樣式（保留原功能） */
+.pack-toggle:hover { color: #4c7c63; }
 .pack-row input[type="checkbox"] {
-  transform: scale(1.3);
-  accent-color: #6f8f7c; /* ✅ 茶綠主色 */
-  cursor: pointer;
+transform: scale(1.3);
+accent-color: #6f8f7c;
+cursor: pointer;
 }
 
-/* === 數量控制區 === */
+/* === 裝罐數量 === */
 .pack-qty {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(255,255,255,0.6);
-  padding: 6px 10px;
-  border-radius: 999px;
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
-  transition: all 0.2s ease;
+display: flex; align-items: center; gap: 10px;
+background: rgba(255,255,255,0.6);
+padding: 6px 10px;
+border-radius: 999px;
+box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+transition: all 0.2s ease;
 }
-
-.pack-qty.hidden {
-  display: none;
-}
-
-/* === +/- 按鈕 === */
+.pack-qty.hidden { display: none; }
 .pack-qty .step {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 1px solid rgba(160,180,170,0.4);
-  background: linear-gradient(145deg, #fafcfb, #eef3ef);
-  font-size: 22px;
-  font-weight: 700;
-  color: #305c46;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+width: 36px; height: 36px;
+border-radius: 50%;
+border: 1px solid rgba(160,180,170,0.4);
+background: linear-gradient(145deg,#fafcfb,#eef3ef);
+font-size: 22px; font-weight: 700; color: #305c46;
+display: flex; align-items: center; justify-content: center;
+cursor: pointer; transition: all 0.2s ease;
+box-shadow: 0 2px 4px rgba(0,0,0,0.04);
 }
-
 .pack-qty .step:hover {
-  background: linear-gradient(145deg, #f8faf9, #e8edea);
-  transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(90,123,104,0.12);
+background: linear-gradient(145deg,#f8faf9,#e8edea);
+transform: translateY(-1px);
+box-shadow: 0 3px 8px rgba(90,123,104,0.12);
 }
-
 .pack-qty .step:active {
-  transform: scale(0.9);
-  background: #e8ebe8;
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.1);
+transform: scale(0.9);
+background: #e8ebe8;
+box-shadow: inset 0 2px 6px rgba(0,0,0,0.1);
 }
-
-/* 禁用 */
-.pack-qty .step.disabled {
-  opacity: 0.35;
-  pointer-events: none;
-}
-
-/* === 數量輸入框 === */
 .pack-qty input {
-  width: 34px;
-  text-align: center;
-  font-size: 18px;
-  font-weight: 700;
-  color: #305c46;
-  background: transparent;
-  border: none;
-  min-width: 22px;
-  transition: color 0.2s ease;
+width: 34px; text-align: center;
+font-size: 18px; font-weight: 700; color: #305c46;
+background: transparent; border: none;
 }
-.pack-qty input:focus {
-  outline: none;
-  color: #4a7b5e;
-}
-
-/* === 裝罐開關禁用狀態 === */
-.pack-toggle.disabled {
-  opacity: 0.4 !important;
-  pointer-events: none !important;
-  filter: grayscale(100%);
-}
-
-/* === 輸入框載入中狀態 === */
-input.loading {
-  pointer-events: none;
-  opacity: 0.6;
-}
-
-/* === 茶湯光感動態（active 狀態） === */
+.pack-qty input:focus { outline: none; color: #4a7b5e; }
 .pack-row.active {
-  border-color: rgba(90,123,104,0.5);
-  box-shadow: 0 6px 18px rgba(90,123,104,0.15);
-  animation: teaGlow 2s ease-in-out infinite;
+border-color: rgba(90,123,104,0.5);
+box-shadow: 0 6px 18px rgba(90,123,104,0.15);
+animation: teaGlow 2s ease-in-out infinite;
 }
 @keyframes teaGlow {
-  0%, 100% {
-    box-shadow: 0 6px 18px rgba(90,123,104,0.15);
-  }
-  50% {
-    box-shadow: 0 6px 24px rgba(120,160,130,0.3);
-  }
-}
-
-
-/* === 動畫 === */
-@keyframes cardFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(16px) scale(0.98);
-    filter: blur(2px);
-  }
-  60% {
-    opacity: 1;
-    transform: translateY(0) scale(1.02);
-    filter: blur(0);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* === 禁用狀態 === */
-.step.disabled {
-  color: #bbb !important;
-  border-color: #ddd !important;
-  pointer-events: none;
-  background: #f9f9f9 !important;
+0%,100% { box-shadow: 0 6px 18px rgba(90,123,104,0.15); }
+50% { box-shadow: 0 6px 24px rgba(120,160,130,0.3); }
 }
 
 /* ============================================================
-🌿 祥興茶行・茶霧流動系統（分類 / 詳情 / Profile）
+🌿 茶霧流動系統（分類 / 詳情 / Profile）
 ============================================================ */
 
-/* === Profile 區塊 === */
+/* === Profile 條 === */
 .profile-blocks {
-  margin-top: 8px;
-  margin-bottom: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+margin: 8px 0 12px;
+display: flex; flex-direction: column; gap: 12px;
 }
-
-.bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.bar b {
-  font-size: 15px;
-  min-width: 48px;
-  color: #222;
-}
-
-.profile-bar {
-  display: flex;
-  gap: 6px;
-  flex: 1;
-  justify-content: flex-start;
-}
-
+.bar { display: flex; align-items: center; justify-content: space-between; }
+.bar b { font-size: 15px; min-width: 48px; color: #222; }
+.profile-bar { display: flex; gap: 6px; flex: 1; justify-content: flex-start; }
 .profile-bar .blk {
-  width: 14px;
-  height: 18px;
-  background: #eee;
-  border-radius: 5px;
-  opacity: 0.5;
-  transition: opacity 0.25s ease, transform 0.25s ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+width: 14px; height: 18px;
+background: #eee; border-radius: 5px;
+opacity: 0.5; transition: opacity .25s ease, transform .25s ease;
+box-shadow: 0 1px 2px rgba(0,0,0,0.12);
 }
-
-/* === 光流動畫（由 JS 注入 --bar-color） === */
 .profile-bar .blk.on {
-  background: var(--bar-color);
-  opacity: 1;
-  background-size: 200% auto;
-  background-image: linear-gradient(
-    90deg,
-    rgba(255,255,255,0.2) 0%,
-    var(--bar-color) 40%,
-    var(--bar-color) 60%,
-    rgba(255,255,255,0.2) 100%
-  );
-  animation: teaFlow 2.5s linear infinite;
+background: var(--bar-color);
+opacity: 1;
+background-size: 200% auto;
+background-image: linear-gradient(90deg,rgba(255,255,255,0.2) 0%,var(--bar-color) 40%,var(--bar-color) 60%,rgba(255,255,255,0.2) 100%);
+animation: teaFlow 2.5s linear infinite;
 }
-@keyframes teaFlow {
-  0% { background-position: -200% center; }
-  100% { background-position: 200% center; }
-}
-
-/* === 元素進場動畫 === */
-.fade-in {
-  opacity: 0;
-  animation: fadeSlideIn 0.5s ease forwards;
-}
-@keyframes fadeSlideIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+@keyframes teaFlow { 0%{background-position:-200% center;}100%{background-position:200% center;} }
 
 /* === 詳情區塊 === */
 .detailblock {
-  background:#fafafa; border-radius:12px; padding:10px 12px; margin-top:8px;
-  line-height:1.6; font-size:14px; color:#333;
-  border-top:1px dashed rgba(0,0,0,.1);
-  transition: all .35s cubic-bezier(.25,1,.4,1);
-  opacity:0; max-height:0; overflow:hidden; transform: translateY(8px);
+background:#fafafa;
+border-radius:12px;
+padding:10px 12px;
+margin-top:8px;
+line-height:1.6; font-size:14px; color:#333;
+border-top:1px dashed rgba(0,0,0,.1);
+transition: all .35s cubic-bezier(.25,1,.4,1);
+opacity:0; max-height:0; overflow:hidden; transform: translateY(8px);
 }
-.detailblock.open {
-  opacity: 1;
-  max-height: 1000px;
-  transform: translateY(0);
-}
-.detailblock > *:not(:first-child) {
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px dashed #ececec;
-}
-.detailblock hr {
-  border: none;
-  border-top: 1.5px solid rgba(0,0,0,0.08);
-  margin: 12px 0;
-}
-.detailblock[hidden]{
-  display:block !important;
-  opacity:0; max-height:0; padding-top:0; padding-bottom:0;
-  overflow:hidden; transform: translateY(8px);
-}
+.detailblock.open { opacity:1; max-height:1000px; transform:translateY(0); }
+.detailblock[hidden]{ display:block!important; opacity:0; max-height:0; padding:0; overflow:hidden; transform:translateY(8px); }
+.detailblock > *:not(:first-child){ margin-top:14px; padding-top:14px; border-top:1px dashed #ececec; }
+.detailblock hr{ border:none; border-top:1.5px solid rgba(0,0,0,0.08); margin:12px 0; }
 
 /* === 詳情按鈕 === */
 .more-btn {
-  width: 100%;
-  margin-top: 8px;
-  border: 1px solid #ddd;
-  background: #fff;
-  color: #333;
-  border-radius: 8px;
-  padding: 8px 10px;
-  font-size: 16px;
-  font-weight: 600;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.25s ease;
+width:100%; margin-top:8px;
+border:1px solid #ddd; background:#fff; color:#333;
+border-radius:8px; padding:8px 10px;
+font-size:16px; font-weight:600;
+display:flex; justify-content:center; align-items:center; gap:6px;
+transition: all .25s ease;
 }
 .more-btn.active {
-  background: #e9f7ef;
-  color: #0a7a45;
-  border-color: #bce4c8;
-  box-shadow: 0 2px 6px rgba(0,128,0,0.08);
+background:#e9f7ef; color:#0a7a45; border-color:#bce4c8;
+box-shadow:0 2px 6px rgba(0,128,0,0.08);
 }
-.more-btn .arrow {
-  transition: transform 0.25s ease;
-}
-.more-btn.active .arrow {
-  transform: rotate(180deg);
-}
-.more-btn:active {
-  filter: brightness(1.05);
-}
+.more-btn .arrow { transition: transform .25s ease; }
+.more-btn.active .arrow { transform: rotate(180deg); }
+.more-btn:active { filter: brightness(1.05); }
 
-/* === 分類區塊（茶霧流動 + Sticky Header） === */
+/* === 分類標題區（Sticky Header + 茶霧流動） === */
 .category-header {
-  position: sticky; top: 68px; z-index: 20;
-  padding: 14px 16px;
-  background: rgba(255,255,255,.88);
-  backdrop-filter: blur(12px) saturate(130%);
-  border: 1px solid rgba(170,190,180,.3);
-  border-radius: 12px;
-  color:#333; font-size:20px; font-weight:700;
-  box-shadow: 0 2px 12px rgba(90,123,104,.06);
-  transition: all .35s cubic-bezier(.25,1,.4,1);
+position: sticky; top:68px; z-index:20;
+padding:14px 16px;
+background:rgba(255,255,255,.88);
+backdrop-filter: blur(12px) saturate(130%);
+border:1px solid rgba(170,190,180,.3);
+border-radius:12px;
+color:#333; font-size:20px; font-weight:700;
+box-shadow:0 2px 12px rgba(90,123,104,.06);
+transition: all .35s cubic-bezier(.25,1,.4,1);
 }
 .category-header.open {
-background: rgba(233,247,239,.9);
-  color:#0a7a45; border-color:#bce4c8;
-  box-shadow: 0 3px 16px rgba(90,123,104,.15), inset 0 0 8px rgba(180,210,190,.25);
+background:rgba(233,247,239,.9);
+color:#0a7a45; border-color:#bce4c8;
+box-shadow:0 3px 16px rgba(90,123,104,.15), inset 0 0 8px rgba(180,210,190,.25);
 }
-.category-header .chev {
-  transition: transform 0.25s ease;
-}
-.category-header.open .chev {
-  transform: rotate(180deg);
-}
+.category-header .chev { transition: transform .25s ease; }
+.category-header.open .chev { transform: rotate(180deg); }
 
-/* === 分類內容柔和展開 === */
+/* === 分類內容展開 === */
 .category-body {
-overflow: hidden;
-  max-height: 0; opacity: 0;
-  transition: max-height .35s cubic-bezier(.25,1,.4,1), opacity .35s cubic-bezier(.25,1,.4,1);
+overflow:hidden;
+max-height:0; opacity:0;
+transition:max-height .35s cubic-bezier(.25,1,.4,1), opacity .35s cubic-bezier(.25,1,.4,1);
 }
-.category-body.open {
-  opacity: 1;
-  max-height: 9999px;
+.category-body.open { opacity:1; max-height:9999px; }
+
+/* === 通用動畫 === */
+@keyframes cardFadeIn {
+from{opacity:0;transform:translateY(16px) scale(.98);filter:blur(2px);}
+60%{opacity:1;transform:translateY(0) scale(1.02);filter:blur(0);}
+to{opacity:1;transform:translateY(0) scale(1);}
+}
+.fade-in{opacity:0;animation:fadeSlideIn .5s ease forwards;}
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* === 互動反饋 === */
+.category-header:active, .more-btn:active {
+filter: brightness(1.05);
+transition: filter .15s ease;
 }
 
-/* === 茶名固定列（霧面浮層） === */
-.itemcard .title {
-  position: sticky;
-  top: 114px;
-  background: rgba(255,255,255,0.86);
-  backdrop-filter: blur(10px);
-  z-index: 10;
-  padding: 8px 12px;
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: #2e3e35;
-  border-bottom: 1px solid rgba(200,200,200,0.25);
-}
-
-/* === 脈衝互動反饋 === */
-.category-header:active,
-.more-btn:active {
-  filter: brightness(1.05);
-  transition: filter 0.15s ease;
-}
-/* === 原本標題漸層：只套在未 sticky 的情況 === */
-.itemcard .title:not(.stuck) {
-  font-family: "Noto Serif TC","PingFang TC",serif;
-  font-weight: 800;
-  font-size: 22px;
-  letter-spacing: .4px;
-  background: linear-gradient(90deg,#476b55,#8aa691);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: #2f4b3c; /* 回退色 */
-}
-
-/* === 茶名固定列（改用 .stuck 修飾類，不影響上面漸層） === */
-.itemcard .title.stuck {
-  position: sticky;
-  top: 114px;               /* 你要固定的高度 */
-  z-index: 10;
-  padding: 8px 12px;
-  background: rgba(255,255,255,.86);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(200,200,200,.25);
-  /* 取消漸層文字，讓它真的看得見 */
-  -webkit-background-clip: initial;
-  -webkit-text-fill-color: currentColor;
-  color: #2e3e35;
-  pointer-events: none;     /* 避免覆蓋下面的加減按鈕 */
-}
 
 /* ============================================================
 🫖 StickyBar 高質感茶系玻璃風格（祥興茶行）
