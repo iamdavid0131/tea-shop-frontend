@@ -20,14 +20,21 @@ export function handleQtyClick(btn) {
   const qtyEl = getQtyEl(id);
   let qty = parseInt(qtyEl.value || 0);
 
-  if (dir === "plus") qty++;
-  if (dir === "minus" && qty > 0) qty--;
+    if (dir === "plus") {
+        qty++;
+        spawnQtyBubble(btn, "+1");
+    }
+    if (dir === "minus" && qty > 0) {
+        qty--;
+        spawnQtyBubble(btn, "-1");
+    }
 
   qtyEl.value = qty;
 
   updatePackUI(id);
   saveCart();
   updateTotals();
+  
 }
 
 /** 裝罐 +/- */
@@ -56,13 +63,20 @@ function handlePackToggle(e) {
   const chk = e.target;
   const id = chk.id.replace("pack-", "");
   const wrap = $(`packQtyWrap-${id}`);
+  const row = chk.closest(".pack-row");
 
-  if (!chk.checked) {
-    wrap.classList.add("hidden");
-    $(`packQty-${id}`).value = 0;
-  } else {
+  if (chk.checked) {
     wrap.classList.remove("hidden");
+    row.classList.remove("close");
+    row.classList.add("open");
     $(`packQty-${id}`).value = 1;
+  } else {
+    row.classList.remove("open");
+    row.classList.add("close");
+    setTimeout(() => {
+      wrap.classList.add("hidden");
+      $(`packQty-${id}`).value = 0;
+    }, 260);
   }
 
   updatePackUI(id);
@@ -122,4 +136,17 @@ export function initQtyControls() {
   });
 
   CONFIG.PRODUCTS.forEach((p) => updatePackUI(p.id));
+}
+
+function spawnQtyBubble(btn, text) {
+  const bubble = document.createElement("div");
+  bubble.className = "qty-bubble";
+  bubble.textContent = text;
+
+  const rect = btn.getBoundingClientRect();
+  bubble.style.left = rect.left + rect.width / 2 + "px";
+  bubble.style.top = rect.top - 4 + "px";
+
+  document.body.appendChild(bubble);
+  setTimeout(() => bubble.remove(), 600);
 }

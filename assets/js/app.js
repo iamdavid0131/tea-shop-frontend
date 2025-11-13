@@ -27,7 +27,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     const cfg = await api.getConfig();
     CONFIG.PRODUCTS = (cfg.data || []).map(p => ({
       ...p,
-      profile: p.profile || null
+      story: p.story || "",
+      profile_sweetness: p.profile?.sweetness || 0,
+      profile_aroma: p.profile?.aroma || 0,
+      profile_roast: p.profile?.roast || 0,
+      profile_body: p.profile?.body || 0,
+      profile_finish: p.profile?.finish || 0,
     }));
 
     // ✅ 渲染商品區

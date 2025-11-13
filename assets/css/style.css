@@ -656,6 +656,80 @@ body {
   border-radius: 8px;
   border: 1px solid rgba(170,190,180,0.4);
 }
+
+/* ============================================================
+✨ PLUS/MINUS 氣泡動畫
+============================================================ */
+.qty-bubble {
+  position: absolute;
+  font-size: 14px;
+  font-weight: 700;
+  color: #2f4b3c;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 0) scale(0.8);
+  animation: qtyBubbleMove 0.6s ease-out forwards;
+}
+
+@keyframes qtyBubbleMove {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0) scale(0.6);
+  }
+  40% {
+    opacity: 1;
+    transform: translate(-50%, -18px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -32px) scale(1.2);
+  }
+}
+
+/* ============================================================
+✨ Pack Row 動畫（展開 & 收回）
+============================================================ */
+.pack-row.open {
+  animation: packOpen .45s cubic-bezier(.25,1,.4,1);
+}
+@keyframes packOpen {
+  from { transform: scale(0.96); opacity: 0.4; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.pack-row.close {
+  animation: packClose .35s ease forwards;
+}
+@keyframes packClose {
+  from { opacity: 1; }
+  to { opacity: 0; transform: scale(0.96); }
+}
+
+/* ============================================================
+✨ Profile Bars 展示動畫
+============================================================ */
+.profile-bar .blk {
+  opacity: 0.2;
+  transform: translateY(4px);
+}
+
+.profile-bar .blk.on {
+  animation: profileBlink .4s ease-out forwards;
+}
+
+@keyframes profileBlink {
+  0% {
+    opacity: 0.2;
+    transform: translateY(4px);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 1;
+  }
+}
 /* ============================================================
 📘 詳細說明（Detail Block）
 ============================================================ */

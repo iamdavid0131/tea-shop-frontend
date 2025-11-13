@@ -241,18 +241,27 @@ function renderSingleProduct(p, container) {
 
       ${packHtml}
 
-      <!-- 🔥 正確的 detailblock（只有一層） -->
       <div class="detailblock open" id="detail-${p.id}">
         ${p.story ? `<p>${p.story}</p>` : ""}
         ${renderProfileGroup(p)}
       </div>
   `;
 
+  // ⭐ 先插入 DOM
   container.appendChild(item);
+
+  // 🟩 Profile 條動畫（Stagger 動態進場）
+  setTimeout(() => {
+    const blocks = container.querySelectorAll(".profile-bar .blk.on");
+    blocks.forEach((blk, i) => {
+      blk.style.animationDelay = `${i * 0.08}s`;
+    });
+  }, 30);
 
   // 初始化裝罐狀態
   setTimeout(() => updatePackUI(p.id), 30);
 }
+
 
 
 // ============================================================
