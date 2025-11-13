@@ -137,12 +137,12 @@ html,body{
 
 /* === 全域設定 === */
 :root {
-  --mist-green: #e8f3ed;
-  --mist-gold: #f7f2e7;
-  --mist-warm: #f5eee4;
-  --mist-red: #f3e8e5;
-  --mist-white: #f6f5f0;
-  --mist-honey: #f9f3e8;
+  --mist-green: #8edcb1;
+  --mist-gold: #f5be46;
+  --mist-warm: #f3ba69;
+  --mist-red: #f7987e;
+  --mist-white: #f4f2e6;
+  --mist-honey: #f8ddab;
   --transition-smooth: cubic-bezier(0.25, 1, 0.4, 1);
   --radius-lg: 18px;
   --shadow-soft: 0 6px 20px rgba(90,123,104,0.08);
