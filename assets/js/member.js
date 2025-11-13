@@ -22,81 +22,95 @@ recentBox.classList.add("hidden");
   if (!phoneInput) return;
 
   // 🔍 會員查詢
-  async function lookup() {
-    const phone = phoneInput.value.trim();
-    if (!phone || phone.length < 8) return;
+async function lookup() {
+  const phone = phoneInput.value.trim();
+  if (!phone || phone.length < 8) return;
 
-    phoneInput.disabled = true;
-    phoneInput.classList.add("loading");
+  phoneInput.disabled = true;
+  phoneInput.classList.add("loading");
 
-    try {
-      const res = await api.memberSearch(phone);
-      if (res?.ok && res.data) {
-        const d = res.data;
+  try {
+    const res = await api.memberSearch(phone);
+    const d = res?.data || {};
+    const stores = Array.isArray(d.recentStores) ? d.recentStores : [];
+    const addresses = Array.isArray(d.recentAddresses) ? d.recentAddresses : [];
 
-        if (nameInput) nameInput.value = d.name || "";
-        if (addressInput) addressInput.value = d.address || "";
-        if (storeNameInput) storeNameInput.value = d.storeName || "";
+    if (res?.ok && d) {
+      if (nameInput) nameInput.value = d.name || "";
+      if (addressInput) addressInput.value = d.address || "";
+      if (storeNameInput) storeNameInput.value = d.storeName || "";
 
-        // ✅ 設定超商下拉選單
-        if (carrierSelect && d.storeName) {
-          const n = d.storeName.toLowerCase();
-          if (n.includes("7")) carrierSelect.value = "7-11";
-          else if (n.includes("family")) carrierSelect.value = "familymart";
-          else if (n.includes("hi")) carrierSelect.value = "hilife";
-        }
+      // ✅ 超商下拉自動設定
+      if (carrierSelect && d.storeName) {
+        const n = d.storeName.toLowerCase();
+        if (n.includes("7")) carrierSelect.value = "7-11";
+        else if (n.includes("family")) carrierSelect.value = "familymart";
+        else if (n.includes("hi")) carrierSelect.value = "hilife";
+      }
 
-        // ✅ 顯示常用收件地址
-        renderRecents(d.recentStores || [], d.recentAddresses || []);
+      // ✅ 有資料才渲染
+      if (stores.length > 0 || addresses.length > 0) {
+        renderRecents(stores, addresses);
         toast(`📦 已載入會員資料：${d.name || ""}`);
       } else {
-        toast("⚠️ 查無此電話會員");
         recentBox?.classList.add("hidden");
+        toast(`📞 ${d.name || "會員"} 無常用地址`);
       }
-    } catch (err) {
-      console.error("查詢會員資料失敗:", err);
-      toast("⚠️ 查詢失敗");
+    } else {
+      toast("⚠️ 查無此電話會員");
+      recentBox?.classList.add("hidden");
     }
-
-    phoneInput.disabled = false;
-    phoneInput.classList.remove("loading");
+  } catch (err) {
+    console.error("查詢會員資料失敗:", err);
+    toast("⚠️ 查詢失敗");
+    recentBox?.classList.add("hidden");
   }
 
-  // 📦 渲染常用地區
-  function renderRecents(stores, addresses) {
-    if (!recentBox || !recentList) return;
+  phoneInput.disabled = false;
+  phoneInput.classList.remove("loading");
+}
+
+// 📦 渲染常用地區
+function renderRecents(stores = [], addresses = []) {
+  if (!recentBox || !recentList) return;
+
+  stores = Array.isArray(stores) ? stores : [];
+  addresses = Array.isArray(addresses) ? addresses : [];
+
+  if (stores.length === 0 && addresses.length === 0) {
+    recentBox.classList.add("hidden");
+    return;
+  }
+
+  // ✅ 平滑顯示
+  recentBox.classList.remove("hidden");
+  recentList.innerHTML = "";
+
+  let currentType = "store";
+  renderList(currentType);
+
+  const tabBtns = recentBox.querySelectorAll(".recent-tab");
+  tabBtns.forEach((btn) => {
+    btn.onclick = () => {
+      tabBtns.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentType = btn.dataset.type;
+      renderList(currentType);
+    };
+  });
+
+  function renderList(type) {
     recentList.innerHTML = "";
-    if (stores.length === 0 && addresses.length === 0) {
-      recentBox.classList.add("hidden");
+    const list = type === "store" ? stores : addresses;
+
+    if (list.length === 0) {
+      recentList.innerHTML = `<div class="empty-tip">尚無常用${type === "store" ? "門市" : "地址"} ☕</div>`;
       return;
     }
 
-    recentBox.classList.remove("hidden");
-
-    // 預設顯示「超商」
-    let currentType = "store";
-    renderList(currentType);
-
-    const tabBtns = recentBox.querySelectorAll(".recent-tab");
-    tabBtns.forEach((btn) => {
-      btn.onclick = () => {
-        tabBtns.forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        currentType = btn.dataset.type;
-        renderList(currentType);
-      };
-    });
-
-    function renderList(type) {
-      recentList.innerHTML = "";
-      const list = type === "store" ? stores : addresses;
-      if (list.length === 0) {
-        recentList.innerHTML = `<div class="empty-tip">尚無常用${type === "store" ? "門市" : "地址"} ☕</div>`;
-        return;
-      }
-      list.forEach((r) => renderRecentItem(r, type));
+    list.forEach((r) => renderRecentItem(r, type));
     }
-  }
+}
 
   // 🏪 單筆項目渲染
   function renderRecentItem(r, type) {

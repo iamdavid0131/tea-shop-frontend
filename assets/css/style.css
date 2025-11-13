@@ -2432,7 +2432,15 @@ textarea {
   padding: 18px;
   margin-top: 14px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  transition: all 0.3s ease;
+  opacity: 1;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  transform: translateY(0);
+}
+.recent-box.hidden {
+  display: none !important;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
 }
 
 .recent-title {
