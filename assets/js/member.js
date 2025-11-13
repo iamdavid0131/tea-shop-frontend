@@ -70,22 +70,32 @@ async function lookup() {
   phoneInput.classList.remove("loading");
 }
 
-// 📦 渲染常用地區
+// 📦 渲染常用地區（依最近使用時間排序）
 function renderRecents(stores = [], addresses = []) {
   if (!recentBox || !recentList) return;
 
+  // ✅ 安全轉陣列
   stores = Array.isArray(stores) ? stores : [];
   addresses = Array.isArray(addresses) ? addresses : [];
 
+  // ✅ 按時間排序（新的在前）
+  const sortByRecent = (arr) =>
+    [...arr].sort((a, b) => new Date(b.updatedAt || b.time || 0) - new Date(a.updatedAt || a.time || 0));
+
+  stores = sortByRecent(stores);
+  addresses = sortByRecent(addresses);
+
+  // ✅ 無資料則隱藏
   if (stores.length === 0 && addresses.length === 0) {
     recentBox.classList.add("hidden");
     return;
   }
 
-  // ✅ 平滑顯示
+  // ✅ 平滑顯示區塊
   recentBox.classList.remove("hidden");
   recentList.innerHTML = "";
 
+  // 預設顯示「超商」
   let currentType = "store";
   renderList(currentType);
 
@@ -109,131 +119,130 @@ function renderRecents(stores = [], addresses = []) {
     }
 
     list.forEach((r) => renderRecentItem(r, type));
-    }
+  }
 }
 
-  // 🏪 單筆項目渲染
-  function renderRecentItem(r, type) {
-    const div = document.createElement("div");
-    div.className = "recent-item";
-    div.innerHTML = `
-      <span class="icon">${type === "store" ? "🏪" : "📦"}</span>
-      <span class="text">${
-        type === "store" ? `${r.carrier?.toUpperCase()} ${r.name}` : r.address
-      }</span>
-    `;
+// 🏪 單筆項目渲染（新增時間標籤）
+function renderRecentItem(r, type) {
+  const div = document.createElement("div");
+  div.className = "recent-item";
 
-    div.onclick = () => {
-      if (type === "store") {
-        if (carrierSelect) carrierSelect.value = r.carrier.toLowerCase();
-        if (storeNameInput) storeNameInput.value = r.name;
+  // 🕓 時間格式化
+  const lastUsed = r.updatedAt || r.time;
+  const timeLabel = lastUsed
+    ? new Date(lastUsed).toLocaleString("zh-TW", {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "";
 
-        const shipRadio = document.querySelector("input[value='store']");
-        if (shipRadio) {
-          shipRadio.checked = true;
-          shipRadio.dispatchEvent(new Event("change"));
+  div.innerHTML = `
+    <span class="icon">${type === "store" ? "🏪" : "📦"}</span>
+    <span class="text">${
+      type === "store"
+        ? `${r.carrier?.toUpperCase() || ""} ${r.name || ""}`
+        : r.address || ""
+    }</span>
+    ${timeLabel ? `<span class="time-tag">${timeLabel}</span>` : ""}
+  `;
+
+  // ✅ 點擊行為
+  div.onclick = () => {
+    if (type === "store") {
+      if (carrierSelect) carrierSelect.value = r.carrier.toLowerCase();
+      if (storeNameInput) storeNameInput.value = r.name;
+
+      const shipRadio = document.querySelector("input[value='store']");
+      if (shipRadio) {
+        shipRadio.checked = true;
+        shipRadio.dispatchEvent(new Event("change"));
+      }
+
+      toast(`🏪 已套用門市：${r.carrier} ${r.name}`);
+    } else {
+      if (addressInput) addressInput.value = r.address;
+
+      // 縣市／行政區自動帶入（保留原邏輯）
+      if (citySelect && districtSelect && r.address) {
+        const match = r.address.match(/^(.{2,3}(市|縣))(.{1,4}(區|鄉|鎮))/);
+        if (match) {
+          const cityFull = match[1];
+          const districtFull = match[3];
+          const cityShort = cityFull.replace(/市|縣/g, "");
+          const districtShort = districtFull.replace(/區|鄉|鎮/g, "");
+          const normalize = (s) => s.replace("臺", "台").replace(/\s/g, "");
+
+          let cityRetry = 0;
+          const trySelectCity = setInterval(() => {
+            const cityOpts = Array.from(citySelect.options);
+            if (cityOpts.length > 1) {
+              const cityOption = cityOpts.find((opt) => {
+                const val = normalize(opt.value);
+                const text = normalize(opt.text);
+                return (
+                  val === normalize(cityFull) ||
+                  text === normalize(cityFull) ||
+                  val === normalize(cityShort) ||
+                  text === normalize(cityShort)
+                );
+              });
+              if (cityOption) {
+                citySelect.value = cityOption.value;
+                citySelect.dispatchEvent(new Event("change"));
+                clearInterval(trySelectCity);
+
+                let districtRetry = 0;
+                const trySelectDistrict = setInterval(() => {
+                  const districtOpts = Array.from(districtSelect.options);
+                  if (districtOpts.length > 1) {
+                    const districtOption = districtOpts.find((opt) => {
+                      const val = normalize(opt.value);
+                      const text = normalize(opt.text);
+                      return (
+                        val === normalize(districtFull) ||
+                        text === normalize(districtFull) ||
+                        val === normalize(districtShort) ||
+                        text === normalize(districtShort)
+                      );
+                    });
+                    if (districtOption) {
+                      districtSelect.value = districtOption.value;
+                      districtSelect.dispatchEvent(new Event("change"));
+                      clearInterval(trySelectDistrict);
+                    }
+                  }
+                  if (++districtRetry > 20) clearInterval(trySelectDistrict);
+                }, 100);
+              }
+            }
+            if (++cityRetry > 20) clearInterval(trySelectCity);
+          }, 100);
         }
+        const trimmed = r.address.replace(/^.{2,3}(市|縣).{1,4}(區|鄉|鎮)/, "");
+        addressInput.value = trimmed.trim();
+      }
 
-        toast(`🏪 已套用門市：${r.carrier} ${r.name}`);
-      } else {
-            if (addressInput) addressInput.value = r.address;
+      const shipRadio = document.querySelector("input[value='cod']");
+      if (shipRadio) {
+        shipRadio.checked = true;
+        shipRadio.dispatchEvent(new Event("change"));
+      }
 
-            // 🏙️ 改進版縣市／行政區自動帶入
-            if (citySelect && districtSelect && r.address) {
-                const match = r.address.match(/^(.{2,3}(市|縣))(.{1,4}(區|鄉|鎮))/);
-                if (match) {
-                    const cityFull = match[1];
-                    const districtFull = match[3];
-                    const cityShort = cityFull.replace(/市|縣/g, "");
-                    const districtShort = districtFull.replace(/區|鄉|鎮/g, "");
-                    const normalize = (s) => s.replace("臺", "台").replace(/\s/g, "");
+      toast(`📦 已套用地址：${r.address}`);
+      addressInput.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+     // 🌟 點擊後短暫高亮
+    div.classList.add("highlight");
+    setTimeout(() => div.classList.remove("highlight"), 1000);
 
-                    // 🏙️ 等縣市選項載入再設定
-                    let cityRetry = 0;
-                    const trySelectCity = setInterval(() => {
-                    const cityOpts = Array.from(citySelect.options);
-                    if (cityOpts.length > 1) {
-                        const cityOption = cityOpts.find(opt => {
-                        const val = normalize(opt.value);
-                        const text = normalize(opt.text);
-                        return (
-                            val === normalize(cityFull) ||
-                            text === normalize(cityFull) ||
-                            val === normalize(cityShort) ||
-                            text === normalize(cityShort)
-                        );
-                        });
+    // ✅ 點擊後自動收起常用清單
+    setTimeout(() => recentBox.classList.add("hidden"), 300);
+  };
 
-                        if (cityOption) {
-                        citySelect.value = cityOption.value;
-                        citySelect.dispatchEvent(new Event("change"));
-                        console.log("🏙️ 已選縣市:", cityOption.value);
-                        clearInterval(trySelectCity);
-
-                        // 🕓 等行政區載入再設定
-                        let districtRetry = 0;
-                        const trySelectDistrict = setInterval(() => {
-                            const districtOpts = Array.from(districtSelect.options);
-                            if (districtOpts.length > 1) {
-                            const districtOption = districtOpts.find(opt => {
-                                const val = normalize(opt.value);
-                                const text = normalize(opt.text);
-                                return (
-                                val === normalize(districtFull) ||
-                                text === normalize(districtFull) ||
-                                val === normalize(districtShort) ||
-                                text === normalize(districtShort)
-                                );
-                            });
-
-                            if (districtOption) {
-                                districtSelect.value = districtOption.value;
-                                districtSelect.dispatchEvent(new Event("change"));
-                                console.log("🏘️ 已選行政區:", districtOption.value);
-                                clearInterval(trySelectDistrict);
-                            }
-                            }
-
-                            if (++districtRetry > 20) {
-                            clearInterval(trySelectDistrict);
-                            console.warn("⚠️ 行政區未載入完成，放棄自動帶入");
-                            }
-                        }, 100);
-                        }
-                    }
-
-                    if (++cityRetry > 20) {
-                        clearInterval(trySelectCity);
-                        console.warn("⚠️ 縣市未載入完成，放棄自動帶入");
-                    }
-                    }, 100);
-                }
-
-                // ✂️ 裁掉縣市區
-                const trimmed = r.address.replace(/^.{2,3}(市|縣).{1,4}(區|鄉|鎮)/, "");
-                addressInput.value = trimmed.trim();
-                }
-
-
-
-
-
-            const shipRadio = document.querySelector("input[value='cod']");
-            if (shipRadio) {
-                shipRadio.checked = true;
-                shipRadio.dispatchEvent(new Event("change"));
-            }
-
-            toast(`📦 已套用地址：${r.address}`);
-
-            // 🚀 自動滾動到宅配區塊
-            addressInput.scrollIntoView({ behavior: "smooth", block: "center" });
-            }
-    };
-
-    // ✅ 只留這一行
-    recentList.appendChild(div);
-  }
+  recentList.appendChild(div);
+}
 
   // ✅ 綁定事件
   phoneInput.addEventListener("blur", lookup);
