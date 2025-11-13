@@ -2434,6 +2434,7 @@ textarea {
   border-radius: 18px;
   padding: 20px 18px 22px;
   margin-top: 18px;
+  margin-bottom: 28px; 
   box-shadow:
     0 3px 10px rgba(120, 110, 90, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
