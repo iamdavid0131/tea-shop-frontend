@@ -4,6 +4,7 @@
 import { $, $$ } from "./dom.js";
 import { updatePackUI, initQtyControls } from "./qty.js";
 import { CATEGORY_MAP } from "./category-map.js";
+import { CONFIG } from "./config.js";
 
 // ============================================================
 // 🌌 Aurora Mist Engine — 極光茶霧動畫
@@ -61,7 +62,8 @@ const AURORA = {
 // ============================================================
 // 🟩 主畫面渲染（直向分類 + 極光背景）
 // ============================================================
-export function renderTeaScenes(items) {
+export function renderTeaScenes() {
+  const items = CONFIG.PRODUCTS; 
   const container = $("teaScenes");
   container.innerHTML = "";
 
