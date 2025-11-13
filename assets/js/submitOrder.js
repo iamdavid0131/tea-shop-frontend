@@ -57,7 +57,7 @@ export async function submitOrder() {
           : "",
       codAddress:
         shippingMethod === "cod"
-          ? $("address")?.value?.trim() || ""
+          ? `${$("city")?.value || ""}${$("district")?.value || ""}${$("address")?.value?.trim() || ""}`.replace(/\s+/g, "")
           : "",
       promoCode: $("promoCode")?.value?.trim() || "",
       note: $("note")?.value?.trim() || "",
