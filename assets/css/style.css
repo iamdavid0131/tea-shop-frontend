@@ -708,17 +708,7 @@ body {
 /* ============================================================
 ✨ Profile Bars 展示動畫
 ============================================================ */
-.profile-bar .blk {
-  opacity: 0.2;
-  transform: translateY(4px);
-}
 
-.profile-bar .blk.on {
-  animation: profileBlink .4s ease-out forwards;
-  background: linear-gradient(90deg, var(--pcolor), color-mix(in srgb, var(--pcolor) 70%, #ffffff));
-  opacity: 1;
-
-}
 
 @keyframes profileBlink {
   0% {
@@ -790,7 +780,12 @@ body {
 }
 
 .profile-bar .blk.on {
-  background: linear-gradient(90deg,#8dd3a4,#4dac7f);
+  animation: profileBlink .4s ease-out forwards;
+  background: linear-gradient(
+    90deg,
+    var(--pcolor) 0%,
+    color-mix(in srgb, var(--pcolor) 30%, #ffffff) 100%
+  );
   opacity: 1;
 }
 .more-btn {
