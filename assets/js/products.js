@@ -338,30 +338,4 @@ function renderBrewGuide(p) {
     </div>
   `;
 }
-// ============================================================
-// 🟩 詳細說明切換（Modal 內）
-// ============================================================
-document.addEventListener("click", (e) => {
-  const btn = e.target.closest(".more-btn");
-  if (!btn) return;
 
-  const id = btn.dataset.id;
-  const block = document.getElementById(`detail-${id}`);
-  if (!block) return;
-
-  const isOpen = block.classList.contains("open");
-
-  // 關閉其他
-  document.querySelectorAll(".detailblock").forEach((el) => {
-    if (el !== block) el.classList.remove("open");
-  });
-  document.querySelectorAll(".more-btn").forEach((el) => {
-    if (el !== btn) el.classList.remove("active");
-  });
-
-  // 開關動畫
-  if (!isOpen) {
-    btn.classList.add("active");
-    block.classList.add("open");
-  }
-});
