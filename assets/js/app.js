@@ -35,18 +35,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       profile_roast:     p.profile?.roast     ?? p.profile_roast     ?? 0,
       profile_body:      p.profile?.body      ?? p.profile_body      ?? 0,
       profile_finish:    p.profile?.finish    ?? p.profile_finish    ?? 0,
+    // ===== HOT BREW =====
+      brew_hot_grams:      p.brew?.hot?.grams      ?? "",
+      brew_hot_water_ml:   p.brew?.hot?.water_ml   ?? "",
+      brew_hot_temp_c:     p.brew?.hot?.temp_c     ?? "",
+      brew_hot_time_s:     p.brew?.hot?.time_s     ?? "",
+      brew_hot_infusions:  p.brew?.hot?.infusions  ?? "",
 
-      // ------- 熱泡 Hot Brew -------
-      brew_hot_grams:      p.brew_hot_grams      || "",
-      brew_hot_water_ml:   p.brew_hot_water_ml   || "",
-      brew_hot_temp_c:     p.brew_hot_temp_c     || "",
-      brew_hot_time_s:     p.brew_hot_time_s     || "",
-      brew_hot_infusions:  p.brew_hot_infusions  || "",
-
-      // ------- 冷泡 Cold Brew -------
-      brew_cold_grams:     p.brew_cold_grams     || "",
-      brew_cold_water_ml:  p.brew_cold_water_ml  || "",
-      brew_cold_hours:     p.brew_cold_hours     || "",
+      // ===== COLD BREW =====
+      brew_cold_grams:     p.brew?.cold?.grams     ?? "",
+      brew_cold_water_ml:  p.brew?.cold?.water_ml  ?? "",
+      brew_cold_hours:     p.brew?.cold?.hours     ?? "",
     }));
 
 
