@@ -100,11 +100,13 @@ export function updatePackUI(id) {
     packToggle.checked = false;
     packToggle.disabled = true;
     label.classList.add("disabled");
-    wrap.classList.add("hidden");
     packInput.value = 0;
+    wrap.classList.add("disabled-wrap");
   } else {
     packToggle.disabled = false;
     label.classList.remove("disabled");
+    packInput.disabled = false;
+    wrap.classList.remove("disabled-wrap");
 
     if (packToggle.checked) {
       wrap.classList.remove("hidden");
