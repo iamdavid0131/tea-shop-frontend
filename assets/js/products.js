@@ -183,6 +183,13 @@ export function initTeaModal() {
 // 🟩 Modal 內單品渲染
 // ============================================================
 function renderSingleProduct(p, container, catInfo) {
+    console.log("=== 🧪 DEBUG: Single Product ===");
+  console.log("p =", p);
+  console.log("catInfo =", catInfo);
+  console.log("profileColor =", catInfo?.profileColor);
+  console.log("hot brew raw =", p.brew_hot_grams, p.brew_hot_time_s);
+  console.log("cold brew raw =", p.brew_cold_grams, p.brew_cold_hours);
+
   container.innerHTML = "";
 
   const item = document.createElement("article");
