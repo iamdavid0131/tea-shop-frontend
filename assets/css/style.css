@@ -197,7 +197,7 @@ html,body{
   --blur-lg: blur(18px);
   --blur-md: blur(12px);
 
-  --ease-soft: cubic-bezier(.25,1,.4,1);
+  --ease-soft: cubic-bezier(.25, .12, .15, 1);
 }
 
 /* ---- 頁面底層 ---- */

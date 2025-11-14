@@ -52,6 +52,22 @@
     window.dispatchEvent(new CustomEvent('promo:applied', { detail: { promo } }));
   });
   </script>
+
+     <!-- 主 JS（指向 /api/*） -->
+  <script type="module" src="assets/js/app.js"></script>
+  <!-- GSAP -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js"></script>
+
+  <!-- Embla Carousel -->
+  <script src="https://cdn.jsdelivr.net/npm/embla-carousel@8.0.0/embla.carousel.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/embla-carousel-autoplay@8.0.0/embla.carousel.autoplay.umd.js"></script>
+
+  <!-- iOS Modal（可選，已整合） -->
+  <script src="https://cdn.jsdelivr.net/npm/body-scroll-lock/lib/bodyScrollLock.min.js"></script>
+
+
+
 </head>
 
 <body>
@@ -345,21 +361,7 @@
 </div>
 
 
-    <!-- 主 JS（指向 /api/*） -->
-  <script type="module" src="assets/js/app.js"></script>
-  <!-- GSAP -->
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js"></script>
-
-  <!-- Embla Carousel -->
-  <script src="https://cdn.jsdelivr.net/npm/embla-carousel@8.0.0/embla.carousel.umd.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/embla-carousel-autoplay@8.0.0/embla.carousel.autoplay.umd.js"></script>
-
-  <!-- iOS Modal（可選，已整合） -->
-  <script src="https://cdn.jsdelivr.net/npm/body-scroll-lock/lib/bodyScrollLock.min.js"></script>
-
-
-
+ 
 
 </body>
 </html>
