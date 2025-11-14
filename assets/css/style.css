@@ -439,8 +439,8 @@ body {
 .tea-modal-bg {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.28);
-  backdrop-filter: blur(4px);
+  background: rgba(0,0,0,0.32); /* 更高級的霧黑 */
+  backdrop-filter: none;        /* ⭐ 停用 blur */
   opacity: 0;
   transition: opacity .35s ease;
   z-index: 9000;
