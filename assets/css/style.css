@@ -446,11 +446,6 @@ body {
   z-index: 9000;
   pointer-events: auto;
 }
-/* modal 出現 → 要能互動 */
-.tea-modal.show {
-  opacity: 1;
-  pointer-events: auto;  /* ⭐ 顯示時恢復事件 */
-}
 
 
 /* ---- 內容（iOS 上滑 card） ---- */
