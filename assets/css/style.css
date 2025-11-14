@@ -781,11 +781,8 @@ body {
 
 .profile-bar .blk.on {
   animation: profileBlink .4s ease-out forwards;
-  background: linear-gradient(
-    90deg,
-    var(--pcolor) 0%,
-    color-mix(in srgb, var(--pcolor) 30%, #ffffff) 100%
-  );
+  background: var(--pcolor);
+  filter: brightness(1.15);
   opacity: 1;
 }
 .more-btn {
