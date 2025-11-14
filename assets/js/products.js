@@ -300,19 +300,19 @@ function renderProfileGroup(p, color) {
 // 🫧 Brew Guide（泡法）
 // ============================================================
 function renderBrewGuide(p) {
-  const hot = [
-    ["茶葉量", p.brew_hot_grams ? `${p.brew_hot_grams} g` : null],
-    ["熱水量", p.brew_hot_water_ml ? `${p.brew_hot_water_ml} ml` : null],
-    ["水溫", p.brew_hot_temp_c ? `${p.brew_hot_temp_c} °C` : null],
-    ["浸泡時間", p.brew_hot_time_s ? `${p.brew_hot_time_s} 秒` : null],
-    ["可回沖", p.brew_hot_infusions ? `${p.brew_hot_infusions} 次` : null],
-  ].filter((x) => x[1]);
+    const hot = [
+    ["茶葉量", p.brew_hot_grams],
+    ["熱水量", p.brew_hot_water_ml],
+    ["水溫", p.brew_hot_temp_c],
+    ["浸泡時間", p.brew_hot_time_s],
+    ["可回沖", p.brew_hot_infusions],
+    ].filter(x => x[1] !== "" && x[1] != null)
 
-  const cold = [
-    ["茶葉量", p.brew_cold_grams ? `${p.brew_cold_grams} g` : null],
-    ["冷水量", p.brew_cold_water_ml ? `${p.brew_cold_water_ml} ml` : null],
-    ["冷泡時間", p.brew_cold_hours ? `${p.brew_cold_hours} 小時` : null],
-  ].filter((x) => x[1]);
+    const cold = [
+        ["茶葉量", p.brew_cold_grams],
+        ["冷水量", p.brew_cold_water_ml],
+        ["冷泡時間", p.brew_cold_hours],
+    ].filter(x => x[1] !== "" && x[1] != null)
 
   if (hot.length === 0 && cold.length === 0) return "";
 
