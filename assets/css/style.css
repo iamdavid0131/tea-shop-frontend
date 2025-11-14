@@ -221,6 +221,7 @@ body {
   overflow-y: visible;
   flex-direction: column;
   -webkit-overflow-scrolling: touch;
+  z-index: 200;
 
   gap: 24px;
   padding: 24px 20px;
@@ -234,6 +235,7 @@ body {
 .tea-scene {
   scroll-snap-align: start;
   margin-bottom: 42px;
+  z-index: 300;
 
   padding: 18px;
   border-radius: var(--radius-lg);
