@@ -141,7 +141,6 @@ html,body{
 .aurora-bg {
   position: fixed;
   inset: 0;
-  z-index: -1;
   overflow: hidden;
   pointer-events: none;
   background: #f6f5f2;
