@@ -87,6 +87,10 @@ export function renderTeaScenes() {
     sec.className = "tea-scene";
     sec.dataset.cat = cat.key;
 
+      /* ⭐ 自動注入 Aurora 主色、次色 */
+    sec.style.setProperty("--catA", cat.colorA);
+    sec.style.setProperty("--catB", cat.colorB);
+
     sec.innerHTML = `
       <header class="tea-scene-header">
         <div class="cat-zh">${cat.title_zh}</div>

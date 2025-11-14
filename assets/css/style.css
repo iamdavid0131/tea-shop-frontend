@@ -251,42 +251,50 @@ body {
 }
 
 /* ============================================================
-📌 分類 Header（zh + en）
+📌 茶類分類標題 — Aurora 同步色彩 + 漸層線
 ============================================================ */
+
 .tea-scene-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 8px 4px 14px;
+  margin-bottom: 20px;
 
-  margin-bottom: 14px;
-  padding: 6px 2px;
+  /* ⭐ 漸層線（從變數產生，自動換色）*/
+  border-bottom: 2px solid transparent;
+  background-image: linear-gradient(to right,
+    var(--catA, #7fbf9a),
+    var(--catB, #cfe8dd)
+  );
+  background-repeat: no-repeat;
+  background-size: 100% 2px;
+  background-position: 0 100%;
 }
 
-.tea-scene-header .title-zh {
-  font-size: 22px;
+/* 中文（主標） */
+.tea-scene-header .cat-zh {
+  font-size: 20px;
   font-weight: 700;
-  letter-spacing: 0.5px;
-  color: #2f4b3c;
+  letter-spacing: 0.05em;
+  color: var(--catA, #2f4b3c);   /* ⭐ 自動取 Aurora 色 */
+  opacity: 0.92;
+  margin-bottom: 4px;
+  transition: color .45s ease;
 }
 
-.tea-scene-header .title-en {
-  font-size: 13px;
+/* 英文副標（香氛排版） */
+.tea-scene-header .cat-en {
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  color: var(--catB, #2f4b3c);   /* ⭐ Aurora 同步 */
   opacity: 0.6;
-  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  font-weight: 500;
+  transition: color .45s ease;
 }
 
-/* ---- 查看更多 ---- */
-.see-all {
-  font-size: 14px;
-  color: #0a7a45;
-  font-weight: 600;
-  cursor: pointer;
-  user-select: none;
-  transition: opacity .25s ease;
-}
-.see-all:hover {
-  opacity: 0.7;
-}
+
 /* ============================================================
 🍵 茶卡片（tea-card）
 ============================================================ */
