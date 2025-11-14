@@ -88,8 +88,13 @@ export function renderTeaScenes() {
     sec.dataset.cat = cat.key;
 
       /* ⭐ 自動注入 Aurora 主色、次色 */
-    sec.style.setProperty("--catA", cat.colorA);
-    sec.style.setProperty("--catB", cat.colorB);
+    // 原始色（Aurora 背景用）
+    sec.style.setProperty("--auroraA", cat.colorA);
+    sec.style.setProperty("--auroraB", cat.colorB);
+
+    // ⭐ 標題字色（自動萃取更深的顏色）
+    sec.style.setProperty("--catA", darkenRGBA(cat.colorA, 0.45)); // 中文主標題
+    sec.style.setProperty("--catB", darkenRGBA(cat.colorB, 0.45)); // 英文副標題
 
     sec.innerHTML = `
       <header class="tea-scene-header">
@@ -350,3 +355,15 @@ function renderBrewGuide(p) {
   `;
 }
 
+function darkenRGBA(rgba, factor = 0.35) {
+  const match = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([0-9.]+))?\)/);
+  if (!match) return rgba;
+
+  let [_, r, g, b, a] = match;
+  r = Math.round(r * (1 - factor));
+  g = Math.round(g * (1 - factor));
+  b = Math.round(b * (1 - factor));
+  a = a !== undefined ? a : 1;
+
+  return `rgba(${r}, ${g}, ${b}, ${a})`;
+}
