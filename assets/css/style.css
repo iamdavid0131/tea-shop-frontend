@@ -464,6 +464,8 @@ body {
   transition: transform .45s var(--ease-soft);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  position: relative;
+  z-index: 9500;
 }
 
 .tea-modal.show .tea-modal-content {
