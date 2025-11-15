@@ -451,7 +451,7 @@ body {
   opacity: 0;
   transition: opacity .35s ease;
   z-index: 9000;
-  pointer-events: auto;
+  pointer-events: none;
 }
 
 
@@ -477,6 +477,12 @@ body {
 
 .tea-modal.show .tea-modal-content {
   transform: translateY(0);
+}
+
+/* modal.show 才恢復事件 */
+.tea-modal.show .tea-modal-bg {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 /* Header */
