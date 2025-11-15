@@ -124,35 +124,41 @@ function showAIModal() {
 
     // ⭐ 綁定送出事件
     modal.querySelector("#aiSubmit").onclick = async () => {
-      const q = modal.querySelector("#aiQuery").value.trim();
-      if (!q) return;
+    const q = modal.querySelector("#aiQuery").value.trim();
+    if (!q) return;
 
-      const resultBox = modal.querySelector("#aiResult");
-      resultBox.innerHTML = "⏳ AI 分析中…";
+    const resultBox = modal.querySelector("#aiResult");
+    resultBox.innerHTML = "⏳ AI 分析中…";
 
-      const out = await callAI(q);
-      console.log("AI 回覆：", out);
+    const out = await callAI(q);
+    console.log("AI 回覆：", out);
 
-      if (!out || !out.best) {
+    if (!out || !out.best) {
         resultBox.innerHTML = "⚠️ 無法理解你的需求，請再描述一下～";
         return;
-      }
+    }
 
-      const best = CONFIG.PRODUCTS.find(p => p.id === out.best);
+    const best = CONFIG.PRODUCTS.find(p => p.id === out.best);
 
-      resultBox.innerHTML = `
+    // ⭐ 次推薦：抓出茶名
+    let secondName = "";
+    if (out.second?.id) {
+        secondName = CONFIG.PRODUCTS.find(p => p.id === out.second.id)?.title || out.second.id;
+    }
+
+    resultBox.innerHTML = `
         <b>推薦：</b> ${best.title}<br>
         <div style="margin:6px 0 12px;">${out.reason}</div>
 
         ${
-          out.second
-            ? `<b>次推薦：</b> ${out.second.title}<br>${out.second.reason}`
+        out.second
+            ? `<b>次推薦：</b> ${secondName}<br>${out.second.reason}`
             : ""
         }
-      `;
+    `;
 
-      // 🔥 自動打開你的商品 modal
-      openProductModal(out.best);
+    // 🔥 自動打開你的商品 modal
+    openProductModal(out.best);
     };
   }
 }
