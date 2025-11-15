@@ -30,7 +30,10 @@ export async function showCartSheet() {
 
   list.innerHTML = "";
 
-  const items = buildOrderItems();
+  const items = CONFIG.PRODUCTS.map(p => ({
+  id: p.id,
+  qty: Number($(`qty-${p.id}`)?.textContent || 0)
+})).filter(i => i.qty > 0);
 
   if (!items.length) {
     list.innerHTML = `<div class="muted" style="padding:12px;">尚未選購商品</div>`;
