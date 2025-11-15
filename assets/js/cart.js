@@ -195,7 +195,7 @@ function getQty(id) {
   return isNaN(q) ? 0 : q;
 }
 
-function buildOrderItems() {
+export function buildOrderItems() {
   return CONFIG.PRODUCTS.map(p => {
     const qty = getQty(p.id);
     if (qty <= 0) return null;
