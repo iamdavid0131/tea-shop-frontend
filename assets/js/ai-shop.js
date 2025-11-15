@@ -146,7 +146,7 @@ function showAIModal() {
 
         ${
           out.second
-            ? `<b>次推薦：</b> ${out.second.id}<br>${out.second.reason}`
+            ? `<b>次推薦：</b> ${out.second.title}<br>${out.second.reason}`
             : ""
         }
       `;
