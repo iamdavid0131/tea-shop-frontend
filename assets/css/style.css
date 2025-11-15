@@ -438,7 +438,7 @@ body {
 }
 
 .tea-modal.show {
-  pointer-events: auto;
+  pointer-events: auto!important;
   opacity: 1;
 }
 
@@ -476,13 +476,13 @@ body {
 }
 
 .tea-modal.show .tea-modal-content {
-  transform: translateY(0);
+  transform: translateY(0)!important;
 }
 
 /* modal.show 才恢復事件 */
 .tea-modal.show .tea-modal-bg {
   opacity: 1;
-  pointer-events: auto;
+  pointer-events: auto!important;
 }
 
 /* Header */

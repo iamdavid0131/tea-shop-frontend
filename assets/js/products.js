@@ -160,7 +160,8 @@ export function initTeaModal() {
   document.addEventListener("click", (e) => {
     const card = e.target.closest(".tea-card");
     if (!card) return;
-
+    
+    console.log("OPEN MODAL");   // ← 看看有沒有出現
     const id = card.dataset.id;
     const product = CONFIG.PRODUCTS.find((p) => p.id == id);
     if (!product) return;
@@ -168,6 +169,7 @@ export function initTeaModal() {
     const catInfo = CATEGORY_MAP.find((c) => c.key === card.dataset.cat);
 
     modal.classList.add("show");
+    console.log("modal:", modal.classList);
     modal.setAttribute("aria-hidden", "false");
 
     modalTitle.textContent = `${product.title}｜${catInfo?.title_zh || ""}`;
