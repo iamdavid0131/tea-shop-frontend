@@ -9,17 +9,26 @@ import { $ } from "./dom.js";
 // ------------------------------------------------------------
 // 1. AI API 呼叫模組（使用 OpenAI Response API）
 // ------------------------------------------------------------
+let taste = JSON.parse(localStorage.getItem("user_taste") || "null");
 async function callAI(message) {
   const res = await fetch("https://tea-order-server.onrender.com/api/ai-tea", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       message,
+      previousTaste: taste,
       products: CONFIG.PRODUCTS,
     }),
   });
 
   return await res.json();
+}
+
+
+// save taste
+function saveUserTaste(preference) {
+  localStorage.setItem("user_taste", JSON.stringify(preference));
+  taste = preference; 
 }
 
 // ------------------------------------------------------------
@@ -132,12 +141,19 @@ function showAIModal() {
 
         </div>
       `;
+      // 儲存使用者口味
+        saveUserTaste({
+        lastBest: best.id,
+        lastReason: out.reason,
+        timestamp: Date.now(),
+        });
 
       // ⭐ 這裡綁定 bubble 點擊事件（事件委派）
       const chat = modal.querySelector(".ai-chat");
       chat.addEventListener("click", (e) => {
         const bubble = e.target.closest(".ai-bubble-click");
         if (!bubble) return;
+        modal.remove();
 
         openProductModal(bubble.dataset.id);
       });
@@ -148,3 +164,4 @@ function showAIModal() {
 // 初始化：自動注入 AI 按鈕
 // ------------------------------------------------------------
 setTimeout(() => injectAIButton(), 300);
+
