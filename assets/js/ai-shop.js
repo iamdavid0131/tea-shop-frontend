@@ -57,93 +57,93 @@ function injectAIButton() {
 // ------------------------------------------------------------
 function showAIModal() {
   let modal = document.getElementById("aiModal");
+
   if (!modal) {
-    // 動態建立
     modal = document.createElement("div");
     modal.id = "aiModal";
-    modal.className = "ai-modal-overlay";  // ⭐ 用 class
+    modal.className = "ai-modal-overlay";
 
     modal.innerHTML = `
-        <div class="ai-box">
+      <div class="ai-box">
+        <h2 class="ai-title">💬 AI 茶品推薦</h2>
 
-            <h2 class="ai-title">💬 AI 茶品推薦</h2>
+        <textarea id="aiQuery" 
+          placeholder="告訴我你喜歡什麼風味…"
+          class="ai-input"></textarea>
 
-            <textarea id="aiQuery" 
-            placeholder="告訴我你喜歡什麼風味…"
-            class="ai-input"></textarea>
+        <button id="aiSubmit" class="ai-submit">送出</button>
 
-            <button id="aiSubmit" class="ai-submit">
-            送出
-            </button>
+        <div id="aiResult" class="ai-result" style="display:none;"></div>
 
-            <div id="aiResult" class="ai-result"></div>
-
-            <button id="aiClose" class="ai-close">
-            關閉
-            </button>
-
-        </div>
-        `;
-
+        <button id="aiClose" class="ai-close">關閉</button>
+      </div>
+    `;
 
     document.body.appendChild(modal);
-
     modal.querySelector("#aiClose").onclick = () => modal.remove();
 
-    // ⭐ 綁定送出事件
+    // ⭐ 送出按鈕事件
     modal.querySelector("#aiSubmit").onclick = async () => {
-    const q = modal.querySelector("#aiQuery").value.trim();
-    if (!q) return;
+      const q = modal.querySelector("#aiQuery").value.trim();
+      if (!q) return;
 
-    const resultBox = modal.querySelector("#aiResult");
-    resultBox.innerHTML = "⏳ AI 分析中…";
+      const resultBox = modal.querySelector("#aiResult");
+      resultBox.style.display = "block";
+      resultBox.innerHTML = "⏳ AI 分析中…";
 
-    const out = await callAI(q);
-    console.log("AI 回覆：", out);
+      const out = await callAI(q);
+      console.log("AI 回覆：", out);
 
-    if (!out || !out.best) {
+      if (!out || !out.best) {
         resultBox.innerHTML = "⚠️ 無法理解你的需求，請再描述一下～";
         return;
-    }
+      }
 
-    const best = CONFIG.PRODUCTS.find(p => p.id === out.best);
+      const best = CONFIG.PRODUCTS.find(p => p.id === out.best);
 
-    // ⭐ 次推薦：抓出茶名
-    let secondName = "";
-    if (out.second?.id) {
-        secondName = CONFIG.PRODUCTS.find(p => p.id === out.second.id)?.title || out.second.id;
-    }
+      let secondName = "";
+      if (out.second?.id) {
+        secondName =
+          CONFIG.PRODUCTS.find(p => p.id === out.second.id)?.title ||
+          out.second.id;
+      }
 
-    resultBox.innerHTML = `
+      // ⭐ bubble UI
+      resultBox.innerHTML = `
         <div class="ai-chat">
-            
-            <div class="ai-bubble ai-bubble-ai">
-            <div class="ai-bubble-label">推薦茶款</div>
-            <div class="ai-bubble-title">${best.title}</div>
-            <div class="ai-bubble-text">${out.reason}</div>
-            </div>
 
-            ${
+          <div class="ai-bubble ai-bubble-ai ai-bubble-click" data-id="${best.id}">
+              <div class="ai-bubble-label">推薦茶款</div>
+              <div class="ai-bubble-title">${best.title}</div>
+              <div class="ai-bubble-text">${out.reason}</div>
+          </div>
+
+          ${
             out.second
-                ? `
-                <div class="ai-bubble ai-bubble-ai">
-                <div class="ai-bubble-label">次推薦</div>
-                <div class="ai-bubble-title">${secondName}</div>
-                <div class="ai-bubble-text">${out.second.reason}</div>
-                </div>
-                `
-                : ""
-            }
+              ? `
+              <div class="ai-bubble ai-bubble-ai ai-bubble-click" data-id="${out.second.id}">
+                  <div class="ai-bubble-label">次推薦</div>
+                  <div class="ai-bubble-title">${secondName}</div>
+                  <div class="ai-bubble-text">${out.second.reason}</div>
+              </div>
+              `
+              : ""
+          }
 
         </div>
-        `;
+      `;
 
-    // 🔥 自動打開你的商品 modal
-    openProductModal(out.best);
+      // ⭐ 這裡綁定 bubble 點擊事件（事件委派）
+      const chat = modal.querySelector(".ai-chat");
+      chat.addEventListener("click", (e) => {
+        const bubble = e.target.closest(".ai-bubble-click");
+        if (!bubble) return;
+
+        openProductModal(bubble.dataset.id);
+      });
     };
   }
 }
-
 // ------------------------------------------------------------
 // 初始化：自動注入 AI 按鈕
 // ------------------------------------------------------------

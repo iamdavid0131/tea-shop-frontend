@@ -2961,12 +2961,14 @@ textarea {
   border-radius: 14px;
   border: 1.5px solid rgba(170,190,180,0.45);
   background: rgba(255,255,255,0.9);
-
+  
+  box-sizing: border-box;
   backdrop-filter: blur(4px);
   color: #2b2b2b;
 
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
   transition: all 0.3s ease;
+  
 }
 
 /* ================================
@@ -2998,6 +3000,7 @@ textarea {
    Result
 ================================ */
 .ai-result {
+  display: none;
   margin-top: 18px;
   font-size: 16px;
   font-weight: 500;
@@ -3183,4 +3186,18 @@ textarea {
   color: #2f4b3c;
   opacity: 0.9;
   line-height: 1.7;
+}
+
+.ai-bubble-click {
+  cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.ai-bubble-click:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6px 18px rgba(60,90,70,0.22);
+}
+
+.ai-bubble-click:active {
+  transform: scale(0.97);
 }
