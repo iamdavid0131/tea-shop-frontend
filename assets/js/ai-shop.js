@@ -115,20 +115,26 @@ function showAIModal() {
     }
 
     resultBox.innerHTML = `
-        <div class="ai-rec-block">
-            <div class="ai-rec-title">推薦：</div>
-            <div class="ai-rec-main">${best.title}</div>
-            <div class="ai-rec-reason">${out.reason}</div>
+        <div class="ai-chat">
+            
+            <div class="ai-bubble ai-bubble-ai">
+            <div class="ai-bubble-label">推薦茶款</div>
+            <div class="ai-bubble-title">${best.title}</div>
+            <div class="ai-bubble-text">${out.reason}</div>
+            </div>
 
             ${
             out.second
                 ? `
-                <div class="ai-rec-title">次推薦：</div>
-                <div class="ai-rec-main">${secondName}</div>
-                <div class="ai-rec-reason">${out.second.reason}</div>
+                <div class="ai-bubble ai-bubble-ai">
+                <div class="ai-bubble-label">次推薦</div>
+                <div class="ai-bubble-title">${secondName}</div>
+                <div class="ai-bubble-text">${out.second.reason}</div>
+                </div>
                 `
                 : ""
             }
+
         </div>
         `;
 
