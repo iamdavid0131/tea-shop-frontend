@@ -88,7 +88,7 @@ html,body{
 }
 
 .ios-header {
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .ios-header > * {
