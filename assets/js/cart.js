@@ -8,7 +8,7 @@ import { api } from "./app.api.js";
 export function saveCart() {
   const cart = {};
   CONFIG.PRODUCTS.forEach((p) => {
-    const qty = parseInt($(`qty-${p.id}`)?.textContent || 0);
+    const qty = getQty(p.id);
     if (qty > 0) cart[p.id] = qty;
   });
   localStorage.setItem("teaOrderCart", JSON.stringify(cart));
@@ -33,10 +33,10 @@ export function restoreCart() {
 // 💰 金額試算 + Sticky Bar 更新
 // ============================================================
 export async function updateTotals() {
-  const items = CONFIG.PRODUCTS.map(p => ({
+    const items = CONFIG.PRODUCTS.map(p => ({
     id: p.id,
-    qty: parseInt($(`qty-${p.id}`)?.textContent || 0),
-  })).filter(i => i.qty > 0);
+    qty: getQty(p.id)
+    })).filter(i => i.qty > 0);
 
   const stickyBar = $("StickyBar");
   if (!stickyBar) return;
@@ -140,7 +140,7 @@ export function animateMoney() {
 export function getCartItems() {
   try {
     const items = CONFIG.PRODUCTS.map(p => {
-      const qty = parseInt($(`qty-${p.id}`)?.textContent || 0);
+      const qty = getQty(p.id);
       const packEl = $(`pack-${p.id}`);
       const pack = packEl?.classList?.contains("active") || packEl?.checked || false;
 
@@ -188,4 +188,12 @@ function randomTeaQuote() {
     "🌸 香氣滿溢，免運已成！",
   ];
   return quotes[Math.floor(Math.random() * quotes.length)];
+}
+
+function getQty(id) {
+  const el = document.getElementById(`qty-${id}`);
+  if (!el) return 0;
+
+  let q = el.value !== undefined ? parseInt(el.value) : parseInt(el.textContent);
+  return isNaN(q) ? 0 : q;
 }
