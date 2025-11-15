@@ -87,6 +87,13 @@ html,body{
   animation: teaLine 1.5s ease-in-out;
 }
 
+.ios-header {
+  pointer-events: none;
+}
+
+.ios-header > * {
+  pointer-events: auto;
+}
 /* ============================================================
 ☁️ 茶霧滑入動畫
 ============================================================ */
