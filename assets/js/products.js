@@ -171,6 +171,15 @@ export function initTeaModal() {
     modal.classList.add("show");
     console.log("modal:", modal.classList);
     modal.setAttribute("aria-hidden", "false");
+    console.log("=== AFTER OPEN ===");
+    console.log("aria-hidden =", modal.getAttribute("aria-hidden"));
+    console.log("class =", modal.className);
+
+    setTimeout(() => {
+    console.log("=== 1 SEC LATER ===");
+    console.log("aria-hidden =", modal.getAttribute("aria-hidden"));
+    console.log("class =", modal.className);
+    }, 1000);
 
     modalTitle.textContent = `${product.title}｜${catInfo?.title_zh || ""}`;
 
