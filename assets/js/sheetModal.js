@@ -5,6 +5,7 @@
 import { $, toast } from "./dom.js";
 import { CONFIG } from "./config.js";
 import { api } from "./app.api.js";
+import { buildOrderItems } from "./cart.js";
 
 // ========================================================
 // 顯示購物明細 Sheet
@@ -29,13 +30,7 @@ export async function showCartSheet() {
 
   list.innerHTML = "";
 
-  const items = CONFIG.PRODUCTS.map(p => ({
-    id: p.id,
-    name: p.title,
-    price: p.price,
-    qty: Number($(`qty-${p.id}`)?.textContent || 0),
-    packQty: Number($(`packQty-${p.id}`)?.value || 0),
-  })).filter(i => i.qty > 0);
+  const items = buildOrderItems();
 
   if (!items.length) {
     list.innerHTML = `<div class="muted" style="padding:12px;">尚未選購商品</div>`;

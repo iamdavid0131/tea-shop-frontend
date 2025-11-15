@@ -33,10 +33,7 @@ export function restoreCart() {
 // 💰 金額試算 + Sticky Bar 更新
 // ============================================================
 export async function updateTotals() {
-    const items = CONFIG.PRODUCTS.map(p => ({
-    id: p.id,
-    qty: getQty(p.id)
-    })).filter(i => i.qty > 0);
+    const items = buildOrderItems();
 
   const stickyBar = $("StickyBar");
   if (!stickyBar) return;
@@ -196,4 +193,23 @@ function getQty(id) {
 
   let q = el.value !== undefined ? parseInt(el.value) : parseInt(el.textContent);
   return isNaN(q) ? 0 : q;
+}
+
+function buildOrderItems() {
+  return CONFIG.PRODUCTS.map(p => {
+    const qty = getQty(p.id);
+    if (qty <= 0) return null;
+
+    const pack = $(`pack-${p.id}`)?.checked || false;
+    const packQty = Number($(`packQty-${p.id}`)?.value || 0);
+
+    return {
+      id: p.id,
+      name: p.title,
+      price: p.price,
+      qty,
+      pack,
+      packQty
+    };
+  }).filter(Boolean);
 }
