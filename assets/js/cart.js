@@ -187,7 +187,7 @@ function randomTeaQuote() {
   return quotes[Math.floor(Math.random() * quotes.length)];
 }
 
-function getQty(id) {
+export function getQty(id) {
   const el = document.getElementById(`qty-${id}`);
   if (!el) return 0;
 
