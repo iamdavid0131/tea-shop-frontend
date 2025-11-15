@@ -10,55 +10,16 @@ import { $ } from "./dom.js";
 // 1. AI API 呼叫模組（使用 OpenAI Response API）
 // ------------------------------------------------------------
 async function callAI(message) {
-  const API_KEY = OPENAI_KEY ?? window.OPENAI_KEY;
-  if (!API_KEY) {
-    throw new Error("❌ OPENAI_KEY 未設定！");
-  }
-
-  const res = await fetch("https://api.openai.com/v1/responses", {
+  const res = await fetch("https://tea-order-server.onrender.com/api/ai-tea", {
     method: "POST",
-    headers: {
-      "Authorization": `Bearer ${API_KEY}`,
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: "gpt-4.1-mini",
-      input: `
-你是「祥興茶行」的專業導購助理。
-
-以下是茶品資料（含風味數值與泡法）：
-${JSON.stringify(CONFIG.PRODUCTS, null, 2)}
-
-客人需求：
-${message}
-
-請輸出：
-1. 最推薦的茶（只給 ID）
-2. 推薦理由（中文）
-3. 若有第二推薦，也請加上簡短理由
-
-格式：
-{
-  "best": "茶品ID",
-  "reason": "文字…",
-  "second": {
-    "id": "xxx",
-    "reason": "文字"
-  }
-}
-`
-    })
+      message,
+      products: CONFIG.PRODUCTS,
+    }),
   });
 
-  const data = await res.json();
-  let txt = data.output_text || data.output || "";
-
-  try {
-    return JSON.parse(txt);
-  } catch (e) {
-    console.warn("AI 回覆非 JSON，原始內容：", txt);
-    return null;
-  }
+  return await res.json();
 }
 
 // ------------------------------------------------------------
