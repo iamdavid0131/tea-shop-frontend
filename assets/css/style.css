@@ -451,7 +451,7 @@ body {
   opacity: 0;
   transition: opacity .35s ease;
   z-index: 9000;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 
