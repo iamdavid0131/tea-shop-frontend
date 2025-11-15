@@ -44,24 +44,13 @@ function injectAIButton() {
 
   const btn = document.createElement("button");
   btn.id = "aiAssistBtn";
+  btn.className = "ai-assist-btn";  // ⭐ 使用 class，而不是 inline style
   btn.textContent = "💬 AI 幫我選茶";
-  btn.style.cssText = `
-    width: 100%;
-    padding: 14px 20px;
-    margin: 0 0 20px;
-    font-size: 17px;
-    font-weight: 700;
-    color: #2f4b3c;
-    background: rgba(255,255,255,0.85);
-    border: 1px solid rgba(160,180,160,0.4);
-    border-radius: 14px;
-    box-shadow: 0 4px 14px rgba(80,110,90,0.08);
-    backdrop-filter: blur(12px);
-  `;
 
   container.prepend(btn);
   btn.addEventListener("click", () => showAIModal());
 }
+
 
 // ------------------------------------------------------------
 // 4. AI Modal UI（輸入需求 → AI 推薦 → 自動開啟商品）
@@ -72,51 +61,30 @@ function showAIModal() {
     // 動態建立
     modal = document.createElement("div");
     modal.id = "aiModal";
-    modal.style.cssText = `
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.35);
-      backdrop-filter: blur(8px);
-      display: flex; justify-content: center; align-items: center;
-      z-index: 999999;
-    `;
+    modal.className = "ai-modal-overlay";  // ⭐ 用 class
 
     modal.innerHTML = `
-      <div style="
-        width: 86%; max-width: 420px;
-        background: rgba(255,255,255,0.9);
-        padding: 20px 22px;
-        border-radius: 18px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-        backdrop-filter: blur(12px);
-      ">
-        <h2 style="margin:0 0 12px; font-size:20px; color:#2f4b3c;">
-          💬 AI 茶品推薦
-        </h2>
+        <div class="ai-box">
 
-        <textarea id="aiQuery" placeholder="告訴我你喜歡什麼風味…" style="
-          width:100%; height:90px; padding:10px;
-          border-radius:10px; border:1px solid #ccc;
-          font-size:15px; resize:none;
-        "></textarea>
+            <h2 class="ai-title">💬 AI 茶品推薦</h2>
 
-        <button id="aiSubmit" style="
-          margin-top:12px; width:100%; padding:12px;
-          font-size:16px; font-weight:700; color:#fff;
-          background:#4f7b61; border:none; border-radius:10px;
-        ">送出</button>
+            <textarea id="aiQuery" 
+            placeholder="告訴我你喜歡什麼風味…"
+            class="ai-input"></textarea>
 
-        <div id="aiResult" style="
-          margin-top:16px; font-size:15px; color:#2f4b3c;
-          line-height:1.6;
-        "></div>
+            <button id="aiSubmit" class="ai-submit">
+            送出
+            </button>
 
-        <button id="aiClose" style="
-          margin-top:14px; width:100%; padding:8px;
-          font-size:14px; border-radius:10px;
-          background:#eee; border:1px solid #ccc;
-        ">關閉</button>
-      </div>
-    `;
+            <div id="aiResult" class="ai-result"></div>
+
+            <button id="aiClose" class="ai-close">
+            關閉
+            </button>
+
+        </div>
+        `;
+
 
     document.body.appendChild(modal);
 
@@ -147,15 +115,22 @@ function showAIModal() {
     }
 
     resultBox.innerHTML = `
-        <b>推薦：</b> ${best.title}<br>
-        <div style="margin:6px 0 12px;">${out.reason}</div>
+        <div class="ai-rec-block">
+            <div class="ai-rec-title">推薦：</div>
+            <div class="ai-rec-main">${best.title}</div>
+            <div class="ai-rec-reason">${out.reason}</div>
 
-        ${
-        out.second
-            ? `<b>次推薦：</b> ${secondName}<br>${out.second.reason}`
-            : ""
-        }
-    `;
+            ${
+            out.second
+                ? `
+                <div class="ai-rec-title">次推薦：</div>
+                <div class="ai-rec-main">${secondName}</div>
+                <div class="ai-rec-reason">${out.second.reason}</div>
+                `
+                : ""
+            }
+        </div>
+        `;
 
     // 🔥 自動打開你的商品 modal
     openProductModal(out.best);
