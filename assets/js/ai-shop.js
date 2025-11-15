@@ -78,7 +78,7 @@ function openProductModal(prodId) {
 // 3. 導購「AI 入口按鈕 + Modal」自動注入 UI
 // ------------------------------------------------------------
 function injectAIButton() {
-  const container = $("teaScenes");
+  const container = $("aiTeaHelperHost");
   if (!container) return;
 
   const btn = document.createElement("button");
