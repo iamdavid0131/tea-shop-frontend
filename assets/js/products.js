@@ -6,7 +6,6 @@ import { $, $$ } from "./dom.js";
 import { updatePackUI, initQtyControls } from "./qty.js";
 import { CATEGORY_MAP } from "./category-map.js";
 import { CONFIG } from "./config.js";
-import { saveCart } from "./cart.js";
 // ============================================================
 // 🌌 Aurora Mist Engine — 極光茶霧
 // ============================================================
