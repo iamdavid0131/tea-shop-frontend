@@ -1,6 +1,8 @@
 import { $, toast } from "./dom.js";
 import { saveCart, updateTotals } from "./cart.js";
 import { CONFIG } from "./config.js";
+import { getQty } from "./cart.js";
+
 
 /** 取得 qty input 元件 */
 function getQtyEl(id) {
