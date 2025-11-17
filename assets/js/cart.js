@@ -32,22 +32,14 @@ export function restoreCart() {
     const saved = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
 
     Object.entries(saved).forEach(([id, data]) => {
-      const { qty, pack, packQty } = data;
+      const { qty } = data;
 
-      // qty
+      // 只還原主頁 qty（textContent or value 都支援）
       const qtyEl = $(`qty-${id}`);
-      if (qtyEl) qtyEl.value = qty;
-
-      // pack 是否啟用
-      const packEl = $(`pack-${id}`);
-      if (packEl) packEl.checked = pack;
-
-      // packQty
-      const pq = $(`packQty-${id}`);
-      if (pq) pq.value = packQty;
-
-      // 更新 UI（顯示/隱藏 packQty 區塊）
-      updatePackUI(id);
+      if (qtyEl) {
+        if ("value" in qtyEl) qtyEl.value = qty;
+        else qtyEl.textContent = qty;
+      }
     });
   } catch (err) {
     console.warn("⚠️ restoreCart 錯誤:", err);

@@ -203,18 +203,21 @@ export function initTeaModal() {
 // 🟩 Modal 內單品渲染
 // ============================================================
 function renderSingleProduct(p, container, catInfo) {
-    console.log("=== 🧪 DEBUG: Single Product ===");
-  console.log("p =", p);
-  console.log("catInfo =", catInfo);
-  console.log("profileColor =", catInfo?.profileColor);
-  console.log("hot brew raw =", p.brew_hot_grams, p.brew_hot_time_s);
-  console.log("cold brew raw =", p.brew_cold_grams, p.brew_cold_hours);
+  console.log("=== 🧪 DEBUG: Single Product ===");
 
   container.innerHTML = "";
 
   const item = document.createElement("article");
   item.className = "itemcard";
 
+  // === 讀取 saved 資料 ===
+  const savedQty = (JSON.parse(localStorage.getItem("teaOrderCart") || "{}"))[p.id] || 0;
+  const savedPack = (JSON.parse(localStorage.getItem("teaOrderPack") || "{}"))[p.id] || {
+    pack: false,
+    packQty: 0
+  };
+
+  // === 單品 HTML ===
   const packHtml = p.packable
     ? `
       <div class="pack-row">
@@ -222,19 +225,17 @@ function renderSingleProduct(p, container, catInfo) {
           <input type="checkbox" id="pack-${p.id}">
           裝罐
         </label>
+
         <div class="pack-qty hidden" id="packQtyWrap-${p.id}">
           <button class="step" data-dir="minus" data-pack="${p.id}">−</button>
-          <input type="number" id="packQty-${p.id}" value="" min="1">
+          <input type="number" id="packQty-${p.id}" value="0" min="1">
           <button class="step" data-dir="plus" data-pack="${p.id}">＋</button>
         </div>
       </div>
     `
     : "";
 
-  // ⭐ catInfo 一定存在，不會 undefined
   const profileColor = catInfo?.profileColor || "#78cfa8";
-  const savedCart = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
-  const currentQty = savedCart[p.id] || 0;
 
   item.innerHTML = `
     <div class="title">${p.title}</div>
@@ -243,7 +244,7 @@ function renderSingleProduct(p, container, catInfo) {
 
     <div class="qty-row">
       <button class="qty-btn" data-id="${p.id}" data-dir="minus">−</button>
-      <input class="qty-input" id="qty-${p.id}" type="number" value="${currentQty}" min="0">
+      <input class="qty-input" id="qty-${p.id}" type="number" value="${savedQty}" min="0">
       <button class="qty-btn" data-id="${p.id}" data-dir="plus">＋</button>
     </div>
 
@@ -258,10 +259,27 @@ function renderSingleProduct(p, container, catInfo) {
 
   container.appendChild(item);
 
-  // 🟩 初始化裝罐 UI
+  // === ⭐ 還原裝罐狀態（最重要） ===
+  const packToggle = document.getElementById(`pack-${p.id}`);
+  const packQtyInput = document.getElementById(`packQty-${p.id}`);
+  const packWrap = document.getElementById(`packQtyWrap-${p.id}`);
+
+  if (packToggle) {
+    packToggle.checked = savedPack.pack;
+
+    if (savedPack.pack) {
+      packWrap.classList.remove("hidden");
+      packQtyInput.value = savedPack.packQty || 1;
+    } else {
+      packWrap.classList.add("hidden");
+      packQtyInput.value = 0;
+    }
+  }
+
+  // === 初始化裝罐 UI（不覆蓋還原結果）===
   setTimeout(() => updatePackUI(p.id), 10);
 
-  // 🟩 Profile + Brew 動畫（Stagger）
+  // === 動畫 ===
   setTimeout(() => {
     const animateEls = container.querySelectorAll(
       `#detail-${p.id} .profile-bar .blk.on,
@@ -280,6 +298,7 @@ function renderSingleProduct(p, container, catInfo) {
     });
   }, 50);
 }
+
 // ============================================================
 // 🟩 Profile 條
 // ============================================================
