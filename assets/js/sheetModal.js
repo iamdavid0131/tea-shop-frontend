@@ -5,7 +5,7 @@
 import { $, toast } from "./dom.js";
 import { CONFIG } from "./config.js";
 import { api } from "./app.api.js";
-import { buildOrderItems,updateTotals } from "./cart.js";
+import { buildOrderItems,updateTotals,refreshSheetTotals } from "./cart.js";
 
 // ========================================================
 // 顯示購物明細 Sheet
@@ -284,9 +284,12 @@ function enableSwipeDelete(row) {
         // 🟩 Step 1：更新 StickyBar
         updateTotals();
 
+
         // 🟩 Step 2：重新渲染購物明細（sheetModal 內容）
         //    避免重複動畫，我們只 refresh list，不開關 modal
         import("./sheetModal.js").then(m => m.showCartSheet());
+
+        refreshSheetTotals();
 
     }, 250);
     });

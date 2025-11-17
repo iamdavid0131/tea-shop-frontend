@@ -219,6 +219,9 @@ function randomTeaQuote() {
   return quotes[Math.floor(Math.random() * quotes.length)];
 }
 
+// ============================================================
+// 📊 取得購物車數量（供 sheetModal 用）
+// ============================================================
 export function getQty(id) {
   const el = document.getElementById(`qty-${id}`);
   if (!el) return 0;
@@ -227,6 +230,9 @@ export function getQty(id) {
   return isNaN(q) ? 0 : q;
 }
 
+// ============================================================
+// 📊 取得購物車內容（供 sheetModal 用）
+// ============================================================
 export function buildOrderItems() {
   const cart = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
 
@@ -245,4 +251,28 @@ export function buildOrderItems() {
   }).filter(Boolean);
 }
 
+// ============================================================
+// 📊 重新渲染購物明細（sheetModal 內容）
+// ============================================================
+function refreshSheetTotals() {
+  const items = buildOrderItems();
+  if (!items.length) {
+    $("cartSub").textContent = "NT$ 0";
+    $("cartDiscRow").style.display = "none";
+    $("cartShip").textContent = "NT$ 0";
+    $("cartTotal").textContent = "NT$ 0";
+    return;
+  }
 
+  api.previewTotals(items, "store", "")
+    .then((preview) => {
+      const data = preview.data || preview;
+
+      $("cartSub").textContent = `NT$ ${data.subtotal.toLocaleString("zh-TW")}`;
+      $("cartDiscRow").style.display = data.discount > 0 ? "flex" : "none";
+      $("cartDisc").textContent =
+        data.discount > 0 ? `- NT$ ${data.discount.toLocaleString("zh-TW")}` : "";
+      $("cartShip").textContent = `NT$ ${data.shippingFee.toLocaleString("zh-TW")}`;
+      $("cartTotal").textContent = `NT$ ${data.total.toLocaleString("zh-TW")}`;
+    });
+}
