@@ -7,6 +7,7 @@ import { CONFIG } from "./config.js";
 import { api } from "./app.api.js";
 import { buildOrderItems } from "./cart.js";
 
+
 // ========================================================
 // 顯示購物明細 Sheet
 // ========================================================
@@ -50,16 +51,22 @@ export async function showCartSheet() {
   // 有商品才畫明細
   items.forEach(i => {
     const row = document.createElement("div");
-    row.className = "line-item";
+
+    row.className = "line-item clickable";
+    row.dataset.id = i.id;
 
     const packStr = i.packQty > 0 ? `（裝罐 ${i.packQty}）` : "";
 
     row.innerHTML = `
-      <div class="li-title">${i.name}</div>
-      <div class="li-qty">× ${i.qty} ${packStr}</div>
-      <div class="li-sub">NT$ ${(i.price * i.qty).toLocaleString("zh-TW")}</div>
-    `;
+        <div class="swipe-content">
+            <div class="li-title">${i.name}</div>
+            <div class="li-qty">× ${i.qty} ${packStr}</div>
+            <div class="li-sub">NT$ ${(i.price * i.qty).toLocaleString("zh-TW")}</div>
+        </div>
+        <button class="swipe-delete" data-id="${i.id}">刪除</button>
+        `;
     list.appendChild(row);
+    enableSwipeDelete(row);
   });
 
   try {
@@ -86,6 +93,19 @@ export async function showCartSheet() {
   }
 
   backdrop.addEventListener("touchmove", e => e.preventDefault(), { passive: false });
+  document.addEventListener("click", (e) => {
+  const row = e.target.closest(".line-item.clickable");
+  if (!row) return;
+
+  const id = row.dataset.id;
+
+  // 關閉 sheet
+  hideCartSheet();
+
+  // 開啟該商品 modal（你的產品 modal 事件是全局監聽的）
+  const productCard = document.querySelector(`.tea-card[data-id="${id}"]`);
+  if (productCard) productCard.click();
+});
 }
 
 // ========================================================
@@ -205,4 +225,61 @@ export function initSheetModal() {
   sheet.style.transform = "translateY(100%)"; // ✅ 正確初始位置
   sheet.style.transition = "transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)";
   backdrop.style.display = "none";
+}
+
+
+function enableSwipeDelete(row) {
+  const content = row.querySelector(".swipe-content");
+  const deleteBtn = row.querySelector(".swipe-delete");
+
+  let open = false;
+  let startX = 0;
+
+  const hammer = new Hammer(row);
+  hammer.get("pan").set({ direction: Hammer.DIRECTION_HORIZONTAL });
+
+  hammer.on("panstart", () => {
+    startX = open ? -90 : 0;
+  });
+
+  hammer.on("panmove", (e) => {
+    let x = startX + e.deltaX;
+
+    // 限制拖動範圍
+    if (x < -90) x = -90;
+    if (x > 0) x = 0;
+
+    content.style.transform = `translateX(${x}px)`;
+    deleteBtn.style.transform = `translateX(${x + 90}px)`;
+  });
+
+  hammer.on("panend", (e) => {
+    const shouldOpen = e.deltaX < -40;   // 左滑超過 40px 打開
+    open = shouldOpen;
+
+    const x = open ? -90 : 0;
+    content.style.transform = `translateX(${x}px)`;
+    deleteBtn.style.transform = `translateX(${x + 90}px)`;
+  });
+
+  // 點按刪除
+  deleteBtn.addEventListener("click", () => {
+    const id = deleteBtn.dataset.id;
+
+    // 移除 localStorage 的購物車項目
+    const cart = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
+    delete cart[id];
+    localStorage.setItem("teaOrderCart", JSON.stringify(cart));
+
+    // 移除 row 並刷新金額
+    row.style.height = row.offsetHeight + "px";
+    row.style.transition = "height .3s ease, opacity .3s ease";
+    row.style.opacity = 0;
+    row.style.height = "0px";
+
+    setTimeout(() => {
+      row.remove();
+      updateTotals();
+    }, 300);
+  });
 }

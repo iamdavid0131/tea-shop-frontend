@@ -3201,3 +3201,39 @@ textarea {
 .ai-bubble-click:active {
   transform: scale(0.97);
 }
+
+/* ================================
+   購物明細左滑刪除
+================================ */
+.line-item {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255,255,255,0.85);
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+
+.swipe-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  transition: transform .25s cubic-bezier(.25,.8,.5,1);
+}
+
+.swipe-delete {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 90px;
+  background: #ff3b30;
+  color: #fff;
+  border: none;
+  font-size: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform: translateX(100%);
+  transition: transform .25s cubic-bezier(.25,.8,.5,1);
+}
