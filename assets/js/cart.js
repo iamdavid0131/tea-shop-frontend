@@ -254,7 +254,7 @@ export function buildOrderItems() {
 // ============================================================
 // 📊 重新渲染購物明細（sheetModal 內容）
 // ============================================================
-function refreshSheetTotals() {
+export function refreshSheetTotals() {
   const items = buildOrderItems();
   if (!items.length) {
     $("cartSub").textContent = "NT$ 0";
