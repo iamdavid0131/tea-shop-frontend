@@ -39,6 +39,17 @@ export function initPaymentUI(retry = 0) {
       window.dispatchEvent(new Event("cart:update"));
     });
   });
+  document.querySelectorAll(".pay-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".pay-btn").forEach((b) =>
+      b.classList.remove("active")
+    );
+    btn.classList.add("active");
+
+    // 觸發重新驗證
+    validate();
+  });
+});
 }
 
 
