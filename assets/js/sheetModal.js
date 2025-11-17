@@ -262,24 +262,26 @@ function enableSwipeDelete(row) {
     deleteBtn.style.transform = `translateX(${x + 90}px)`;
   });
 
-  // 點按刪除
-  deleteBtn.addEventListener("click", () => {
+    deleteBtn.addEventListener("click", (e) => {
+    e.stopPropagation();   // ← 重點！阻止事件往上冒泡
+    e.preventDefault();    // ← 避免 click 被 browser 視為普通點擊
+
     const id = deleteBtn.dataset.id;
 
-    // 移除 localStorage 的購物車項目
+    // 更新 localStorage
     const cart = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
     delete cart[id];
     localStorage.setItem("teaOrderCart", JSON.stringify(cart));
 
-    // 移除 row 並刷新金額
+    // 動畫：縮起 row
     row.style.height = row.offsetHeight + "px";
     row.style.transition = "height .3s ease, opacity .3s ease";
     row.style.opacity = 0;
     row.style.height = "0px";
 
     setTimeout(() => {
-      row.remove();
-      updateTotals();
+        row.remove();
+        updateTotals();
     }, 300);
-  });
+    });
 }
