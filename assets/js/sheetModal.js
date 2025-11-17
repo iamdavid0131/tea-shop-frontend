@@ -263,8 +263,8 @@ function enableSwipeDelete(row) {
   });
 
     deleteBtn.addEventListener("click", (e) => {
-    e.stopPropagation();   // ← 重點！阻止事件往上冒泡
-    e.preventDefault();    // ← 避免 click 被 browser 視為普通點擊
+    e.stopPropagation();
+    e.preventDefault();
 
     const id = deleteBtn.dataset.id;
 
@@ -273,15 +273,23 @@ function enableSwipeDelete(row) {
     delete cart[id];
     localStorage.setItem("teaOrderCart", JSON.stringify(cart));
 
-    // 動畫：縮起 row
+    // 動畫關閉 item
     row.style.height = row.offsetHeight + "px";
-    row.style.transition = "height .3s ease, opacity .3s ease";
-    row.style.opacity = 0;
+    row.style.transition = "height .25s ease, opacity .25s ease";
+    row.style.opacity = "0";
     row.style.height = "0px";
 
     setTimeout(() => {
         row.remove();
+
+        // 🟩 Step 1：更新 StickyBar
         updateTotals();
-    }, 300);
+
+        // 🟩 Step 2：重新渲染購物明細（sheetModal 內容）
+        //    避免重複動畫，我們只 refresh list，不開關 modal
+        import("./sheetModal.js").then(m => m.showCartSheet());
+
+    }, 250);
     });
+
 }
