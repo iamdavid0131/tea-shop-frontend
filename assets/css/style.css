@@ -2296,6 +2296,8 @@ textarea {
   background: linear-gradient(135deg, #5a7b68, #7fa38a);
   box-shadow: 0 5px 14px rgba(90,123,104,0.3);
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 /* Hover 微光＋柔和上浮 */
 .submit-btn:not(:disabled):hover {
