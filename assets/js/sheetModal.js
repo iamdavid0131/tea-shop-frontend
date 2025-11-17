@@ -32,24 +32,35 @@ export async function showCartSheet() {
   const items = buildOrderItems();
   console.log("🧪 sheetModal items =", items);
 
-
+  // 🚨 這裡一定要早退，否則會觸發 /preview 的 400
   if (!items.length) {
     list.innerHTML = `<div class="muted" style="padding:12px;">尚未選購商品</div>`;
-  } else {
-    items.forEach(i => {
-      const row = document.createElement("div");
-      row.className = "line-item";
 
-      const packStr = i.packQty > 0 ? `（裝罐 ${i.packQty}）` : "";
+    // optional：順便把下方金額區清空，避免殘留舊資料
+    $("cartSub").textContent = "NT$ 0";
+    $("cartDiscRow").style.display = "none";
+    $("cartDisc").textContent = "";
+    $("cartShip").textContent = "NT$ 0";
+    $("cartTotal").textContent = "NT$ 0";
+    $("promoMsg").textContent = "";
 
-      row.innerHTML = `
-        <div class="li-title">${i.name}</div>
-        <div class="li-qty">× ${i.qty} ${packStr}</div>
-        <div class="li-sub">NT$ ${(i.price * i.qty).toLocaleString("zh-TW")}</div>
-      `;
-      list.appendChild(row);
-    });
+    return;   // ⭐ 關鍵：不要再 call api.previewTotals
   }
+
+  // 有商品才畫明細
+  items.forEach(i => {
+    const row = document.createElement("div");
+    row.className = "line-item";
+
+    const packStr = i.packQty > 0 ? `（裝罐 ${i.packQty}）` : "";
+
+    row.innerHTML = `
+      <div class="li-title">${i.name}</div>
+      <div class="li-qty">× ${i.qty} ${packStr}</div>
+      <div class="li-sub">NT$ ${(i.price * i.qty).toLocaleString("zh-TW")}</div>
+    `;
+    list.appendChild(row);
+  });
 
   try {
     const preview = await api.previewTotals(items, "store", promoCode);

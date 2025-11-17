@@ -2,6 +2,8 @@ import { $, toast } from "./dom.js";
 import { CONFIG } from "./config.js";
 import { api } from "./app.api.js";
 
+console.log("🧪 cart.js loaded v3");
+
 // ============================================================
 // 💾 儲存購物車
 // ============================================================
@@ -22,7 +24,14 @@ export function restoreCart() {
     const saved = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
     Object.entries(saved).forEach(([id, qty]) => {
       const elQty = $(`qty-${id}`);
-      if (elQty) elQty.textContent = qty;
+      if (!elQty) return;
+
+      // ✅ 依元素型態決定寫 value 還是 textContent
+      if ("value" in elQty) {
+        elQty.value = qty;
+      } else {
+        elQty.textContent = qty;
+      }
     });
   } catch (e) {
     console.warn("⚠️ 無法還原購物車:", e);
@@ -33,7 +42,7 @@ export function restoreCart() {
 // 💰 金額試算 + Sticky Bar 更新
 // ============================================================
 export async function updateTotals() {
-    const items = buildOrderItems();
+  const items = buildOrderItems();
 
   const stickyBar = $("StickyBar");
   if (!stickyBar) return;
@@ -143,7 +152,7 @@ export function getCartItems() {
 
       return {
         id: p.id,
-        name: p.name || "",
+        name: p.title || p.name || "",
         qty,
         pack,
       };
@@ -165,7 +174,13 @@ export function clearCart() {
 
     CONFIG.PRODUCTS.forEach(p => {
       const qtyEl = $(`qty-${p.id}`);
-      if (qtyEl) qtyEl.textContent = "0";
+      if (!qtyEl) return;
+
+      if ("value" in qtyEl) {
+        qtyEl.value = "0";
+      } else {
+        qtyEl.textContent = "0";
+      }
     });
 
     updateTotals();
@@ -202,18 +217,15 @@ export function buildOrderItems() {
 
     const packEl = $(`pack-${p.id}`);
     const pack = packEl?.checked || false;
-
-    // ⚠️ packQty 必須跟著有裝罐才讀，不然永遠 0
     const packQty = pack ? Number($(`packQty-${p.id}`)?.value || 1) : 0;
 
     return {
       id: p.id,
-      name: p.title || p.name || "",  // ⭐ title 優先，其次 name
-      price: p.price || 0,            // ⭐ 必須保險帶 price
+      name: p.title || p.name || "",
+      price: p.price || 0,
       qty,
       pack,
       packQty
     };
   }).filter(Boolean);
 }
-
