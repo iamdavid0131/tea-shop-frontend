@@ -181,6 +181,10 @@ export function getCartItems() {
         pack,
       };
     }).filter(i => i.qty > 0);
+    console.log("📦 localStorage cart =", cart);
+    console.log("📦 CONFIG.PRODUCTS ids =", CONFIG.PRODUCTS.map(x => x.id));
+    console.log("📦 匹配結果 =", items);
+
 
     return items;
   } catch (err) {
