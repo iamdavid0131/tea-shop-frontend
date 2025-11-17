@@ -228,22 +228,21 @@ export function getQty(id) {
 }
 
 export function buildOrderItems() {
-  return CONFIG.PRODUCTS.map(p => {
-    const qty = getQty(p.id);
-    if (qty <= 0) return null;
+  const cart = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
 
-    const packEl = $(`pack-${p.id}`);
-    const pack = packEl?.checked || false;
-    const packQty = pack ? Number($(`packQty-${p.id}`)?.value || 1) : 0;
+  return Object.entries(cart).map(([id, data]) => {
+    const p = CONFIG.PRODUCTS.find(x => x.id == id);
+    if (!p) return null;
 
     return {
       id: p.id,
       name: p.title || p.name || "",
       price: p.price,
-      qty,
-      pack,
-      packQty
+      qty: data.qty,
+      pack: data.pack,
+      packQty: data.packQty
     };
   }).filter(Boolean);
 }
+
 
