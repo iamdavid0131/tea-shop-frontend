@@ -30,6 +30,8 @@ export async function showCartSheet() {
 
   // ⭐⭐ 用統一格式建構購物車（包含 name, price, packQty）
   const items = buildOrderItems();
+  console.log("🧪 sheetModal items =", items);
+
 
   if (!items.length) {
     list.innerHTML = `<div class="muted" style="padding:12px;">尚未選購商品</div>`;
