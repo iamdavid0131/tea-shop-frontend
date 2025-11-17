@@ -9,7 +9,7 @@ html,body{
   background: #fff;
 }
 body {
-  padding-bottom: calc(var(--sticky-height, 90px) + 80px); /* StickyBar 高度 + 送出按鈕預留空間 */
+  padding-bottom: calc(var(--sticky-height, 90px) + 100px); /* StickyBar 高度 + 送出按鈕預留空間 */
 }
 .ios-header {
   position: relative;
