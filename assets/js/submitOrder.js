@@ -1,6 +1,5 @@
 // ===============================
-// ☕ submitOrder.js
-// 送出訂單主流程模組（逐品項版本）
+// ☕ submitOrder.js（模組版）
 // ===============================
 
 import { api } from "./app.api.js";
@@ -8,7 +7,9 @@ import { $, toast } from "./dom.js";
 import { getCartItems, clearCart } from "./cart.js";
 import { CONFIG } from "./config.js";
 
-// ✅ 格式化購物車品項（對應 Sheet 欄位名稱）
+// -------------------------------
+// 格式化品項
+// -------------------------------
 function formatCartItems(rawItems) {
   return rawItems.map((i) => {
     const product = CONFIG.PRODUCTS.find((p) => p.id === i.id);
@@ -21,7 +22,34 @@ function formatCartItems(rawItems) {
   });
 }
 
-// ✅ 主送出流程
+// -------------------------------
+// 封裝 validate（export 給外部使用）
+// -------------------------------
+export function validateSubmit() {
+  const btn = $("submitOrderBtn");
+  if (!btn) return;
+
+  const consent = $("consentAgree");
+  const name = $("name");
+  const phone = $("phone");
+  const shipRadios = document.querySelectorAll("input[name='shipping']");
+  const payRadios = document.querySelectorAll("input[name='payment']");
+
+  const hasItem = (getCartItems()?.length || 0) > 0;
+  const hasName = name?.value.trim().length > 0;
+  const hasPhone = phone?.value.trim().length >= 8;
+  const hasShip = [...shipRadios].some((r) => r.checked);
+  const hasPay =
+    [...payRadios].some((r) => r.checked) ||
+    document.querySelector(".pay-btn.active") !== null;
+  const agreed = consent?.checked;
+
+  btn.disabled = !(hasItem && hasName && hasPhone && hasShip && hasPay && agreed);
+}
+
+// -------------------------------
+// 主送出流程
+// -------------------------------
 export async function submitOrder() {
   const btn = $("submitOrderBtn");
   const loadingOverlay = $("globalLoading");
@@ -33,9 +61,9 @@ export async function submitOrder() {
     loadingOverlay?.classList.add("show");
     loadingOverlay?.setAttribute("aria-hidden", "false");
 
-    // === 組裝訂單資料 ===
     const shippingMethod =
       document.querySelector("input[name='shipping']:checked")?.value || "";
+
     const payMethod =
       document.querySelector(".pay-btn.active")?.dataset.method ||
       document.querySelector("input[name='payment']:checked")?.value ||
@@ -57,78 +85,46 @@ export async function submitOrder() {
           : "",
       codAddress:
         shippingMethod === "cod"
-          ? `${$("city")?.value || ""}${$("district")?.value || ""}${$("address")?.value?.trim() || ""}`.replace(/\s+/g, "")
+          ? `${$("city")?.value || ""}${$("district")?.value || ""}${$("address")?.value?.trim() || ""}`
+              .replace(/\s+/g, "")
           : "",
       promoCode: $("promoCode")?.value?.trim() || "",
       note: $("note")?.value?.trim() || "",
       consent: $("consentAgree")?.checked ? "Y" : "N",
 
-      // 🟢 支付欄位
+      // 支付欄位
       paymentMethod: payMethod,
       paymentStatus: "pending",
-      paymentTxId: "",
-      paymentTime: "",
 
-      // 🫖 商品與金額區
+      // 金額
       items,
-      pricingPolicy: {},
       subtotal: 0,
       discount: 0,
       shippingFee: 0,
-      total: Number(
-        $("total_s")?.textContent.replace(/[^\d]/g, "") || 0
-      ),
-
+      total: Number($("total_s")?.textContent.replace(/[^\d]/g, "") || 0),
       status: "created",
     };
 
     // === 基本驗證 ===
-    const nameInput = $("name");
-    const phoneInput = $("phone");
-    const errName = $("err-name");
-    const errPhone = $("err-phone");
-
-    [nameInput, phoneInput].forEach((i) =>
-      i?.classList.remove("form-error")
-    );
-    [errName, errPhone].forEach((e) => e?.classList.remove("show"));
-
-    let invalidField = null;
-
-    if (!order.buyerName) {
-      nameInput?.classList.add("form-error");
-      errName?.classList.add("show");
-      invalidField = nameInput;
-    } else if (!order.buyerPhone) {
-      phoneInput?.classList.add("form-error");
-      errPhone?.classList.add("show");
-      invalidField = phoneInput;
-    }
-
-    if (invalidField) {
+    if (!order.buyerName || !order.buyerPhone) {
       toast("⚠️ 請完整填寫收件人資料");
-      invalidField.scrollIntoView({ behavior: "smooth", block: "center" });
-      resetUI();
+      validateSubmit();
       return;
     }
 
     if (order.items.length === 0) {
       toast("🛒 您的購物車是空的");
-      resetUI();
+      validateSubmit();
       return;
     }
 
-    // === 傳送到後端 ===
-    console.log("🧾 order.items", order.items);
+    // === 送出 ===
     const res = await api.submitOrder(order);
-    console.log("🧾 submitOrder response:", JSON.stringify(res, null, 2));
 
-    // ✅ 後端成功
     if (res.ok && res.orderId) {
       showSuccessModal(res.orderId, order.total);
       clearCart();
 
-      // ✅ 同步更新會員紀錄
       try {
         await api.memberOrder({
           phone: order.buyerPhone,
@@ -139,166 +135,88 @@ export async function submitOrder() {
           address: order.codAddress,
           orderId: res.orderId,
         });
-      } catch (err) {
-        console.warn("⚠️ 更新會員資料失敗:", err);
-      }
+      } catch {}
 
       return;
     }
 
-    console.warn("❌ 後端回傳錯誤:", res);
     toast("❌ 訂單送出失敗：" + (res?.error || "伺服器未回應"));
   } catch (err) {
-    console.error("❌ 送出訂單錯誤:", err);
+    console.error("❌ submitOrder error", err);
     toast("⚠️ 網路異常，請稍後再試");
   } finally {
-    resetUI();
-  }
-
-  function resetUI() {
     btn.disabled = false;
     btn.textContent = "送出訂單";
     loadingOverlay?.classList.remove("show");
-    loadingOverlay?.setAttribute("aria-hidden", "true");
   }
 }
-// ✅ 顯示成功卡片（茶系浮層動畫版）
-function showSuccessModal(orderId, total, lineUrl) {
+
+// -------------------------------
+// 成功畫面
+// -------------------------------
+function showSuccessModal(orderId, total) {
   const backdrop = $("successBackdrop");
-  const idEl = $("successOrderId");
-  const totalEl = $("successTotal");
-  const lineBox = $("lineBindBox");
-  const lineBtn = $("lineBindBtn");
-  const closeBtn = $("successClose");
+  $("successOrderId").textContent = orderId || "-";
+  $("successTotal").textContent = `NT$${Number(total).toLocaleString()}`;
 
-  if (!backdrop) {
-    console.error("❌ 未找到 successBackdrop 元素");
-    return;
-  }
-
-  // ✅ 注入訂單資訊
-  if (idEl) idEl.textContent = orderId || "-";
-  if (totalEl) totalEl.textContent = `NT$${Number(total).toLocaleString()}`;
-
-  // ✅ 顯示 LINE 綁定提示（自動淡入）
-  if (lineUrl) {
-    lineBox.hidden = false;
-    lineBtn.href = lineUrl;
-  } else {
-    lineBox.hidden = false; // 改為預設顯示（保留 LINE 提示 UI）
-  }
-
-  // ✅ 顯示浮層（含動畫）
   backdrop.classList.remove("hidden");
   requestAnimationFrame(() => backdrop.classList.add("show"));
 
-  // ✅ 啟動 SVG 打勾動畫（重置後重新觸發）
-  const checkCircle = backdrop.querySelector(".check-circle");
-  const checkMark = backdrop.querySelector(".check-mark");
-  if (checkCircle && checkMark) {
-    checkCircle.style.animation = "none";
-    checkMark.style.animation = "none";
-    void checkCircle.offsetWidth; // 強制重排
-    void checkMark.offsetWidth;
-    checkCircle.style.animation = "drawCircle 0.6s ease-out forwards";
-    checkMark.style.animation = "drawCheck 0.4s ease-out 0.4s forwards";
-  }
-
-  // ✅ 清空表單與購物車
   clearCart();
-  ["name", "phone", "address", "note"].forEach(id => {
+
+  // 清空表單
+  ["name", "phone", "address", "note"].forEach((id) => {
     const el = $(id);
     if (el) el.value = "";
   });
 
-  const agree = $("consentAgree");
-  if (agree) agree.checked = false;
+  $("consentAgree").checked = false;
+  $("submitOrderBtn").setAttribute("disabled", "true");
 
-  document.querySelectorAll("input[name='shipping'], input[name='payment']")
-    .forEach(r => r.checked = false);
-
-  $("submitOrderBtn")?.setAttribute("disabled", "true");
-
-  // ✅ 綁定「回到表單」按鈕
-  if (closeBtn) {
-    closeBtn.onclick = () => {
-      backdrop.classList.remove("show");
-      setTimeout(() => backdrop.classList.add("hidden"), 400);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    };
-  }
+  $("successClose").onclick = () => {
+    backdrop.classList.remove("show");
+    setTimeout(() => backdrop.classList.add("hidden"), 400);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 }
 
-
-// ✅ 初始化送出訂單 & 關閉事件
+// -------------------------------
+// 初始化
+// -------------------------------
 export function initSubmitOrder() {
   const btn = $("submitOrderBtn");
   if (!btn) return;
 
-  // ✅ 若 URL 帶 ?paid=1 → 顯示成功畫面
-  const params = new URLSearchParams(location.search);
-  if (params.get("paid") === "1") {
-    const orderId = params.get("orderId");
-    const total = params.get("total");
-    showSuccessModal(orderId, total);
-    const cleanUrl = location.origin + location.pathname;
-    history.replaceState({}, document.title, cleanUrl);
-  }
+  const allInputs = [
+    $("name"),
+    $("phone"),
+    $("consentAgree"),
+    ...document.querySelectorAll("input[name='shipping']"),
+    ...document.querySelectorAll("input[name='payment']")
+  ];
 
-  const consent = $("consentAgree");
-  const name = $("name");
-  const phone = $("phone");
-  const shipRadios = document.querySelectorAll("input[name='shipping']");
-  const payRadios = document.querySelectorAll("input[name='payment']");
-
-  window.validate = () => {
-    const hasItem = (getCartItems()?.length || 0) > 0;
-    const hasName = name?.value.trim().length > 0;
-    const hasPhone = phone?.value.trim().length >= 8;
-    const hasShip = [...shipRadios].some((r) => r.checked);
-    const hasPay =
-      [...payRadios].some((r) => r.checked) ||
-      document.querySelector(".pay-btn.active") !== null;
-    const agreed = consent?.checked;
-    btn.disabled = !(
-      hasItem &&
-      hasName &&
-      hasPhone &&
-      hasShip &&
-      hasPay &&
-      agreed
-    );
-  };
-
-  [name, phone, consent, ...shipRadios, ...payRadios].forEach((el) => {
-    el?.addEventListener("input", validate);
-    el?.addEventListener("change", validate);
+  allInputs.forEach((el) => {
+    el?.addEventListener("input", validateSubmit);
+    el?.addEventListener("change", validateSubmit);
   });
 
-  window.addEventListener("cart:update", validate);
+  window.addEventListener("cart:update", validateSubmit);
 
   btn.addEventListener("click", (e) => {
     e.preventDefault();
     if (!btn.disabled) submitOrder();
   });
 
-  validate();
-
-  $("successClose")?.addEventListener("click", () => {
-    const backdrop = $("successBackdrop");
-    backdrop.classList.remove("show");
-    backdrop.setAttribute("aria-hidden", "true");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    clearCart();
-  });
-  // 付款方式按鈕切換 active（重要）
-  document.querySelectorAll(".pay-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".pay-btn").forEach((b) =>
-        b.classList.remove("active")
+  // 支付按鈕
+  document.querySelectorAll(".pay-btn").forEach((b) => {
+    b.addEventListener("click", () => {
+      document.querySelectorAll(".pay-btn").forEach((x) =>
+        x.classList.remove("active")
       );
-      btn.classList.add("active");
-      validate();
+      b.classList.add("active");
+      validateSubmit();
     });
   });
+
+  validateSubmit();
 }

@@ -1,5 +1,5 @@
 import { $ } from "./dom.js";
-import { validate } from "./submitOrder.js";
+import { validateSubmit } from "./submitOrder.js";
 
 export function initPaymentUI(retry = 0) {
   const paymentCard = document.getElementById("paymentCard");
@@ -48,7 +48,7 @@ export function initPaymentUI(retry = 0) {
     btn.classList.add("active");
 
     // 觸發重新驗證
-    window.validate();
+    validateSubmit();
   });
 });
 }
