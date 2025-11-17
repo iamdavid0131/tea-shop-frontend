@@ -14,7 +14,14 @@ export function saveCartItem(id, qty, pack, packQty) {
   if (qty > 0) {
     cart[id] = { qty, pack, packQty };
   } else {
-    delete cart[id]; // qty = 0 就移除
+    delete cart[id];
+  }
+
+  // ⭐ 同步更新 UI (這個你目前沒有)
+  const qtyEl = document.getElementById(`qty-${id}`);
+  if (qtyEl) {
+    if ("value" in qtyEl) qtyEl.value = qty;
+    else qtyEl.textContent = qty;
   }
 
   localStorage.setItem("teaOrderCart", JSON.stringify(cart));
