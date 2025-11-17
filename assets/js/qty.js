@@ -1,5 +1,5 @@
 import { $, toast } from "./dom.js";
-import { saveCart, updateTotals } from "./cart.js";
+import { saveCartItem, updateTotals } from "./cart.js";
 import { CONFIG } from "./config.js";
 import { getQty } from "./cart.js";
 
@@ -34,7 +34,7 @@ export function handleQtyClick(btn) {
   qtyEl.value = qty;
 
   updatePackUI(id);
-  saveCart();
+  saveCartItem(id, qty, pack, packQty);
   updateTotals();
   
 }
@@ -56,7 +56,7 @@ function handlePackBtn(btn) {
   packInput.value = Math.min(qty, v);
 
   updatePackUI(id);
-  saveCart();
+  saveCartItem(id, qty, pack, packQty);
   updateTotals();
 }
 
@@ -82,7 +82,7 @@ function handlePackToggle(e) {
   }
 
   updatePackUI(id);
-  saveCart();
+  saveCartItem(id, qty, pack, packQty);
   updateTotals();
 }
 

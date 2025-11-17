@@ -4,21 +4,18 @@ import { api } from "./app.api.js";
 
 console.log("🧪 cart.js loaded v3");
 
-// ============================================================
-// 💾 儲存購物車
-// ============================================================
-export function saveCart() {
-  const cart = {};
 
-  CONFIG.PRODUCTS.forEach((p) => {
-    const qty = getQty(p.id);
-    const pack = $(`pack-${p.id}`)?.checked || false;
-    const packQty = Number($(`packQty-${p.id}`)?.value || 0);
+// ============================================================
+// 🟩 儲存「單一商品」進購物車
+// ============================================================
+export function saveCartItem(id, qty, pack, packQty) {
+  const cart = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
 
-    if (qty > 0) {
-      cart[p.id] = { qty, pack, packQty };
-    }
-  });
+  if (qty > 0) {
+    cart[id] = { qty, pack, packQty };
+  } else {
+    delete cart[id]; // qty = 0 就移除
+  }
 
   localStorage.setItem("teaOrderCart", JSON.stringify(cart));
 }
