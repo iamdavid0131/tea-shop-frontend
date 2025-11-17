@@ -48,7 +48,7 @@ export function initPaymentUI(retry = 0) {
     btn.classList.add("active");
 
     // 觸發重新驗證
-    validate();
+    window.validate();
   });
 });
 }
