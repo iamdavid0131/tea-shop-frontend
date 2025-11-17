@@ -44,8 +44,19 @@ export function validateSubmit() {
     document.querySelector(".pay-btn.active") !== null;
   const agreed = consent?.checked;
 
+  // 🔥 這裡印出全部條件，馬上知道哪個是 false
+  console.log("=== validateSubmit Debug ===");
+  console.log("🛒 商品數量 hasItem:", hasItem, getCartItems());
+  console.log("👤 姓名 hasName:", hasName, name?.value);
+  console.log("📱 電話 hasPhone:", hasPhone, phone?.value);
+  console.log("🚚 運送方式 hasShip:", hasShip);
+  console.log("💳 付款方式 hasPay:", hasPay);
+  console.log("✔️ 同意條款 agreed:", agreed);
+  console.log("🔍 disabled 結果 =", !(hasItem && hasName && hasPhone && hasShip && hasPay && agreed));
+
   btn.disabled = !(hasItem && hasName && hasPhone && hasShip && hasPay && agreed);
 }
+
 
 // -------------------------------
 // 主送出流程
@@ -220,3 +231,4 @@ export function initSubmitOrder() {
 
   validateSubmit();
 }
+
