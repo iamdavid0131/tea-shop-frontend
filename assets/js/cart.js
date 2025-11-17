@@ -200,16 +200,20 @@ export function buildOrderItems() {
     const qty = getQty(p.id);
     if (qty <= 0) return null;
 
-    const pack = $(`pack-${p.id}`)?.checked || false;
-    const packQty = Number($(`packQty-${p.id}`)?.value || 0);
+    const packEl = $(`pack-${p.id}`);
+    const pack = packEl?.checked || false;
+
+    // ⚠️ packQty 必須跟著有裝罐才讀，不然永遠 0
+    const packQty = pack ? Number($(`packQty-${p.id}`)?.value || 1) : 0;
 
     return {
       id: p.id,
-      name: p.title,
-      price: p.price,
+      name: p.title || p.name || "",  // ⭐ title 優先，其次 name
+      price: p.price || 0,            // ⭐ 必須保險帶 price
       qty,
       pack,
       packQty
     };
   }).filter(Boolean);
 }
+
