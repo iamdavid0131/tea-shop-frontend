@@ -5,8 +5,7 @@
 import { $, toast } from "./dom.js";
 import { CONFIG } from "./config.js";
 import { api } from "./app.api.js";
-import { buildOrderItems } from "./cart.js";
-
+import { buildOrderItems,updateTotals } from "./cart.js";
 
 // ========================================================
 // 顯示購物明細 Sheet
