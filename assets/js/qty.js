@@ -22,23 +22,25 @@ export function handleQtyClick(btn) {
   const qtyEl = getQtyEl(id);
   let qty = parseInt(qtyEl.value || 0);
 
-    if (dir === "plus") {
-        qty++;
-        spawnQtyBubble(btn, "+1");
-    }
-    if (dir === "minus" && qty > 0) {
-        qty--;
-        spawnQtyBubble(btn, "-1");
-    }
+  if (dir === "plus") {
+    qty++;
+    spawnQtyBubble(btn, "+1");
+  }
+  if (dir === "minus" && qty > 0) {
+    qty--;
+    spawnQtyBubble(btn, "-1");
+  }
 
   qtyEl.value = qty;
+
+  // ⭐ 重新抓 pack / packQty
+  const pack = $(`pack-${id}`)?.checked || false;
+  const packQty = Number($(`packQty-${id}`)?.value || 0);
 
   updatePackUI(id);
   saveCartItem(id, qty, pack, packQty);
   updateTotals();
-  
 }
-
 /** 裝罐 +/- */
 function handlePackBtn(btn) {
   const id = btn.dataset.pack;
@@ -54,6 +56,9 @@ function handlePackBtn(btn) {
   if (dir === "minus" && v > 1) v--;
 
   packInput.value = Math.min(qty, v);
+
+  const pack = $(`pack-${id}`)?.checked || false;
+  const packQty = Number(packInput.value || 0);
 
   updatePackUI(id);
   saveCartItem(id, qty, pack, packQty);
@@ -81,6 +86,11 @@ function handlePackToggle(e) {
     }, 260);
   }
 
+  const qtyEl = getQtyEl(id);
+  const qty = parseInt(qtyEl?.value || 0);
+  const pack = chk.checked;
+  const packQty = Number($(`packQty-${id}`)?.value || 0);
+
   updatePackUI(id);
   saveCartItem(id, qty, pack, packQty);
   updateTotals();
@@ -88,8 +98,8 @@ function handlePackToggle(e) {
 
 /** 裝罐 UI 動態控制 */
 export function updatePackUI(id) {
-  const qtyEl = getQty(id);
-  const qty = qtyEl;
+  const qtyEl = document.getElementById(`qty-${id}`);
+  const qty = parseInt(qtyEl?.value || 0);
 
   const packToggle = $(`pack-${id}`);
   const packInput = $(`packQty-${id}`);
@@ -97,18 +107,15 @@ export function updatePackUI(id) {
 
   if (!packToggle || !packInput) return;
 
-  // === qty = 0 不要重設使用者的 pack 設定，只要禁用 UI ===
   if (qty === 0) {
     packToggle.disabled = true;
     wrap.classList.add("disabled-wrap");
     return;
   }
 
-  // qty > 0 → 可編輯
   packToggle.disabled = false;
   wrap.classList.remove("disabled-wrap");
 
-  // === 不要重置 packQty，只在勾選 pack 時才顯示 ===
   if (packToggle.checked) {
     wrap.classList.remove("hidden");
   } else {
