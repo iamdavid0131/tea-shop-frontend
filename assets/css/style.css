@@ -2275,14 +2275,9 @@ textarea {
 
 /* === 送出訂單 === */
 .submit-area {
-  position: fixed;
-  bottom: 90px; /* 高於 StickyBar 的高度 */
-  left: 0;
-  width: 100%;
+  margin-top: 24px;
   display: flex;
   justify-content: center;
-  z-index: 1000; /* 高過 StickyBar */
-  padding: 0 16px;
 }
 
 .submit-btn {
