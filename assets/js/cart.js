@@ -9,12 +9,20 @@ console.log("🧪 cart.js loaded v3");
 // ============================================================
 export function saveCart() {
   const cart = {};
+
   CONFIG.PRODUCTS.forEach((p) => {
     const qty = getQty(p.id);
-    if (qty > 0) cart[p.id] = qty;
+    const pack = $(`pack-${p.id}`)?.checked || false;
+    const packQty = Number($(`packQty-${p.id}`)?.value || 0);
+
+    if (qty > 0) {
+      cart[p.id] = { qty, pack, packQty };
+    }
   });
+
   localStorage.setItem("teaOrderCart", JSON.stringify(cart));
 }
+
 
 // ============================================================
 // 🔄 還原購物車
@@ -22,21 +30,30 @@ export function saveCart() {
 export function restoreCart() {
   try {
     const saved = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
-    Object.entries(saved).forEach(([id, qty]) => {
-      const elQty = $(`qty-${id}`);
-      if (!elQty) return;
 
-      // ✅ 依元素型態決定寫 value 還是 textContent
-      if ("value" in elQty) {
-        elQty.value = qty;
-      } else {
-        elQty.textContent = qty;
-      }
+    Object.entries(saved).forEach(([id, data]) => {
+      const { qty, pack, packQty } = data;
+
+      // qty
+      const qtyEl = $(`qty-${id}`);
+      if (qtyEl) qtyEl.value = qty;
+
+      // pack 是否啟用
+      const packEl = $(`pack-${id}`);
+      if (packEl) packEl.checked = pack;
+
+      // packQty
+      const pq = $(`packQty-${id}`);
+      if (pq) pq.value = packQty;
+
+      // 更新 UI（顯示/隱藏 packQty 區塊）
+      updatePackUI(id);
     });
-  } catch (e) {
-    console.warn("⚠️ 無法還原購物車:", e);
+  } catch (err) {
+    console.warn("⚠️ restoreCart 錯誤:", err);
   }
 }
+
 
 // ============================================================
 // 💰 金額試算 + Sticky Bar 更新
@@ -211,21 +228,20 @@ export function getQty(id) {
 }
 
 export function buildOrderItems() {
-  return CONFIG.PRODUCTS.map(p => {
-    const qty = getQty(p.id);
-    if (qty <= 0) return null;
+  const saved = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
 
-    const packEl = $(`pack-${p.id}`);
-    const pack = packEl?.checked || false;
-    const packQty = pack ? Number($(`packQty-${p.id}`)?.value || 1) : 0;
+  return CONFIG.PRODUCTS.map((p) => {
+    const data = saved[p.id];
+    if (!data) return null;
 
     return {
       id: p.id,
       name: p.title || p.name || "",
-      price: p.price || 0,
-      qty,
-      pack,
-      packQty
+      price: p.price,
+      qty: data.qty,
+      pack: data.pack,
+      packQty: data.packQty
     };
   }).filter(Boolean);
 }
+

@@ -6,7 +6,7 @@ import { $, $$ } from "./dom.js";
 import { updatePackUI, initQtyControls } from "./qty.js";
 import { CATEGORY_MAP } from "./category-map.js";
 import { CONFIG } from "./config.js";
-
+import { saveCart } from "./cart.js";
 // ============================================================
 // 🌌 Aurora Mist Engine — 極光茶霧
 // ============================================================
@@ -224,7 +224,7 @@ function renderSingleProduct(p, container, catInfo) {
         </label>
         <div class="pack-qty hidden" id="packQtyWrap-${p.id}">
           <button class="step" data-dir="minus" data-pack="${p.id}">−</button>
-          <input type="number" id="packQty-${p.id}" value="0" min="0">
+          <input type="number" id="packQty-${p.id}" value="" min="1">
           <button class="step" data-dir="plus" data-pack="${p.id}">＋</button>
         </div>
       </div>
@@ -233,6 +233,8 @@ function renderSingleProduct(p, container, catInfo) {
 
   // ⭐ catInfo 一定存在，不會 undefined
   const profileColor = catInfo?.profileColor || "#78cfa8";
+  const savedCart = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
+  const currentQty = savedCart[p.id] || 0;
 
   item.innerHTML = `
     <div class="title">${p.title}</div>
@@ -241,7 +243,7 @@ function renderSingleProduct(p, container, catInfo) {
 
     <div class="qty-row">
       <button class="qty-btn" data-id="${p.id}" data-dir="minus">−</button>
-      <input class="qty-input" id="qty-${p.id}" type="number" value="0" min="0">
+      <input class="qty-input" id="qty-${p.id}" type="number" value="${currentQty}" min="0">
       <button class="qty-btn" data-id="${p.id}" data-dir="plus">＋</button>
     </div>
 
