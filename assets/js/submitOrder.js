@@ -251,7 +251,7 @@ export function initSubmitOrder() {
   const shipRadios = document.querySelectorAll("input[name='shipping']");
   const payRadios = document.querySelectorAll("input[name='payment']");
 
-  const validate = () => {
+  window.validate = () => {
     const hasItem = (getCartItems()?.length || 0) > 0;
     const hasName = name?.value.trim().length > 0;
     const hasPhone = phone?.value.trim().length >= 8;

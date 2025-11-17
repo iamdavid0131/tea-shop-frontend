@@ -1,4 +1,5 @@
 import { $ } from "./dom.js";
+import { validate } from "./submitOrder.js";
 
 export function initPaymentUI(retry = 0) {
   const paymentCard = document.getElementById("paymentCard");
