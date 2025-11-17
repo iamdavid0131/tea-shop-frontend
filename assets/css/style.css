@@ -8,6 +8,9 @@
 html,body{
   background: #fff;
 }
+body {
+  padding-bottom: 140px; /* StickyBar 高度 + 送出按鈕預留空間 */
+}
 .ios-header {
   position: relative;
   z-index: 100;
@@ -2278,6 +2281,8 @@ textarea {
   margin-top: 24px;
   display: flex;
   justify-content: center;
+  padding: 0 16px;
+  position: static; /* 🔥 必須取消 fixed */
 }
 
 .submit-btn {
