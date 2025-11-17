@@ -37,7 +37,7 @@ export function initPaymentUI(retry = 0) {
       console.log("💳 已選擇付款方式：", method);
 
       // 🔄 觸發全局事件（讓 submitOrder.js 重新驗證）
-      window.dispatchEvent(new Event("cart:update"));
+      validateSubmit();
     });
   });
   document.querySelectorAll(".pay-btn").forEach((btn) => {
