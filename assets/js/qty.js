@@ -86,36 +86,34 @@ function handlePackToggle(e) {
 
 /** 裝罐 UI 動態控制 */
 export function updatePackUI(id) {
-  const qtyEl = getQtyEl(id);
-  const qty = parseInt(qtyEl?.value || 0);
+  const qtyEl = getQty(id);
+  const qty = qtyEl;
 
   const packToggle = $(`pack-${id}`);
-  if (!packToggle) return;
-
   const packInput = $(`packQty-${id}`);
   const wrap = $(`packQtyWrap-${id}`);
-  const label = packToggle.closest(".pack-row").querySelector(".pack-toggle");
 
+  if (!packToggle || !packInput) return;
+
+  // === qty = 0 不要重設使用者的 pack 設定，只要禁用 UI ===
   if (qty === 0) {
-    packToggle.checked = false;
     packToggle.disabled = true;
-    label.classList.add("disabled");
-    packInput.value = 0;
     wrap.classList.add("disabled-wrap");
-  } else {
-    packToggle.disabled = false;
-    label.classList.remove("disabled");
-    packInput.disabled = false;
-    wrap.classList.remove("disabled-wrap");
+    return;
+  }
 
-    if (packToggle.checked) {
-      wrap.classList.remove("hidden");
-      packInput.value = Math.min(qty, parseInt(packInput.value || 1));
-    } else {
-      wrap.classList.add("hidden");
-    }
+  // qty > 0 → 可編輯
+  packToggle.disabled = false;
+  wrap.classList.remove("disabled-wrap");
+
+  // === 不要重置 packQty，只在勾選 pack 時才顯示 ===
+  if (packToggle.checked) {
+    wrap.classList.remove("hidden");
+  } else {
+    wrap.classList.add("hidden");
   }
 }
+
 
 /* ============================================================
 ✨ 初始化：永遠只會綁一次事件（解決 +2 問題）

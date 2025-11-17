@@ -32,14 +32,25 @@ export function restoreCart() {
     const saved = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
 
     Object.entries(saved).forEach(([id, data]) => {
-      const { qty } = data;
+      const { qty, pack, packQty } = data;
 
-      // 只還原主頁 qty（textContent or value 都支援）
+      // qty
       const qtyEl = $(`qty-${id}`);
       if (qtyEl) {
         if ("value" in qtyEl) qtyEl.value = qty;
         else qtyEl.textContent = qty;
       }
+
+      // pack
+      const packEl = $(`pack-${id}`);
+      if (packEl) packEl.checked = pack;
+
+      // packQty
+      const pq = $(`packQty-${id}`);
+      if (pq) pq.value = packQty;
+
+      // 更新 UI (顯示/隱藏 packQty)
+      updatePackUI(id);
     });
   } catch (err) {
     console.warn("⚠️ restoreCart 錯誤:", err);
@@ -220,19 +231,21 @@ export function getQty(id) {
 }
 
 export function buildOrderItems() {
-  const saved = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
+  return CONFIG.PRODUCTS.map(p => {
+    const qty = getQty(p.id);
+    if (qty <= 0) return null;
 
-  return CONFIG.PRODUCTS.map((p) => {
-    const data = saved[p.id];
-    if (!data) return null;
+    const packEl = $(`pack-${p.id}`);
+    const pack = packEl?.checked || false;
+    const packQty = pack ? Number($(`packQty-${p.id}`)?.value || 1) : 0;
 
     return {
       id: p.id,
       name: p.title || p.name || "",
       price: p.price,
-      qty: data.qty,
-      pack: data.pack,
-      packQty: data.packQty
+      qty,
+      pack,
+      packQty
     };
   }).filter(Boolean);
 }

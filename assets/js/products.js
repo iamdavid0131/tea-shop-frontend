@@ -210,25 +210,29 @@ function renderSingleProduct(p, container, catInfo) {
   const item = document.createElement("article");
   item.className = "itemcard";
 
-  // === 讀取 saved 資料 ===
-  const savedQty = (JSON.parse(localStorage.getItem("teaOrderCart") || "{}"))[p.id] || 0;
-  const savedPack = (JSON.parse(localStorage.getItem("teaOrderPack") || "{}"))[p.id] || {
+  // === 讀取 saved cart（新版結構）===
+  const saved = (JSON.parse(localStorage.getItem("teaOrderCart") || "{}"))[p.id] || {
+    qty: 0,
     pack: false,
-    packQty: 0
+    packQty: 0,
   };
 
-  // === 單品 HTML ===
+  const savedQty = saved.qty || 0;
+  const savedPack = saved.pack || false;
+  const savedPackQty = saved.packQty || 1;
+
+  // === 單品 HTML 產生 ===
   const packHtml = p.packable
     ? `
       <div class="pack-row">
         <label class="pack-toggle">
-          <input type="checkbox" id="pack-${p.id}">
+          <input type="checkbox" id="pack-${p.id}" ${savedPack ? "checked" : ""}>
           裝罐
         </label>
 
-        <div class="pack-qty hidden" id="packQtyWrap-${p.id}">
+        <div class="pack-qty ${savedPack ? "" : "hidden"}" id="packQtyWrap-${p.id}">
           <button class="step" data-dir="minus" data-pack="${p.id}">−</button>
-          <input type="number" id="packQty-${p.id}" value="0" min="1">
+          <input type="number" id="packQty-${p.id}" value="${savedPackQty}" min="1">
           <button class="step" data-dir="plus" data-pack="${p.id}">＋</button>
         </div>
       </div>
@@ -259,24 +263,7 @@ function renderSingleProduct(p, container, catInfo) {
 
   container.appendChild(item);
 
-  // === ⭐ 還原裝罐狀態（最重要） ===
-  const packToggle = document.getElementById(`pack-${p.id}`);
-  const packQtyInput = document.getElementById(`packQty-${p.id}`);
-  const packWrap = document.getElementById(`packQtyWrap-${p.id}`);
-
-  if (packToggle) {
-    packToggle.checked = savedPack.pack;
-
-    if (savedPack.pack) {
-      packWrap.classList.remove("hidden");
-      packQtyInput.value = savedPack.packQty || 1;
-    } else {
-      packWrap.classList.add("hidden");
-      packQtyInput.value = 0;
-    }
-  }
-
-  // === 初始化裝罐 UI（不覆蓋還原結果）===
+  // === 初始化裝罐 UI，不覆蓋本來的數值 ===
   setTimeout(() => updatePackUI(p.id), 10);
 
   // === 動畫 ===
@@ -298,6 +285,7 @@ function renderSingleProduct(p, container, catInfo) {
     });
   }, 50);
 }
+
 
 // ============================================================
 // 🟩 Profile 條
