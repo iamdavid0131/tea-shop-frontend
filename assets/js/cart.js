@@ -169,29 +169,27 @@ export function animateMoney() {
 // ============================================================
 export function getCartItems() {
   try {
-    const items = CONFIG.PRODUCTS.map(p => {
-      const qty = getQty(p.id);
-      const packEl = $(`pack-${p.id}`);
-      const pack = packEl?.classList?.contains("active") || packEl?.checked || false;
+    const cart = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
+
+    return Object.entries(cart).map(([id, data]) => {
+      const p = CONFIG.PRODUCTS.find(x => x.id == id);
+      if (!p) return null;
 
       return {
         id: p.id,
         name: p.title || p.name || "",
-        qty,
-        pack,
+        qty: data.qty,
+        pack: data.pack,
+        packQty: data.packQty
       };
-    }).filter(i => i.qty > 0);
-    console.log("📦 localStorage cart =", cart);
-    console.log("📦 CONFIG.PRODUCTS ids =", CONFIG.PRODUCTS.map(x => x.id));
-    console.log("📦 匹配結果 =", items);
+    }).filter(Boolean);
 
-
-    return items;
   } catch (err) {
     console.error("⚠️ getCartItems 失敗:", err);
     return [];
   }
 }
+
 
 // ============================================================
 // 🧹 清空購物車（送出訂單成功後）
