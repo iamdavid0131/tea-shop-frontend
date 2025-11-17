@@ -9,7 +9,7 @@ html,body{
   background: #fff;
 }
 body {
-  padding-bottom: 200px; /* StickyBar 高度 + 送出按鈕預留空間 */
+  padding-bottom: calc(var(--sticky-height, 90px) + 32px); /* StickyBar 高度 + 送出按鈕預留空間 */
 }
 .ios-header {
   position: relative;
@@ -889,7 +889,9 @@ body {
   transition: all 0.45s cubic-bezier(0.25, 1, 0.5, 1);
   transform-origin: bottom;
 }
-
+#StickyBar {
+  --sticky-height: 90px;
+}
 /* === 玻璃質感 === */
 .stickybar.glassy {
   background: linear-gradient(180deg, rgba(255,255,255,0.82), rgba(245,248,245,0.9));
