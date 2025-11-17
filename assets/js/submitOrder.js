@@ -291,4 +291,14 @@ export function initSubmitOrder() {
     window.scrollTo({ top: 0, behavior: "smooth" });
     clearCart();
   });
+  // 付款方式按鈕切換 active（重要）
+  document.querySelectorAll(".pay-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".pay-btn").forEach((b) =>
+        b.classList.remove("active")
+      );
+      btn.classList.add("active");
+      validate();
+    });
+  });
 }
