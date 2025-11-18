@@ -207,28 +207,73 @@ function showAIModal() {
         return;
       }
 
-      // ----------------------------------------------------
-      // (5) 一般推薦模式（best + second）
-      // ----------------------------------------------------
-      const best = CONFIG.PRODUCTS.find(p => p.id === out.best);
+    // ----------------------------------------------------
+    // (5) 一般推薦模式（best + second）
+    // ----------------------------------------------------
 
-      let secondId = null;
-      let secondName = "";
-      let secondReason = "";
+    // 1) 取得 best ID（無論字串或物件）
+    const bestId =
+    typeof out.best === "string"
+        ? out.best
+        : out.best?.id;
 
-      if (out.second) {
-        secondId = typeof out.second === "string" ? out.second : out.second.id;
-        secondReason = out.second.reason || "";
-        const secondProd = CONFIG.PRODUCTS.find(p => p.id === secondId);
-        secondName = secondProd?.title || secondId;
-      }
+    // 2) 若沒有 bestId → 直接中斷（必須有 best）
+    if (!bestId) {
+    resultBox.innerHTML = `
+        <div class="ai-error">
+        ⚠️ AI 推薦結果異常（無 best），請再試一次。
+        </div>
+    `;
+    console.error("AI 無 best:", out);
+    return;
+    }
+
+    // 3) find 產品資料
+    const best = CONFIG.PRODUCTS.find(p => p.id === bestId);
+
+    if (!best) {
+    resultBox.innerHTML = `
+        <div class="ai-error">
+        ⚠️ 找不到推薦的茶品（ID：${bestId}）
+        </div>
+    `;
+    console.error("找不到茶品:", out);
+    return;
+    }
+
+    // 4) best 理由（字串 or 物件.reason）
+    const bestReason =
+    typeof out.best === "string"
+        ? out.reason || ""
+        : out.best?.reason || "";
+
+    // 5) second 同樣邏輯
+    let secondId = null;
+    let secondName = "";
+    let secondReason = "";
+
+    if (out.second) {
+    secondId =
+        typeof out.second === "string"
+        ? out.second
+        : out.second?.id;
+
+    const secondProd = CONFIG.PRODUCTS.find(p => p.id === secondId);
+    secondName = secondProd?.title || secondId;
+
+    secondReason =
+        typeof out.second === "string"
+        ? out.secondReason || ""
+        : out.second?.reason || "";
+    }
+
 
       resultBox.innerHTML = `
         <div class="ai-chat">
           <div class="ai-bubble ai-bubble-ai ai-bubble-click" data-id="${best.id}">
             <div class="ai-bubble-label">推薦茶款</div>
             <div class="ai-bubble-title">${best.title}</div>
-            <div class="ai-bubble-text">${out.reason}</div>
+            <div class="ai-bubble-text">${bestReason}</div>
           </div>
 
           ${secondId ? `
