@@ -338,25 +338,29 @@
 </div>
 <!-- ✅ 成功提示模組 -->
 <div id="successBackdrop" class="success-backdrop hidden">
-  <div class="success-card">
-    <svg class="success-check" viewBox="0 0 52 52">
-      <circle class="check-circle" cx="26" cy="26" r="25" fill="none"/>
-      <path class="check-mark" fill="none" d="M14 27l7 7 17-17"/>
+  <div class="success-card glass-success">
+
+    <!-- 🎉 勾勾動畫 -->
+    <svg class="success-check" viewBox="0 0 100 100">
+      <circle class="check-circle" cx="50" cy="50" r="40" fill="none"/>
+      <path class="check-mark" fill="none" d="M30 52 L45 67 L70 40"/>
     </svg>
 
-    <h2 class="success-title">訂單已送出</h2>
-    <p class="success-sub">感謝您的訂購，我們將儘快為您出貨。</p>
+    <div class="success-title">訂單成功</div>
+    <div class="success-sub">感謝您的支持，茶香即將為您送上 🍃</div>
 
     <div class="success-info">
-      <div><strong>訂單編號</strong> <span id="successOrderId">—</span></div>
-      <div><strong>金額</strong> <span id="successTotal">NT$—</span></div>
+      <div><strong>訂單編號</strong><span id="successOrderId">—</span></div>
+      <div><strong>訂單金額</strong><span id="successTotal">—</span></div>
     </div>
 
+    <!-- LINE 綁定 -->
     <div id="lineBindBox">
-      <a id="lineBindBtn" href="#" class="line-bind-btn">綁定 LINE 以接收出貨通知</a>
+      <a id="successLine" class="line-bind-btn">加入 LINE 接收出貨通知</a>
     </div>
 
-    <button id="successClose" class="success-close">回到表單</button>
+    <!-- 返回按鈕 -->
+    <button id="successClose" class="success-close">返回訂購頁</button>
   </div>
 </div>
 
