@@ -166,17 +166,28 @@ function showAIModal() {
   // ----------------------------------------------------
   const best = CONFIG.PRODUCTS.find(p => p.id === out.best);
 
-  let secondId = null;
-  let secondName = "";
+    let secondId = null;
+    let secondName = "";
+    let secondReason = "";
 
-  if (out.second) {
-    secondId = typeof out.second === "string"
-      ? out.second
-      : out.second.id;
+    if (out.second) {
+    // 可能是字串，也可能是物件
+    if (typeof out.second === "string") {
+        secondId = out.second;
+    } else {
+        secondId = out.second.id;
+        secondReason = out.second.reason || "";
+    }
 
+    // 從 CONFIG.PRODUCTS 找 title
     const secondProd = CONFIG.PRODUCTS.find(p => p.id === secondId);
     secondName = secondProd?.title || secondId;
-  }
+
+    // 如果後端第二推薦沒有理由，用空或提示
+    if (!secondReason) {
+        secondReason = secondProd?.descShort || "風味也相近，可作為備選茶款。";
+    }
+    }
 
   resultBox.innerHTML = `
     <div class="ai-chat">
@@ -192,7 +203,7 @@ function showAIModal() {
           <div class="ai-bubble ai-bubble-ai ai-bubble-click" data-id="${secondId}">
               <div class="ai-bubble-label">次推薦</div>
               <div class="ai-bubble-title">${secondName}</div>
-              <div class="ai-bubble-text">${out.second.reason}</div>
+              <div class="ai-bubble-text">${secondReason}</div>
           </div>
           `
           : ""
