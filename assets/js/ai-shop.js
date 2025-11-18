@@ -74,7 +74,10 @@ function showAIModal() {
 
     modal.innerHTML = `
       <div class="ai-box">
-        <h2 class="ai-title">💬 AI 茶品推薦</h2>
+        <h2 class="ai-title">
+        <i class="ph ph-chat-teardrop-dots ai-icon"></i>
+        AI 茶品推薦
+        </h2>
 
         <textarea id="aiQuery" 
           placeholder="告訴我你喜歡什麼風味…"
@@ -112,77 +115,111 @@ function showAIModal() {
     // ❸ AI 查詢送出
     // ----------------------------------------------------
     modal.querySelector("#aiSubmit").onclick = async () => {
-      const q = modal.querySelector("#aiQuery").value.trim();
-      if (!q) return;
+  const q = modal.querySelector("#aiQuery").value.trim();
+  if (!q) return;
 
-      const resultBox = modal.querySelector("#aiResult");
-      resultBox.style.display = "block";
-      resultBox.innerHTML = "⏳ AI 分析中…";
+  const resultBox = modal.querySelector("#aiResult");
+  resultBox.style.display = "block";
 
-      const out = await callAI(q);
-      console.log("AI 回覆：", out);
+  // ----------------------------------------------------
+  // 🌟 1. LOADING UI（玻璃 3 點動畫 + 文字）
+  // ----------------------------------------------------
+  resultBox.innerHTML = `
+    <div class="ai-loader">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+    <div class="ai-loading-text">AI 正在分析風味…</div>
+  `;
 
-      if (!out || !out.best) {
-        resultBox.innerHTML = "⚠️ 無法理解你的需求，請再描述一下～";
-        return;
-      }
+  // ----------------------------------------------------
+  // 🌟 2. Timeout（避免卡太久）
+  // ----------------------------------------------------
+  const aiPromise = callAI(q);
+  const timeoutPromise = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error("timeout")), 8000)
+  );
 
-      const best = CONFIG.PRODUCTS.find(p => p.id === out.best);
+  let out;
+  try {
+    out = await Promise.race([aiPromise, timeoutPromise]);
+  } catch (e) {
+    resultBox.innerHTML = `
+      <div class="ai-error">
+        ⚠️ 分析時間較久，可能正在忙線<br>
+        請再試一次或簡短描述風味～
+      </div>
+    `;
+    return;
+  }
 
-      let secondId = null;
-        let secondName = "";
+  console.log("AI 回覆：", out);
 
-        // second 可能是一個物件，也可能是字串
-        if (out.second) {
-        secondId = typeof out.second === "string" 
-            ? out.second 
-            : out.second.id;
+  if (!out || !out.best) {
+    resultBox.innerHTML = "⚠️ 無法理解你的需求，請再描述一下～";
+    return;
+  }
 
-        const secondProd = CONFIG.PRODUCTS.find(p => p.id === secondId);
-        secondName = secondProd?.title || secondId;
-        }
-      resultBox.innerHTML = `
-        <div class="ai-chat">
-          <div class="ai-bubble ai-bubble-ai ai-bubble-click" data-id="${best.id}">
-              <div class="ai-bubble-label">推薦茶款</div>
-              <div class="ai-bubble-title">${best.title}</div>
-              <div class="ai-bubble-text">${out.reason}</div>
+  // ----------------------------------------------------
+  // 🌟 3. 正常結果顯示
+  // ----------------------------------------------------
+  const best = CONFIG.PRODUCTS.find(p => p.id === out.best);
+
+  let secondId = null;
+  let secondName = "";
+
+  if (out.second) {
+    secondId = typeof out.second === "string"
+      ? out.second
+      : out.second.id;
+
+    const secondProd = CONFIG.PRODUCTS.find(p => p.id === secondId);
+    secondName = secondProd?.title || secondId;
+  }
+
+  resultBox.innerHTML = `
+    <div class="ai-chat">
+      <div class="ai-bubble ai-bubble-ai ai-bubble-click" data-id="${best.id}">
+          <div class="ai-bubble-label">推薦茶款</div>
+          <div class="ai-bubble-title">${best.title}</div>
+          <div class="ai-bubble-text">${out.reason}</div>
+      </div>
+
+      ${
+        out.second
+          ? `
+          <div class="ai-bubble ai-bubble-ai ai-bubble-click" data-id="${secondId}">
+              <div class="ai-bubble-label">次推薦</div>
+              <div class="ai-bubble-title">${secondName}</div>
+              <div class="ai-bubble-text">${out.second.reason}</div>
           </div>
+          `
+          : ""
+      }
+    </div>
+  `;
 
-          ${
-            out.second
-              ? `
-              <div class="ai-bubble ai-bubble-ai ai-bubble-click" data-id="${secondId}">
-                  <div class="ai-bubble-label">次推薦</div>
-                  <div class="ai-bubble-title">${secondName}</div>
-                  <div class="ai-bubble-text">${out.second.reason}</div>
-              </div>
-              `
-              : ""
-          }
-        </div>
-      `;
+  saveUserTaste({
+    lastBest: best.id,
+    lastReason: out.reason,
+    timestamp: Date.now(),
+  });
 
-      saveUserTaste({
-        lastBest: best.id,
-        lastReason: out.reason,
-        timestamp: Date.now(),
-      });
+  // ----------------------------------------------------
+  // 🌟 4. 點選 bubble → 開啟商品 Modal
+  // ----------------------------------------------------
+  const chat = modal.querySelector(".ai-chat");
+  chat.addEventListener("click", (e) => {
+    const bubble = e.target.closest(".ai-bubble-click");
+    if (!bubble) return;
 
-      // ----------------------------------------------------
-      // ❹ 點選 bubble → 關 modal → 開茶商品 modal
-      // ----------------------------------------------------
-      const chat = modal.querySelector(".ai-chat");
-      chat.addEventListener("click", (e) => {
-        const bubble = e.target.closest(".ai-bubble-click");
-        if (!bubble) return;
+    modal.classList.remove("show");
+    setTimeout(() => modal.remove(), 250);
 
-        modal.classList.remove("show");
-        setTimeout(() => modal.remove(), 250);
-
-        openProductModal(bubble.dataset.id);
-      });
-    };
+    openProductModal(bubble.dataset.id);
+  });
+};
   }
 
   // ----------------------------------------------------
