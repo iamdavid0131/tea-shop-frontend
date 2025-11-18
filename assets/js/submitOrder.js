@@ -168,8 +168,13 @@ function showSuccessModal(orderId, total) {
   $("successOrderId").textContent = orderId || "-";
   $("successTotal").textContent = `NT$${Number(total).toLocaleString()}`;
 
+  // ⚠️ 清掉 AI overlay 避免擋住
+  document.getElementById("aiTeaHelperHost")?.classList.remove("active");
+
   backdrop.classList.remove("hidden");
   requestAnimationFrame(() => backdrop.classList.add("show"));
+
+  bindSuccessButtons(); // ⭐ 綁定按鈕事件
 
   clearCart();
 
@@ -181,13 +186,28 @@ function showSuccessModal(orderId, total) {
 
   $("consentAgree").checked = false;
   $("submitOrderBtn").setAttribute("disabled", "true");
-
-  $("successClose").onclick = () => {
-    backdrop.classList.remove("show");
-    setTimeout(() => backdrop.classList.add("hidden"), 400);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
 }
+
+function bindSuccessButtons() {
+  const backdrop = $("successBackdrop");
+  const closeBtn = $("successClose");
+  const lineBtn = $("successLine"); // 如果沒有可以忽略
+
+  if (closeBtn) {
+    closeBtn.onclick = () => {
+      backdrop.classList.remove("show");
+      setTimeout(() => backdrop.classList.add("hidden"), 380);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+  }
+
+  if (lineBtn) {
+    lineBtn.onclick = () => {
+      window.location.href = "https://line.me/R/ti/p/@agw3661i";
+    };
+  }
+}
+
 
 // -------------------------------
 // 初始化
@@ -226,7 +246,7 @@ export function initSubmitOrder() {
       validateSubmit();
     });
   });
-
+  bindSuccessButtons();
   validateSubmit();
   checkEcpayReturn();
 }
@@ -244,15 +264,24 @@ export function checkEcpayReturn() {
     // 清除購物車
     clearCart?.();
 
-    // 開啟成功視窗（你原本的函式）
+    // ⚠️ 確保 AI overlay 沒擋住
+    document.getElementById("aiTeaHelperHost")?.classList.remove("active");
+
+    // ⚠️ 確保 loading 沒擋住
+    $("globalLoading")?.classList.remove("show");
+    $("globalLoading")?.setAttribute("aria-hidden", "true");
+
+    // 顯示成功畫面
     const backdrop = $("successBackdrop");
     $("successOrderId").textContent = orderId;
     $("successTotal").textContent = `NT$${Number(total).toLocaleString()}`;
-
     backdrop.classList.remove("hidden");
     requestAnimationFrame(() => backdrop.classList.add("show"));
 
-    // 清掉網址參數，避免刷新又跳一次
+    // ⭐ 綁定成功視窗所有按鈕
+    bindSuccessButtons();
+
+    // 清掉網址參數
     history.replaceState({}, "", window.location.pathname);
   }
 }
