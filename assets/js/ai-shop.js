@@ -320,65 +320,79 @@ function buildCompareUI(a, b, compare, products) {
   const teaB = products.find(p => p.id === b);
 
   if (!teaA || !teaB) {
-    return `<div class="ai-error">⚠ 比較失敗（找不到產品）</div>`;
+    return `<div class="ai-error">⚠ 無法進行比較（找不到茶品）</div>`;
   }
 
   return `
-    <div class="ai-compare-card">
+    <div class="compare-wrapper">
 
-      <div class="ai-compare-header">
+      <!-- 標題列 -->
+      <div class="compare-header">
         <i class="ph ph-swap"></i>
         茶品比較
       </div>
 
-      <div class="ai-compare-grid">
+      <div class="compare-table">
 
-        <!-- 左邊 -->
-        <div class="ai-col">
-          <div class="ai-item-title">${teaA.title}</div>
-          <div class="ai-item-price">NT$${teaA.price}</div>
-          <div class="ai-badge">A</div>
+        <!-- 左側欄 -->
+        <div class="compare-col compare-col-left">
+          <div class="tea-title">${teaA.title}</div>
+          <div class="tea-price">NT$${teaA.price}</div>
+          <div class="tea-tag tag-a">A</div>
         </div>
 
-        <!-- 中間項目說明 -->
-        <div class="ai-mid">
-          <div class="ai-mid-row">
-            <div class="ai-mid-label">香氣</div>
-            <div class="ai-mid-text">${compare.aroma}</div>
+        <!-- 中間比對項 -->
+        <div class="compare-middle">
+
+          <div class="middle-block">
+            <div class="middle-label">香氣</div>
+            <div class="middle-text">${compare.aroma}</div>
           </div>
-          <div class="ai-mid-row">
-            <div class="ai-mid-label">厚度</div>
-            <div class="ai-mid-text">${compare.body}</div>
+
+          <div class="middle-block">
+            <div class="middle-label">厚度</div>
+            <div class="middle-text">${compare.body}</div>
           </div>
-          <div class="ai-mid-row">
-            <div class="ai-mid-label">焙火</div>
-            <div class="ai-mid-text">${compare.roast}</div>
+
+          <div class="middle-block">
+            <div class="middle-label">焙火</div>
+            <div class="middle-text">${compare.roast}</div>
           </div>
-          <div class="ai-mid-row">
-            <div class="ai-mid-label">價格</div>
-            <div class="ai-mid-text">${compare.price}</div>
+
+          <div class="middle-block">
+            <div class="middle-label">價格</div>
+            <div class="middle-text">${compare.price}</div>
           </div>
+
         </div>
 
-        <!-- 右邊 -->
-        <div class="ai-col">
-          <div class="ai-item-title">${teaB.title}</div>
-          <div class="ai-item-price">NT$${teaB.price}</div>
-          <div class="ai-badge badge-b">B</div>
+        <!-- 右側欄 -->
+        <div class="compare-col compare-col-right">
+          <div class="tea-title">${teaB.title}</div>
+          <div class="tea-price">NT$${teaB.price}</div>
+          <div class="tea-tag tag-b">B</div>
         </div>
 
       </div>
 
-      <div class="ai-summary">${compare.summary}</div>
-
-      <div class="ai-buttons">
-        <button class="ai-btn" data-id="${teaA.id}">了解 ${teaA.title}</button>
-        <button class="ai-btn" data-id="${teaB.id}">了解 ${teaB.title}</button>
+      <!-- 總結 -->
+      <div class="compare-summary">
+        ${compare.summary}
       </div>
 
+      <!-- 按鈕 -->
+      <div class="compare-actions">
+        <button class="compare-btn" data-id="${teaA.id}">
+          查看 ${teaA.title}
+        </button>
+        <button class="compare-btn" data-id="${teaB.id}">
+          查看 ${teaB.title}
+        </button>
+      </div>
     </div>
   `;
 }
+
 // ============================================================
 // ⭐ AI Brew UI（熱泡 / 冰鎮 / 冷泡）
 // ============================================================
