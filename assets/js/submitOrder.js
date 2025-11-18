@@ -135,7 +135,7 @@ export async function submitOrder() {
 
     const form = document.createElement("form");
     form.method = "POST";
-    form.action = "/api/order/submit";
+    form.action = "https://tea-order-server.onrender.com/api/order/submit"; 
     form.style.display = "none";
 
     const input = document.createElement("input");
