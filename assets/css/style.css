@@ -2944,28 +2944,64 @@ textarea {
    🌿 奢華茶系濾光玻璃系統（全套升級版）
    glass-blur + light-diffuse + tea-shadow
 ============================================================ */
+/* ================================
+   AI Modal Overlay（讓 modal 置中）
+================================ */
+.ai-modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .25s ease, visibility .25s ease;
+}
+
+.ai-modal-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
 
 /* ================================
    AI Modal Card (主容器)
 ================================ */
 .ai-box {
   width: 86%;
-  max-width: 420px;
+  max-width: 430px;
 
-  background: rgba(255,255,255,0.55);
-  border: 1px solid rgba(220,235,225,0.55);
-  
-  backdrop-filter: blur(22px) saturate(180%);
-  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  background: rgba(255, 255, 255, 0.48);
+  border-radius: 26px;
 
-  padding: 24px 26px;
-  border-radius: 22px;
+  padding: 28px 28px 34px;
+
+  border: 1px solid rgba(220, 235, 225, 0.55);
+
   box-shadow:
-    0 18px 38px rgba(75,95,80,0.22),
-    inset 0 0 0 1px rgba(255,255,255,0.35);
+    0 20px 45px rgba(75, 95, 80, 0.28),
+    0 8px 18px rgba(70, 90, 80, 0.16),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.40);
 
-  animation: aiFadeIn .28s ease;
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+
+  animation: aiPopIn .35s cubic-bezier(.25,1.4,.5,1);
 }
+
+/* 彈性開場動畫（像 iOS Modal） */
+@keyframes aiPopIn {
+  0% { transform: translateY(18px) scale(.94); opacity: 0; }
+  60% { transform: translateY(-4px) scale(1.02); opacity: 1; }
+  100% { transform: translateY(0px) scale(1); }
+}
+
 
 /* ================================
    Fade In
@@ -2991,23 +3027,30 @@ textarea {
 ================================ */
 .ai-input {
   width: 100%;
-  min-height: 110px;
+  min-height: 115px;
+
   padding: 16px 18px;
   font-size: 16px;
 
-  border-radius: 16px;
-  border: 1.5px solid rgba(200,215,205,0.55);
-  background: rgba(255,255,255,0.82);
+  border-radius: 18px;
+  border: 1.6px solid rgba(200, 215, 205, 0.55);
 
+  background: rgba(255,255,255,0.72);
   box-shadow:
-    inset 0 2px 5px rgba(0,0,0,0.08),
-    0 0 0 2px rgba(255,255,255,0.4);
+    inset 0 2px 5px rgba(0, 0, 0, 0.08),
+    0 0 0 2px rgba(255,255,255,0.35);
 
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-
-  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  transition: all .28s ease;
 }
+
+.ai-input:focus {
+  border: 1.6px solid rgba(150, 180, 165, 0.9);
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.12),
+    0 0 0 2px rgba(200,255,200,0.35);
+}
+
 
 /* ================================
    Submit Button
@@ -3017,32 +3060,32 @@ textarea {
   width: 100%;
   padding: 15px;
 
-  border-radius: 16px;
-  border: none;
-
   font-size: 17px;
-  font-weight: 700;
+  font-weight: 760;
   color: #fff;
 
-  background: linear-gradient(
-    135deg,
+  border-radius: 18px;
+  border: none;
+
+  background: linear-gradient(135deg,
     rgba(88,118,99,0.95),
-    rgba(128,168,143,0.97)
+    rgba(138,178,153,0.97)
   );
 
   box-shadow:
-    0 10px 24px rgba(90,123,104,0.32),
-    0 0 0 1px rgba(255,255,255,0.35) inset;
+    0 12px 28px rgba(90,123,104,0.32),
+    0 0 0 1px rgba(255,255,255,0.38) inset;
 
-  transition: all 0.25s ease;
+  transition: all .25s ease;
 }
 
 .ai-submit:hover {
   transform: translateY(-3px);
   box-shadow:
-    0 14px 28px rgba(90,123,104,0.38),
-    0 0 0 1px rgba(255,255,255,0.4) inset;
+    0 16px 32px rgba(90,123,104,0.35),
+    0 0 0 1px rgba(255,255,255,0.40) inset;
 }
+
 
 /* ================================
    Result
@@ -3067,21 +3110,38 @@ textarea {
    Close Button
 ================================ */
 .ai-close {
-  width: 100%;
-  padding: 13px;
-  margin-top: 20px;
+  position: absolute;
+  top: 14px;
+  right: 14px;
 
-  border-radius: 14px;
-  border: 1px solid rgba(180,180,180,0.45);
-  background: rgba(255,255,255,0.7);
+  width: 36px;
+  height: 36px;
 
+  border-radius: 50%;
+  border: 1px solid rgba(200,220,210,0.55);
+
+  background: rgba(255,255,255,0.55);
+  color: #3f5f4c;
   font-size: 15px;
-  font-weight: 600;
-  color: #555;
+  font-weight: 700;
 
-  backdrop-filter: blur(6px);
-  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  cursor: pointer;
+  transition: all .25s ease;
 }
+
+.ai-close:hover {
+  background: rgba(255,255,255,0.75);
+  transform: scale(1.08);
+}
+
+
 
 /* ================================
    Recommendation block

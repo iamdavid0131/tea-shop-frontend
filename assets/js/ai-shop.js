@@ -89,7 +89,10 @@ function showAIModal() {
     `;
 
     document.body.appendChild(modal);
-    modal.querySelector("#aiClose").onclick = () => modal.remove();
+        modal.querySelector("#aiClose").onclick = () => {
+            modal.classList.remove("show");
+            setTimeout(() => modal.remove(), 250);
+    };
 
     // ⭐ 送出按鈕事件
     modal.querySelector("#aiSubmit").onclick = async () => {
@@ -153,7 +156,7 @@ function showAIModal() {
       chat.addEventListener("click", (e) => {
         const bubble = e.target.closest(".ai-bubble-click");
         if (!bubble) return;
-        modal.remove();
+        modal.classList.add("show");
 
         openProductModal(bubble.dataset.id);
       });
