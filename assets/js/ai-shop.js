@@ -53,7 +53,7 @@ function injectAIButton() {
 
   const btn = document.createElement("button");
   btn.id = "aiAssistBtn";
-  btn.className = "ai-assist-btn";  // ⭐ 使用 class，而不是 inline style
+  btn.className = "ai-assist-btn glassy";  // ⭐ 使用 class，而不是 inline style
   btn.textContent = "💬 AI 幫我選茶";
 
   container.prepend(btn);
