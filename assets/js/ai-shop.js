@@ -84,7 +84,7 @@ function showAIModal() {
 
         <div id="aiResult" class="ai-result" style="display:none;"></div>
 
-        <button id="aiClose" class="ai-close">關閉</button>
+        <button id="aiClose" class="ai-close-icon">x</button>
       </div>
     `;
 
