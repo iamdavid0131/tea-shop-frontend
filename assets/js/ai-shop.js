@@ -89,12 +89,28 @@ function showAIModal() {
     `;
 
     document.body.appendChild(modal);
-        modal.querySelector("#aiClose").onclick = () => {
-            modal.classList.remove("show");
-            setTimeout(() => modal.remove(), 250);
+
+    // ----------------------------------------------------
+    // ❶ 關閉按鈕
+    // ----------------------------------------------------
+    modal.querySelector("#aiClose").onclick = () => {
+      modal.classList.remove("show");
+      setTimeout(() => modal.remove(), 250);
     };
 
-    // ⭐ 送出按鈕事件
+    // ----------------------------------------------------
+    // ❷ 點背景關閉（但不關掉 ai-box）
+    // ----------------------------------------------------
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        modal.classList.remove("show");
+        setTimeout(() => modal.remove(), 250);
+      }
+    });
+
+    // ----------------------------------------------------
+    // ❸ AI 查詢送出
+    // ----------------------------------------------------
     modal.querySelector("#aiSubmit").onclick = async () => {
       const q = modal.querySelector("#aiQuery").value.trim();
       if (!q) return;
@@ -120,10 +136,8 @@ function showAIModal() {
           out.second.id;
       }
 
-      // ⭐ bubble UI
       resultBox.innerHTML = `
         <div class="ai-chat">
-
           <div class="ai-bubble ai-bubble-ai ai-bubble-click" data-id="${best.id}">
               <div class="ai-bubble-label">推薦茶款</div>
               <div class="ai-bubble-title">${best.title}</div>
@@ -141,28 +155,37 @@ function showAIModal() {
               `
               : ""
           }
-
         </div>
       `;
-      // 儲存使用者口味
-        saveUserTaste({
+
+      saveUserTaste({
         lastBest: best.id,
         lastReason: out.reason,
         timestamp: Date.now(),
-        });
+      });
 
-      // ⭐ 這裡綁定 bubble 點擊事件（事件委派）
+      // ----------------------------------------------------
+      // ❹ 點選 bubble → 關 modal → 開茶商品 modal
+      // ----------------------------------------------------
       const chat = modal.querySelector(".ai-chat");
       chat.addEventListener("click", (e) => {
         const bubble = e.target.closest(".ai-bubble-click");
         if (!bubble) return;
-        modal.classList.add("show");
+
+        modal.classList.remove("show");
+        setTimeout(() => modal.remove(), 250);
 
         openProductModal(bubble.dataset.id);
       });
     };
   }
+
+  // ----------------------------------------------------
+  // ❺ 最重要：開啟 Modal（你之前漏掉）
+  // ----------------------------------------------------
+  modal.classList.add("show");
 }
+
 // ------------------------------------------------------------
 // 初始化：自動注入 AI 按鈕
 // ------------------------------------------------------------
