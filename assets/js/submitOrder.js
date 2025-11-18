@@ -228,5 +228,31 @@ export function initSubmitOrder() {
   });
 
   validateSubmit();
+  checkEcpayReturn();
 }
 
+// ===============================
+// ⛩ 付款後自動跳成功畫面
+// ===============================
+export function checkEcpayReturn() {
+  const url = new URL(window.location.href);
+  const paid = url.searchParams.get("paid");
+  const orderId = url.searchParams.get("orderId");
+  const total = url.searchParams.get("total");
+
+  if (paid === "1" && orderId) {
+    // 清除購物車
+    clearCart?.();
+
+    // 開啟成功視窗（你原本的函式）
+    const backdrop = $("successBackdrop");
+    $("successOrderId").textContent = orderId;
+    $("successTotal").textContent = `NT$${Number(total).toLocaleString()}`;
+
+    backdrop.classList.remove("hidden");
+    requestAnimationFrame(() => backdrop.classList.add("show"));
+
+    // 清掉網址參數，避免刷新又跳一次
+    history.replaceState({}, "", window.location.pathname);
+  }
+}
