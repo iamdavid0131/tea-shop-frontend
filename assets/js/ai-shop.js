@@ -129,13 +129,18 @@ function showAIModal() {
 
       const best = CONFIG.PRODUCTS.find(p => p.id === out.best);
 
-      let secondName = "";
-      if (out.second?.id) {
-        secondName =
-          CONFIG.PRODUCTS.find(p => p.id === out.second.id)?.title ||
-          out.second.id;
-      }
+      let secondId = null;
+        let secondName = "";
 
+        // second 可能是一個物件，也可能是字串
+        if (out.second) {
+        secondId = typeof out.second === "string" 
+            ? out.second 
+            : out.second.id;
+
+        const secondProd = CONFIG.PRODUCTS.find(p => p.id === secondId);
+        secondName = secondProd?.title || secondId;
+        }
       resultBox.innerHTML = `
         <div class="ai-chat">
           <div class="ai-bubble ai-bubble-ai ai-bubble-click" data-id="${best.id}">
@@ -147,7 +152,7 @@ function showAIModal() {
           ${
             out.second
               ? `
-              <div class="ai-bubble ai-bubble-ai ai-bubble-click" data-id="${out.second.id}">
+              <div class="ai-bubble ai-bubble-ai ai-bubble-click" data-id="${secondId}">
                   <div class="ai-bubble-label">次推薦</div>
                   <div class="ai-bubble-title">${secondName}</div>
                   <div class="ai-bubble-text">${out.second.reason}</div>
