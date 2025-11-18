@@ -58,8 +58,10 @@ export async function showCartSheet() {
 
     row.innerHTML = `
         <div class="swipe-content">
+        <div class="swipe-info">
             <div class="li-title">${i.name}</div>
             <div class="li-qty">× ${i.qty} ${packStr}</div>
+        </div>
             <div class="li-sub">NT$ ${(i.price * i.qty).toLocaleString("zh-TW")}</div>
         </div>
         <button class="swipe-delete" data-id="${i.id}">刪除</button>
