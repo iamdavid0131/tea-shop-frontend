@@ -2903,10 +2903,6 @@ textarea {
 }
 
 /* ============================================================
- 🌿 祥興茶行 AI 導購 — Premium Glass Tea Style
-   (For ai-shop.js)
-============================================================ */
-/* ============================================================
    🌿 奢華茶系濾光玻璃系統（全套升級版）
    glass-blur + light-diffuse + tea-shadow
 ============================================================ */
@@ -2914,6 +2910,28 @@ textarea {
 /* ================================
    AI Modal Card (主容器)
 ================================ */
+#aiTeaHelperHost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  display: none; /* 預設隱藏 */
+  justify-content: center;
+  align-items: center;
+
+  background: rgba(0,0,0,0.22);
+  backdrop-filter: blur(4px);
+
+  z-index: 9999;
+}
+
+/* 開啟時 */
+#aiTeaHelperHost.active {
+  display: flex;
+}
+
 .ai-box {
   width: 86%;
   max-width: 420px;

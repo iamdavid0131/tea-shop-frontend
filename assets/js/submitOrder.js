@@ -59,7 +59,7 @@ export function validateSubmit() {
 
 
 // -------------------------------
-// 主送出流程
+// 主送出流程（後端直接開綠界版本）
 // -------------------------------
 export async function submitOrder() {
   const btn = $("submitOrderBtn");
@@ -129,29 +129,27 @@ export async function submitOrder() {
       return;
     }
 
-    // === 送出 ===
-    const res = await api.submitOrder(order);
+    // =====================================================
+    // ⭐ 最重要修改：不再用 fetch！改用 form POST
+    // =====================================================
 
-    if (res.ok && res.orderId) {
-      showSuccessModal(res.orderId, order.total);
-      clearCart();
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = "/api/order/submit";
+    form.style.display = "none";
 
-      try {
-        await api.memberOrder({
-          phone: order.buyerPhone,
-          orderTotal: order.total,
-          method: order.shippingMethod,
-          carrier: order.storeCarrier,
-          storeName: order.storeName,
-          address: order.codAddress,
-          orderId: res.orderId,
-        });
-      } catch {}
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = "orderJSON";
+    input.value = JSON.stringify(order);
 
-      return;
-    }
+    form.appendChild(input);
+    document.body.appendChild(form);
 
-    toast("❌ 訂單送出失敗：" + (res?.error || "伺服器未回應"));
+    // ⭐ 提交表單 → 後端 res.send(htmlForm) → 瀏覽器立即跳綠界
+    form.submit();
+    return;
+
   } catch (err) {
     console.error("❌ submitOrder error", err);
     toast("⚠️ 網路異常，請稍後再試");
