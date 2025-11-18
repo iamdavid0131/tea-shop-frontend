@@ -210,6 +210,16 @@ function showAIModal() {
       }
     </div>
   `;
+  const brewGuideHTML = makeBrewGuide(best.title);
+
+    resultBox.innerHTML = `
+    <div class="ai-chat">
+        …（你的推薦 bubble）
+    </div>
+
+    ${brewGuideHTML}
+    `;
+
 
   saveUserTaste({
     lastBest: best.id,
@@ -238,6 +248,22 @@ function showAIModal() {
   // ----------------------------------------------------
   modal.classList.add("show");
 }
+
+function makeBrewGuide(teaName) {
+  return `
+    <div class="ai-brew-guide">
+      <div class="brew-title">冰鎮泡法建議（${teaName}）</div>
+      <div class="brew-text">
+        • 茶量：建議加強 +30%（6g → 7.8g）<br>
+        • 水溫：85°C<br>
+        • 熱泡：240 秒後立刻冰鎮<br>
+        • 特點：香氣更集中、尾韻更甜
+      </div>
+    </div>
+  `;
+}
+
+
 
 // ------------------------------------------------------------
 // 初始化：自動注入 AI 按鈕

@@ -3394,6 +3394,35 @@ textarea {
 }
 
 /* ================================
+   Ai 泡法
+================================ */
+.ai-brew-guide {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 16px;
+
+  background: rgba(255,255,255,0.55);
+  border: 1px solid rgba(200,220,210,0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  box-shadow:
+    0 6px 18px rgba(60,85,70,0.12),
+    inset 0 0 0 1px rgba(255,255,255,0.45);
+
+  font-size: 15px;
+  line-height: 1.7;
+  color: #2f4b3c;
+}
+
+.brew-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #3b5e49;
+}
+
+/* ================================
    購物明細左滑刪除
 ================================ */
 .line-item {
