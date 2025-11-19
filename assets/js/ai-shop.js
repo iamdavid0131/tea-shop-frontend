@@ -218,27 +218,27 @@ function appendAskOptions(chat, options) {
     btn.textContent = opt;
 
     btn.onclick = async () => {
-      const session = loadSession();
+      let session = loadSession();        // 改成 let 才能改變
       let userTaste = JSON.parse(localStorage.getItem("user_taste") || "null");
 
-      // 重新開始
+      // --- 重新開始 ---
       if (opt === "重新開始") {
         resetSession();
         userTaste = null;
-        appendAIBubble(chat, "好的～我們重新來！想了解什麼呢？😊");
+        appendAIBubble(chat, "好的～我們重新開始！你想了解哪方面呢？😊");
         return;
       }
 
-      // 使用上次偏好
+      // --- 使用上次偏好 ---
       if (opt === "使用上次偏好") {
-        appendAIBubble(chat, "好的，我會根據你的偏好來推薦！");
+        appendAIBubble(chat, "好的，我會根據你的偏好協助你！");
         return;
       }
 
       appendUserBubble(chat, opt);
-      const out = await callAI(opt, session);
 
-      if (out.session) saveSession(out.session);
+      const out = await callAI(opt, session);
+      saveSession(out.session || null);
       handleAIResponse(out, chat);
     };
 
@@ -247,6 +247,7 @@ function appendAskOptions(chat, options) {
 
   chat.appendChild(box);
 }
+
 
 
 // ============================================================
