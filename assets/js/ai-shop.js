@@ -1,14 +1,12 @@
 // ============================================================
-// ⭐ ai-shop.js（多輪對話 2.0）Part 1 — 基礎架構
+// ⭐ ai-shop.js（多輪對話 v3-stable）Part 1 — 系統 + UI + Modal
 // ============================================================
 
 import { CONFIG } from "./config.js";
-import { $ } from "./dom.js";
 
 // ============================================================
-// 🧠 1. 前端 Session（localStorage 保存導購狀態）
+// 🧠 1. Session（localStorage）
 // ============================================================
-
 const AI_SESSION_KEY = "ai_guide_session";
 
 function loadSession() {
@@ -29,9 +27,8 @@ function resetSession() {
 
 
 // ============================================================
-// 💬 2. Chat UI：新增訊息泡泡
+// 💬 2. Chat UI：新增氣泡
 // ============================================================
-
 function appendAIBubble(container, text) {
   const bubble = document.createElement("div");
   bubble.className = "ai-bubble ai-bubble-ai";
@@ -48,9 +45,8 @@ function appendUserBubble(container, text) {
 
 
 // ============================================================
-// 📡 3. callAI（多輪對話版）
+// 📡 3. callAI（呼叫後端）
 // ============================================================
-
 async function callAI(message, session) {
   const res = await fetch("https://tea-order-server.onrender.com/api/ai-tea", {
     method: "POST",
@@ -68,9 +64,8 @@ async function callAI(message, session) {
 
 
 // ============================================================
-// 🎨 4. 建立 AI Modal 基礎框架（聊天介面）
+// 🎨 4. 建立 Modal（聊天視窗）
 // ============================================================
-
 function createAIModal() {
   let modal = document.getElementById("aiModal");
 
@@ -101,13 +96,14 @@ function createAIModal() {
 
     document.body.appendChild(modal);
 
-    // 關閉
+    // 左上角關閉
     modal.querySelector("#aiClose").onclick = () => {
       resetSession();
       modal.classList.remove("show");
       setTimeout(() => modal.remove(), 250);
     };
 
+    // 點背景關閉
     modal.addEventListener("click", e => {
       if (e.target === modal) {
         resetSession();
@@ -122,9 +118,8 @@ function createAIModal() {
 
 
 // ============================================================
-// 🏁 5. 打開 AI Modal
+// 🏁 5. 開啟 AI Modal（初始化畫面）
 // ============================================================
-
 function showAIModal() {
   const modal = createAIModal();
   const chat = modal.querySelector("#aiChat");
@@ -135,20 +130,20 @@ function showAIModal() {
 
   let userTaste = JSON.parse(localStorage.getItem("user_taste") || "null");
 
-  // 打開時清空畫布
+  // --- 初始化畫布 ---
   chat.innerHTML = "";
-if (userTaste) {
-  appendAIBubble(chat, "歡迎回來！要使用上次的風味偏好嗎？😊");
 
-  appendAskOptions(chat, ["使用上次偏好", "重新開始"]);
-} else {
-  appendAIBubble(chat, "嗨～我是 AI 侍茶師，可以推薦/送禮/泡法/搭餐/性格測驗，請問有什麼需要我幫忙的嗎？😊");
-}
+  if (userTaste) {
+    appendAIBubble(chat, "歡迎回來！要使用上次的風味偏好嗎？😊");
+    appendAskOptions(chat, ["使用上次偏好", "重新開始"]);
+  } else {
+    appendAIBubble(chat, "嗨～我是 AI 侍茶師，可以推薦｜送禮｜搭餐｜泡法｜比較｜性格茶。想從哪裡開始？😊");
+  }
 
   // 初始 session
   let session = loadSession() || null;
 
-  // 點擊送出
+  // 送出按鈕
   sendBtn.onclick = async () => {
     const msg = input.value.trim();
     if (!msg) return;
@@ -163,29 +158,27 @@ if (userTaste) {
     handleAIResponse(result, chat);
   };
 }
-
 // ============================================================
-// ⭐ ai-shop.js（多輪對話 2.0）Part 2 — 回覆處理 + UI Builders
+// ⭐ ai-shop.js（多輪對話 v3-stable）Part 2 — 回應處理 + UI 建構
 // ============================================================
 
 
 // ============================================================
 // 🎯 6. 處理 AI 回應（核心）
 // ============================================================
-
 function handleAIResponse(out, chat) {
 
   // -------------------------------
   // (A) 錯誤
   // -------------------------------
-  if (out.mode === "error") {
+ 	if (out.mode === "error") {
     appendAIBubble(chat, "抱歉，我這邊出現問題了，請再試一次 🙏");
     return;
   }
 
   // -------------------------------
   // (B) AI 要問問題（多輪導購）
-  // -------------------------------
+// -------------------------------
   if (out.mode === "ask") {
     appendAIBubble(chat, out.ask || "我需要更多資訊喔！");
 
@@ -196,8 +189,8 @@ function handleAIResponse(out, chat) {
   }
 
   // -------------------------------
-  // (C) 推荐推薦模式（一般）
-// -------------------------------
+  // (C) Recommend —— 一般推薦
+  // -------------------------------
   if (out.mode === "recommend") {
     chat.innerHTML += buildRecommendBubble(out, CONFIG.PRODUCTS);
     enableProductClicks(chat);
@@ -205,8 +198,8 @@ function handleAIResponse(out, chat) {
   }
 
   // -------------------------------
-  // (D) Pairing（搭餐）
-// -------------------------------
+  // (D) Pairing —— 搭餐推薦
+  // -------------------------------
   if (out.mode === "pairing") {
     chat.innerHTML += buildPairingBubble(out, CONFIG.PRODUCTS);
     enableProductClicks(chat);
@@ -214,8 +207,8 @@ function handleAIResponse(out, chat) {
   }
 
   // -------------------------------
-  // (E) Gift（送禮）
-// -------------------------------
+  // (E) Gift —— 送禮推薦
+  // -------------------------------
   if (out.mode === "gift") {
     chat.innerHTML += buildGiftBubble(out, CONFIG.PRODUCTS);
     enableProductClicks(chat);
@@ -223,8 +216,8 @@ function handleAIResponse(out, chat) {
   }
 
   // -------------------------------
-  // (F) Compare 比較兩款
-// -------------------------------
+  // (F) Compare —— 比較兩款
+  // -------------------------------
   if (out.mode === "compare") {
     chat.innerHTML += buildCompareBubble(out, CONFIG.PRODUCTS);
     enableProductClicks(chat);
@@ -232,8 +225,8 @@ function handleAIResponse(out, chat) {
   }
 
   // -------------------------------
-  // (G) 泡法
-// -------------------------------
+  // (G) Brew —— 泡法指南
+  // -------------------------------
   if (out.mode === "brew") {
     chat.innerHTML += buildBrewBubble(out, CONFIG.PRODUCTS);
     enableProductClicks(chat);
@@ -241,7 +234,7 @@ function handleAIResponse(out, chat) {
   }
 
   // -------------------------------
-  // (H) Masterpick（店長推薦）
+  // (H) Masterpick —— 店長推薦
   // -------------------------------
   if (out.mode === "masterpick") {
     chat.innerHTML += buildMasterpickBubble(out, CONFIG.PRODUCTS);
@@ -250,8 +243,8 @@ function handleAIResponse(out, chat) {
   }
 
   // -------------------------------
-  // (I) Personality（性格茶）
-// -------------------------------
+  // (I) Personality —— 性格茶
+  // -------------------------------
   if (out.mode === "personality") {
     chat.innerHTML += buildPersonalityBubble(out, CONFIG.PRODUCTS);
     enableProductClicks(chat);
@@ -264,9 +257,8 @@ function handleAIResponse(out, chat) {
 
 
 // ============================================================
-// 🧩 7. 使用者選項按鈕
+// 🧩 7. 使用者選項按鈕（多輪流程最重要區塊）
 // ============================================================
-
 function appendAskOptions(chat, options) {
   const box = document.createElement("div");
   box.className = "ai-option-group";
@@ -277,29 +269,30 @@ function appendAskOptions(chat, options) {
     btn.textContent = opt;
 
     btn.onclick = async () => {
-      const input = document.getElementById("aiInput");
-      const session = JSON.parse(localStorage.getItem("ai_guide_session") || "null");
+      let session = loadSession();
 
-        if (opt === "重新開始") {
+      // 重新開始
+      if (opt === "重新開始") {
         resetSession();
-        session = null;   // <-- 🔥 關鍵：前端記憶也要清掉
-        userTaste = null;
+        session = null;
         localStorage.removeItem("user_taste");
 
-        appendAIBubble(chat, "好的～我們重新開始！你想了解哪方面呢？😊");
+        appendAIBubble(chat, "好的～我們重新開始！你想從哪個方向開始呢？😊");
         return;
-        }
+      }
 
-
-        if (opt === "使用上次偏好") {
-        appendAIBubble(chat, "好的，我會根據你的偏好協助你！");
-        // 不 reset session
+      // 使用上次偏好
+      if (opt === "使用上次偏好") {
+        appendAIBubble(chat, "好的，我會依照你的偏好協助你！");
         return;
-        }
+      }
 
+      // 一般選項 → 視為使用者發話
+      appendUserBubble(chat, opt);
 
       const out = await callAI(opt, session);
       saveSession(out.session || null);
+
       handleAIResponse(out, chat);
     };
 
@@ -312,9 +305,8 @@ function appendAskOptions(chat, options) {
 
 
 // ============================================================
-// 🧩 8. 開商品 modal 點擊觸發
+// 🧩 8. 點商品 → 打開 modal (前端既有功能)
 // ============================================================
-
 function enableProductClicks(chat) {
   chat.querySelectorAll("[data-prod]")?.forEach(btn => {
     btn.onclick = () => {
@@ -332,17 +324,15 @@ function enableProductClicks(chat) {
 
 
 // ============================================================
-// ⭐ 9. 各種模式 UI 建構（氣泡版）
+// ⭐ 9. 氣泡 UI 建構器（所有模式）
 // ============================================================
 
-
 // ----------------------------
-// (1) Recommend
+// (1) Recommend 一般推薦
 // ----------------------------
 function buildRecommendBubble(out, products) {
   const best = products.find(p => p.id === (out.best?.id || out.best));
   const secondId = out.second?.id || out.second;
-
   const second = products.find(p => p.id === secondId);
 
   return `
@@ -358,8 +348,7 @@ function buildRecommendBubble(out, products) {
       <div class="ai-prod-item" data-prod="${second.id}">
         <div class="prod-name">${second.title}</div>
         <div class="prod-reason">${out.second.reason}</div>
-      </div>
-      ` : ""}
+      </div>` : ""}
     </div>
   `;
 }
@@ -387,10 +376,10 @@ function buildPairingBubble(out, products) {
 
 
 // ----------------------------
-// (3) Gift（送禮）
+// (3) Gift（送禮推薦）
 // ----------------------------
 function buildGiftBubble(out, products) {
-  const tea = products.find(p => p.id === out.best);
+  const tea = products.find(p => p.id === out.tea || out.best);
 
   return `
     <div class="ai-bubble ai-bubble-ai">
@@ -467,7 +456,7 @@ function buildBrewBubble(out, products) {
 
 
 // ----------------------------
-// (6) MasterPick
+// (6) Masterpick
 // ----------------------------
 function buildMasterpickBubble(out, products) {
   const tea = products.find(p => p.id === out.best);
@@ -506,22 +495,47 @@ function buildPersonalityBubble(out, products) {
 }
 
 // ============================================================
-// 10. 注入 AI「對話助理」按鈕
+// ⭐ ai-shop.js v3-stable — Part 3：AI 導購入口按鈕 + Init
 // ============================================================
 
-function injectAIAssistButton() {
+/**
+ * 10. 注入 AI「對話助理」按鈕
+ * - 你網站 HTML 需有 <div id="aiEntry"></div>
+ * - 這段會在 AI 入口處插入一顆浮動按鈕
+ */
+function injectAIAssistButton(retry = 0) {
   const container = document.getElementById("aiEntry");
-  if (!container) return;
 
+  // 若 container 尚未出現 → 稍後再試
+  if (!container) {
+    if (retry < 10) {
+      requestAnimationFrame(() => injectAIAssistButton(retry + 1));
+    }
+    return;
+  }
+
+  // 已存在按鈕 → 不重複插入
+  if (document.getElementById("aiAssistBtn")) return;
+
+  // 建立按鈕
   const btn = document.createElement("button");
   btn.id = "aiAssistBtn";
   btn.className = "ai-assist-btn";
-  btn.innerHTML = `<i class="ph ph-chat-circle-dots"></i> AI 導購聊天`;
+  btn.innerHTML = `
+    <i class="ph ph-chat-circle-dots"></i>
+    AI 導購聊天
+  `;
 
   btn.onclick = () => showAIModal();
 
+  // 插入到容器 **最前方**
   container.prepend(btn);
 }
 
-// 啟動
-setTimeout(() => injectAIAssistButton(), 300);
+/**
+ * 11. 啟動點（最終）
+ * - 等 DOM Ready 後注入導購按鈕
+ */
+document.addEventListener("DOMContentLoaded", () => {
+  injectAIAssistButton();
+});
