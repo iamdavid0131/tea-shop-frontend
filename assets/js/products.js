@@ -220,6 +220,15 @@ function renderSingleProduct(p, container, catInfo) {
   const savedPack = saved.pack || false;
   const savedPackQty = saved.packQty || 1;
 
+// === 🔥 庫存顯示用 ===
+  const stock = Number(p.stock || 0);
+
+  function renderStockTag(stock) {
+    if (stock === 0) return `<div class="stock-tag soldout">缺貨中</div>`;
+    if (stock <= 5) return `<div class="stock-tag low">剩 ${stock} 件</div>`;
+    return `<div class="stock-tag ok">庫存 ${stock} 件</div>`;
+  }
+
   // === 單品 HTML 產生 ===
   const packHtml = p.packable
     ? `
@@ -245,6 +254,8 @@ function renderSingleProduct(p, container, catInfo) {
     <div class="meta">${p.tagline || ""}</div>
     <div class="meta price-line">NT$ ${p.price} / ${p.unit}</div>
 
+     ${renderStockTag(stock)}
+
     <div class="qty-row">
       <button class="qty-btn" data-id="${p.id}" data-dir="minus">−</button>
       <input class="qty-input" id="qty-${p.id}" type="number" value="${savedQty}" min="0">
@@ -261,6 +272,44 @@ function renderSingleProduct(p, container, catInfo) {
   `;
 
   container.appendChild(item);
+
+    // ============================================================
+  // 🔥🔥 / 禁止購買與調整（核心）
+  // ============================================================
+
+  const qtyInput = container.querySelector(`#qty-${p.id}`);
+  const plusBtn = container.querySelector(`.qty-btn[data-dir="plus"]`);
+  const minusBtn = container.querySelector(`.qty-btn[data-dir="minus"]`);
+
+  // 若缺貨 → 禁用所有購買相關按鈕
+  if (stock === 0) {
+    qtyInput.value = 0;
+    qtyInput.disabled = true;
+    if (plusBtn) plusBtn.disabled = true;
+    if (minusBtn) minusBtn.disabled = true;
+  }
+
+  // === 限制最大值不能超過庫存 ===
+  qtyInput.addEventListener("input", () => {
+    let v = Number(qtyInput.value) || 0;
+    if (v > stock) v = stock;
+    if (v < 0) v = 0;
+    qtyInput.value = v;
+  });
+
+  if (plusBtn) {
+    plusBtn.addEventListener("click", () => {
+      let v = Number(qtyInput.value) || 0;
+      if (v < stock) qtyInput.value = v + 1;
+    });
+  }
+
+  if (minusBtn) {
+    minusBtn.addEventListener("click", () => {
+      let v = Number(qtyInput.value) || 0;
+      qtyInput.value = Math.max(0, v - 1);
+    });
+  }
 
   // === 初始化裝罐 UI，不覆蓋本來的數值 ===
   setTimeout(() => updatePackUI(p.id), 10);
