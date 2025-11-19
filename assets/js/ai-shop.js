@@ -133,7 +133,7 @@ function showAIModal() {
 
   // 打開時清空畫布
   chat.innerHTML = "";
-  appendAIBubble(chat, "嗨～需要我幫你選茶嗎？😊");
+  appendAIBubble(chat, "嗨～我是 AI 侍茶師，可以推薦/送禮/泡法/搭餐/性格測驗，請問有什麼需要我幫忙的嗎？😊");
 
   // 初始 session
   let session = loadSession() || null;
