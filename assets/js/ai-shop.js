@@ -280,11 +280,13 @@ function appendAskOptions(chat, options) {
       const input = document.getElementById("aiInput");
       const session = JSON.parse(localStorage.getItem("ai_guide_session") || "null");
 
-      if (opt === "重新開始") {
+        if (opt === "重新開始") {
         resetSession();
-        userTaste = null;
         localStorage.removeItem("user_taste");
-        appendAIBubble(chat, "好的～我們重新開始！你想了解哪方面呢？");
+
+        chat.innerHTML = "";  // 清空畫面
+        appendAIBubble(chat, "好的～我們重新開始！你想了解哪方面呢？😊");
+
         return;
         }
 
