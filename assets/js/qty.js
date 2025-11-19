@@ -73,23 +73,37 @@ function handlePackToggle(e) {
   const row = chk.closest(".pack-row");
 
   if (chk.checked) {
+    // 1. 顯示邏輯：移除 hidden，加入 open
     wrap.classList.remove("hidden");
     row.classList.remove("close");
     row.classList.add("open");
     $(`packQty-${id}`).value = 1;
   } else {
+    // 2. 隱藏邏輯：移除 open，加入 close
     row.classList.remove("open");
     row.classList.add("close");
-    setTimeout(() => {
-      wrap.classList.add("hidden");
-      $(`packQty-${id}`).value = 0;
-    }, 260);
-  }
+    
+    // ⭐️ 修正處 1：不使用 setTimeout 處理 wrap 的 hidden 類別
+    // 讓 CSS (透過 .close 類別) 來處理動畫和最終的隱藏效果。
+    
+    // ⭐️ 修正處 2：立即重置值（在保存之前）
+    $(`packQty-${id}`).value = 0; 
+    
+    // 為了確保 wrap 在動畫完成後被隱藏，我們可以在 row 元素上監聽 CSS 動畫結束事件
+    // 或者，我們將 wrap 元素放入 setTimeout 內隱藏的邏輯移除，改為
+    // 讓 row.classList.add("close") 配合 CSS 樣式來控制 wrap 的顯示/隱藏。
 
+  }
+  
+  // 由於我們修改了 else 區塊，這裡確保 packQty 的值已經是 0 或 1
   const qtyEl = getQtyEl(id);
   const qty = parseInt(qtyEl?.value || 0);
   const pack = chk.checked;
-  const packQty = Number($(`packQty-${id}`)?.value || 0);
+  
+  // 這裡需要根據 chk.checked 來決定 packQty 的值
+  const packQty = chk.checked 
+    ? Number($(`packQty-${id}`)?.value || 0)
+    : 0; // 取消打勾時，packQty 必須傳 0
 
   updatePackUI(id);
   saveCartItem(id, qty, pack, packQty);
