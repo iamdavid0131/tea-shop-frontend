@@ -3200,819 +3200,295 @@ textarea {
 /* ============================================================
    🌫 奢華茶系濾光玻璃系統 – AI Bubble（系統訊息）
 ============================================================ */
+/* ============================================================
+   🌿 奢華茶系濾光玻璃系統 B
+   「暖茶色玻璃（金綠混合）」— Bubble Base
+============================================================ */
+
 .ai-bubble {
-  max-width: 88%;
-  padding: 14px 18px;
+  max-width: 90%;
+  margin: 10px 0;
+  padding: 16px 18px;
   border-radius: 18px;
+
   line-height: 1.65;
   font-size: 15px;
+  color: #2f4b3c;
 
-  /* --- 玻璃濾光核心 --- */
-  background: rgba(255,255,255,0.48);
-  border: 1px solid rgba(200,215,205,0.40);
+  background: rgba(245, 255, 245, 0.55);
+  border: 1px solid rgba(165, 190, 165, 0.50);
 
-  /* --- 光影層 --- */
   box-shadow:
-    0 6px 22px rgba(60,85,70,0.15),
-    0 3px 8px rgba(60,85,70,0.10),
-    inset 0 0 0 1px rgba(255,255,255,0.35);
+    0 8px 30px rgba(120,150,120,0.20),
+    0 3px 14px rgba(90,120,90,0.10),
+    inset 0 0 0 1px rgba(255,255,255,0.45);
 
-  backdrop-filter: blur(18px) saturate(180%);
-  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(170%);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
 
   animation: aiBubbleFade .25s ease;
-  transition: transform .25s ease, box-shadow .25s ease;
+  word-break: break-word;
 }
 
-/* ============================================================
-   AI Bubble（左側）
-============================================================ */
+/* AI 泡泡靠左（偏暖） */
 .ai-bubble-ai {
   align-self: flex-start;
   border-top-left-radius: 6px;
-
-  background: rgba(255,255,255,0.62);
-  border: 1px solid rgba(180,180,180,0.38);
-
-  box-shadow:
-    0 4px 12px rgba(0,0,0,0.06),
-    inset 0 0 0 1px rgba(255,255,255,0.45);
+  background: rgba(250,255,245,0.60);
 }
 
-/* ============================================================
-   User Bubble（右側）
-============================================================ */
+/* User 泡泡（暖金漸層） */
 .ai-bubble-user {
-  background: #0a84ff;
-  color: white;
-  margin-left: auto;
+  align-self: flex-end;
+
+  background: linear-gradient(135deg,
+    #9ac89f,
+    #c6d8a4
+  );
+
+  color: #ffffff;
+  border: none;
 
   box-shadow:
-    0 6px 16px rgba(10,132,255,0.28),
-    inset 0 0 0 1px rgba(255,255,255,0.25);
-}
-
-/* ============================================================
-   AI Bubble Interaction
-============================================================ */
-.ai-bubble-click:hover {
-  transform: scale(1.025);
-  box-shadow:
-    0 12px 28px rgba(60,85,70,0.20),
-    0 6px 14px rgba(60,85,70,0.15),
+    0 6px 22px rgba(130,160,130,0.28),
     inset 0 0 0 1px rgba(255,255,255,0.45);
 }
 
-.ai-bubble-click:active {
-  transform: scale(0.97);
-  box-shadow:
-    0 4px 12px rgba(60,85,70,0.20),
-    inset 0 0 0 1px rgba(255,255,255,0.30);
-}
-
-/* ============================================================
-   Label（例如：推薦茶款 / 次推薦）
-============================================================ */
-.ai-bubble-label {
-  font-size: 13px;
-  font-weight: 700;
-  color: #4e6b58;
-  opacity: 0.75;
-  margin-bottom: 4px;
-}
-
-/* ============================================================
-   Tea Title（茶名）
-============================================================ */
+/* 標題漸層（茶綠 → 暖金） */
 .ai-bubble-title {
   font-size: 17px;
   font-weight: 800;
-  letter-spacing: 0.3px;
+  margin-bottom: 8px;
 
-  background: linear-gradient(90deg, #4e6b58, #8fb79c);
+  background: linear-gradient(90deg,
+    #688e63,
+    #bacc8b
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-
-  margin-bottom: 6px;
 }
 
-/* ============================================================
-   理由文本
-============================================================ */
+@keyframes aiBubbleFade {
+  from { opacity: 0; transform: translateY(6px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 .ai-bubble-text {
-  font-size: 14.5px;
-  color: #2f4b3c;
-  line-height: 1.7;
-  opacity: 0.92;
+  font-size: 15px;
+  opacity: .96;
 }
-
 /* ============================================================
-   Product Item（可點擊商品卡片）
+   🧩 AI 選項按鈕（暖金茶綠版）
 ============================================================ */
-.ai-prod-item {
-  margin-top: 10px;
-  padding: 10px 12px;
-  background: rgba(255,255,255,0.72);
-  border: 1px solid rgba(160,160,160,0.3);
-  border-radius: 12px;
-  cursor: pointer;
 
-  backdrop-filter: blur(12px) saturate(160%);
-  -webkit-backdrop-filter: blur(12px) saturate(160%);
-
-  box-shadow:
-    0 10px 22px rgba(80,100,90,0.12),
-    inset 0 0 0 1px rgba(255,255,255,0.45);
-
-  transition: .25s ease;
-}
-
-.ai-prod-item:hover {
-  background: rgba(255,255,255,0.92);
-  border-color: #0a84ff;
-}
-
-/* ============================================================
-   Option Buttons（ask 模式的選項按鈕）
-============================================================ */
 .ai-option-group {
-  margin-top: 12px;
+  margin-top: 10px;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
 .ai-option-btn {
-  padding: 8px 12px;
+  padding: 8px 14px;
   font-size: 14px;
-
-  background: rgba(255,255,255,0.55);
   border-radius: 12px;
-  border: 1px solid rgba(180,200,190,0.45);
 
-  cursor: pointer;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(255,255,245,0.65);
+  border: 1px solid rgba(180,200,170,0.50);
+
+  color: #2f4b3c;
 
   box-shadow:
-    0 4px 12px rgba(60,85,70,0.10),
-    inset 0 0 0 1px rgba(255,255,255,0.40);
+    0 5px 14px rgba(130,160,130,0.18),
+    inset 0 0 0 1px rgba(255,255,255,0.35);
 
-  transition: .2s ease;
+  cursor: pointer;
+  transition: .25s ease;
 }
 
 .ai-option-btn:hover {
-  background: rgba(255,255,255,0.85);
-  transform: translateY(-1px);
-  box-shadow:
-    0 6px 16px rgba(60,85,70,0.18),
-    inset 0 0 0 1px rgba(255,255,255,0.45);
-}
-
-/* ============================================================
-   Fade Animation
-============================================================ */
-@keyframes aiBubbleFade {
-  from { opacity: 0; transform: translateY(6px) scale(.96); }
-  to   { opacity: 1; transform: translateY(0)  scale(1); }
+  background: rgba(255,255,255,0.82);
+  border-color: #bcd99f;
+  transform: translateY(-2px);
 }
 /* ============================================================
-   🍏 Compare UI – 奢華茶系濾光玻璃版
+   🛒 商品卡（暖金茶綠玻璃）
 ============================================================ */
 
-.compare-wrapper {
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 20px 14px 34px;
+.ai-prod-item {
+  margin-top: 12px;
+  padding: 12px 14px;
 
-  font-family: system-ui, -apple-system, "PingFang TC", sans-serif;
-  color: #26432e;
-  
-  background: rgba(255,255,255,0.45);
-  border-radius: 22px;
-  border: 1px solid rgba(220,235,225,0.40);
+  background: rgba(255,255,250,0.65);
+  border: 1px solid rgba(170,190,170,0.50);
 
-  backdrop-filter: blur(22px) saturate(160%);
-  -webkit-backdrop-filter: blur(22px) saturate(160%);
-
-  box-shadow:
-    0 14px 32px rgba(60,85,70,0.15),
-    inset 0 0 0 1px rgba(255,255,255,0.38);
-
-  animation: aiFadeIn .32s ease;
-}
-
-/* 標題列 */
-.compare-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 21px;
-  font-weight: 700;
-  margin-bottom: 20px;
-
-  background: linear-gradient(90deg, #345c46, #7fa38a);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* 三欄主體 */
-.compare-table {
-  display: grid;
-  grid-template-columns: 1fr 1.6fr 1fr;
-  gap: 10px;
-  align-items: start;
-}
-
-/* 左右兩側欄位 */
-.compare-col {
-  text-align: center;
-  padding: 14px 8px;
-
-  background: rgba(255,255,255,0.42);
   border-radius: 14px;
-  border: 1px solid rgba(200,215,205,0.45);
+  cursor: pointer;
 
   box-shadow:
-    0 4px 12px rgba(50,70,60,0.08),
-    inset 0 0 0 1px rgba(255,255,255,0.35);
+    0 6px 18px rgba(120,150,110,0.20),
+    inset 0 0 0 1px rgba(255,255,255,0.45);
+
+  transition: all .25s ease;
+}
+
+.ai-prod-item:hover {
+  background: rgba(255,255,255,0.85);
+  transform: translateY(-2px);
+  border-color: #9ac89f;
+  box-shadow:
+    0 10px 26px rgba(120,150,110,0.28),
+    inset 0 0 0 1px rgba(255,255,255,0.55);
+}
+
+.prod-name {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.prod-reason,
+.prod-desc {
+  font-size: 14px;
+  color: #466e4a;
+  line-height: 1.6;
+}
+/* ============================================================
+   🌟 推薦 Bubble（暖金茶綠）
+============================================================ */
+
+.recommend-block {
+  margin-top: 10px;
+  padding: 14px 16px;
+
+  background: rgba(250,255,245,0.65);
+  border: 1px solid rgba(190,205,175,0.50);
+
+  border-radius: 16px;
+
+  box-shadow:
+    0 10px 28px rgba(110,140,110,0.15),
+    inset 0 0 0 1px rgba(255,255,255,0.45);
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+/* ============================================================
+   🍽 Pairing Bubble
+============================================================ */
+
+.pairing-summary {
+  font-size: 14.5px;
+  color: #3c5c46;
+  margin-bottom: 10px;
+  line-height: 1.7;
+}
+/* ============================================================
+   🎁 Gift Bubble
+============================================================ */
+
+.gift-summary {
+  font-size: 15px;
+  color: #35543d;
+  margin-bottom: 10px;
+  line-height: 1.7;
+}
+/* ============================================================
+   🔍 Compare（暖金玻璃）
+============================================================ */
+
+.compare-block {
+  margin-top: 12px;
+  padding: 16px;
+
+  background: rgba(255,255,245,0.65);
+  border: 1px solid rgba(190,205,180,0.50);
+
+  border-radius: 16px;
+
+  box-shadow:
+    0 10px 26px rgba(120,150,120,0.15),
+    inset 0 0 0 1px rgba(255,255,255,0.45);
+
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 1fr;
+  gap: 10px;
 
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
 
-/* 茶名與價格 */
-.tea-title {
-  font-weight: 700;
-  font-size: 17px;
-  margin-bottom: 8px;
-
-  background: linear-gradient(90deg, #4e6b58, #8fb79c);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.tea-price {
-  font-size: 15px;
-  color: #56755f;
-  margin-bottom: 6px;
-}
-
-/* A / B Tags */
-.tea-tag {
-  margin-top: 10px;
-  width: 44px;
-  height: 44px;
-
-  border-radius: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  font-weight: 700;
-  font-size: 18px;
-  color: white;
-
-  /* 玻璃 + 高級色塊 */
-  box-shadow:
-    0 4px 8px rgba(60,85,70,0.25),
-    inset 0 0 0 1px rgba(255,255,255,0.5);
-}
-
-.tag-a {
-  background: linear-gradient(135deg, #5d8f72, #88b79a);
-}
-
-.tag-b {
-  background: linear-gradient(135deg, #8fae99, #afc9b8);
-}
-
-/* 中間比對條目 */
-.compare-middle {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.middle-block {
-  padding: 14px 16px;
-  border-radius: 16px;
-
-  background: rgba(255,255,255,0.62);
-  border: 1px solid rgba(200,220,210,0.45);
-
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-
-  box-shadow:
-    0 6px 14px rgba(60,85,70,0.10),
-    inset 0 0 0 1px rgba(255,255,255,0.45);
-}
-
-.middle-label {
-  font-weight: 700;
-  font-size: 15px;
-  margin-bottom: 6px;
-  color: #345c45;
-}
-
-.middle-text {
-  font-size: 14.5px;
-  line-height: 1.7;
-  color: #3a4d3c;
-  opacity: 0.95;
-}
-
-/* 總結段落 */
-.compare-summary {
-  margin: 26px 0 20px;
-  padding: 16px 18px;
-  border-radius: 16px;
-
-  background: rgba(255,255,255,0.52);
-  border: 1px solid rgba(200,215,205,0.40);
-
-  font-size: 15px;
-  line-height: 1.75;
-  color: #2f3f34;
-
-  box-shadow:
-    0 4px 12px rgba(70,100,80,0.12),
-    inset 0 0 0 1px rgba(255,255,255,0.45);
-}
-
-/* 查看按鈕 */
-.compare-actions {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-  margin-top: 20px;
-}
-
-.compare-btn {
-  padding: 12px 20px;
-
-  background: linear-gradient(135deg, #3b6e4e, #7fa38a);
-  color: #fff;
-
-  border: none;
-  border-radius: 14px;
-
-  font-size: 15px;
-  font-weight: 700;
-
-  box-shadow:
-    0 6px 14px rgba(50,80,60,0.18),
-    inset 0 0 0 1px rgba(255,255,255,0.35);
-
-  transition: .25s ease;
-}
-
-.compare-btn:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    0 10px 24px rgba(50,80,60,0.22),
-    inset 0 0 0 1px rgba(255,255,255,0.45);
-}
-
-.compare-btn:active {
-  transform: scale(.96);
-  opacity: 0.85;
-}
-/* ============================================================
-   🍵 Brew Card（霧面玻璃泡法卡片 – 豪華升級）
-============================================================ */
-
-.brew-card {
-  margin-top: 20px;
-  padding: 26px;
-  border-radius: 24px;
-
-  /* --- 核心玻璃效果 --- */
-  background: rgba(255,255,255,0.55);
-  border: 1px solid rgba(210,225,215,0.55);
-
-  backdrop-filter: blur(22px) saturate(180%);
-  -webkit-backdrop-filter: blur(22px) saturate(180%);
-
-  /* --- 外陰影 + 內亮邊 --- */
-  box-shadow:
-    0 14px 32px rgba(60,85,70,0.18),
-    inset 0 0 0 1px rgba(255,255,255,0.38);
-
-  animation: aiFadeIn .35s ease;
-}
-
-/* Header */
-.brew-header {
-  font-size: 19px;
-  font-weight: 800;
-  color: #345c45;
-
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-
-  background: linear-gradient(90deg, #3d614c, #8fb79c);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* 每個泡法區塊 */
-.brew-section {
-  margin-bottom: 18px;
-  padding: 18px 18px;
-  border-radius: 18px;
-
-  background: rgba(255,255,255,0.48);
-  border: 1px solid rgba(200,215,205,0.45);
-
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-
-  box-shadow:
-    0 10px 24px rgba(60,85,70,0.12),
-    inset 0 0 0 1px rgba(255,255,255,0.35);
-}
-
-.brew-title {
-  font-size: 15.5px;
-  font-weight: 750;
-  color: #325d46;
-  margin-bottom: 8px;
-}
-
-.brew-text {
-  font-size: 14.5px;
-  line-height: 1.75;
-  color: #3d5245;
-  opacity: 0.95;
-}
-
-/* Tips 區（虛線茶香框） */
-.brew-tips {
-  margin-top: 12px;
-  padding: 14px 16px;
-  border-radius: 16px;
-
-  background: rgba(250,255,250,0.65);
-  border: 1px dashed rgba(140,170,150,0.55);
-
-  font-size: 14.5px;
-  line-height: 1.7;
-  color: #2f4b3c;
-
-  display: flex;
-  gap: 8px;
-  align-items: start;
-
-  box-shadow:
-    0 6px 14px rgba(70,100,80,0.10),
-    inset 0 0 0 1px rgba(255,255,255,0.45);
-}
-
-/* View Product 按鈕 */
-.brew-btn {
-  margin-top: 18px;
-  width: 100%;
-  padding: 15px;
-
-  border-radius: 16px;
-  border: none;
-
-  background: linear-gradient(135deg, #7fa38a,#99c0ad);
-  color: #fff;
-
-  font-weight: 780;
-  font-size: 15px;
-
-  /* 浮起感 */
-  box-shadow:
-    0 6px 14px rgba(70,100,80,0.20),
-    inset 0 0 0 1px rgba(255,255,255,0.45);
-
-  transition: .28s ease;
-}
-
-.brew-btn:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    0 10px 22px rgba(70,100,80,0.25),
-    inset 0 0 0 1px rgba(255,255,255,0.55);
-}
-
-.brew-btn:active {
-  transform: scale(.97);
-  opacity: .88;
-}
-/* ============================================================
-   🎁 Gift Card（送禮卡片 – 奢華茶系濾光玻璃）
-============================================================ */
-
-.gift-card {
-  margin-top: 22px;
-  padding: 26px;
-  border-radius: 24px;
-
-  /* 玻璃霧面 */
-  background: rgba(255,255,255,0.55);
-  border: 1px solid rgba(210,225,215,0.55);
-
-  backdrop-filter: blur(22px) saturate(180%);
-  -webkit-backdrop-filter: blur(22px) saturate(180%);
-
-  /* 外陰影 + 內亮框 */
-  box-shadow:
-    0 14px 32px rgba(60,85,70,0.18),
-    inset 0 0 0 1px rgba(255,255,255,0.38);
-
-  animation: aiFadeIn .38s ease;
-}
-
-.gift-header {
-  font-size: 19px;
-  font-weight: 800;
-
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-
-  background: linear-gradient(90deg, #3d614c, #8fb79c);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* 茶名 */
-.gift-title {
-  font-size: 20px;
-  font-weight: 800;
-  margin-bottom: 12px;
-
-  background: linear-gradient(90deg, #4e6b58, #9fc7b0);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* 送禮說明 */
-.gift-reason {
-  font-size: 15.5px;
-  line-height: 1.8;
-  color: #2f4b3c;
-  opacity: 0.95;
-
-  padding: 14px 4px 4px;
-}
-
-/* CTA 按鈕 */
-.gift-btn {
-  margin-top: 22px;
-  width: 100%;
-  padding: 15px;
-
-  border-radius: 18px;
-  border: none;
-
-  background: linear-gradient(135deg, #7fa38a,#99c0ad);
-  color: #fff;
-  
-  font-weight: 780;
-  font-size: 15px;
-
-  box-shadow:
-    0 6px 14px rgba(70,100,80,0.20),
-    inset 0 0 0 1px rgba(255,255,255,0.45);
-
-  transition: .25s ease;
-}
-
-.gift-btn:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    0 12px 26px rgba(70,100,80,0.25),
-    inset 0 0 0 1px rgba(255,255,255,0.55);
-}
-
-.gift-btn:active {
-  transform: scale(.96);
-  opacity: .88;
-}
-/* ============================================================
-   👑 Master Pick（店長特別推薦）— 奢華茶系濾光玻璃
-============================================================ */
-
-.master-card {
-  margin-top: 24px;
-  padding: 28px;
-  border-radius: 26px;
-
-  /* 奢華磨砂玻璃 */
-  background: rgba(255,255,255,0.55);
-  border: 1px solid rgba(215,225,215,0.55);
-
-  backdrop-filter: blur(22px) saturate(180%);
-  -webkit-backdrop-filter: blur(22px) saturate(180%);
-
-  /* 外陰影 + 內亮邊框 */
-  box-shadow:
-    0 16px 38px rgba(60,85,70,0.18),
-    inset 0 0 0 1px rgba(255,255,255,0.40);
-
-  animation: aiFadeIn .42s ease;
-}
-
-/* Header：皇冠 + Title（漸層） */
-.mp-header {
-  font-size: 19px;
-  font-weight: 800;
-
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 14px;
-
-  background: linear-gradient(90deg,#4e6b58,#8fb79c);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* 限量標籤（保留 class，不改語意） */
-.mp-limited {
-  margin-bottom: 12px;
-  padding: 10px 14px;
-
-  font-size: 14px;
-  font-weight: 760;
-  color: #b44;
-
-  background: rgba(255,230,230,0.75);
-  border: 1px solid rgba(255,150,150,0.45);
-  border-radius: 14px;
-
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-/* 茶名：更高級的文字 */
-.mp-title {
-  font-size: 21px;
-  font-weight: 800;
-  margin-bottom: 12px;
-
-  background: linear-gradient(90deg,#456b52,#a3c8b0);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* 理由文字 */
-.mp-reason {
-  font-size: 15.5px;
-  line-height: 1.78;
-  color: #2f4b3c;
-  opacity: 0.94;
-
-  margin-bottom: 24px;
-}
-
-/* CTA 按鈕 */
-.mp-btn {
-  width: 100%;
-  padding: 15px;
-
-  border-radius: 18px;
-  border: none;
-
-  background: linear-gradient(135deg, #7fa38a,#9dbdad);
-  color: #fff;
-  font-weight: 760;
-  font-size: 15px;
-
-  box-shadow:
-    0 6px 14px rgba(70,100,80,0.22),
-    inset 0 0 0 1px rgba(255,255,255,0.45);
-
-  transition: .25s ease;
-}
-
-.mp-btn:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    0 12px 26px rgba(70,100,80,0.26),
-    inset 0 0 0 1px rgba(255,255,255,0.55);
-}
-
-.mp-btn:active {
-  transform: scale(.96);
-  opacity: .88;
-}
-
-.ai-chat-area {
-  flex: 1;
-  max-height: 60vh;
-  overflow-y: auto;
-  padding: 6px 2px 12px;
-
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-
-  -webkit-overflow-scrolling: touch;
-}
-
-
-.ai-text-input {
-  flex: 1;
-  padding: 12px 14px;
-  border-radius: 14px;
-  border: 1px solid rgba(190, 210, 200, 0.55);
-
-  background: rgba(255,255,255,0.55);
-  backdrop-filter: blur(12px) saturate(160%);
-  -webkit-backdrop-filter: blur(12px) saturate(160%);
-
-  font-size: 15px;
-  outline: none;
-  transition: .25s ease;
-}
-
-.ai-text-input:focus {
-  border-color: rgba(120, 160, 140, 0.85);
-  box-shadow: 0 0 0 2px rgba(180,220,200,0.35);
-}
-
-
-.ai-send-btn {
-  background: #0a84ff;
-  border: none;
-  color: white;
-
-  padding: 12px 16px;
-  border-radius: 14px;
-
-  font-size: 15px;
-  font-weight: 600;
-
-  box-shadow: 0 4px 12px rgba(0,0,0,0.18);
-  transition: .25s ease;
-}
-
-.ai-send-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 18px rgba(0,0,0,0.22);
-}
-
-
-.prod-name {
-  font-size: 16px;
-  font-weight: 700;
-  margin-bottom: 4px;
-  color: #244030;
-}
-
-.prod-reason {
-  font-size: 14px;
-  opacity: .85;
-  color: #2f4b3c;
-  line-height: 1.6;
-}
-
-
-.compare-block {
-  display: flex;
-  gap: 12px;
-  margin-top: 12px;
-
-  background: rgba(255,255,255,0.55);
-  border: 1px solid rgba(200,220,210,0.45);
-  padding: 14px;
-  border-radius: 16px;
-
-  backdrop-filter: blur(14px) saturate(160%);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
-}
-
 .compare-name {
   font-size: 15px;
   font-weight: 700;
-  color: #214231;
-  cursor: pointer;
-}
-.compare-name:hover {
-  color: #0a84ff;
-}
-.brew-item {
-  margin: 6px 0;
-  font-size: 14px;
-  color: #2f4b3c;
-  line-height: 1.6;
+  color: #355c45;
 }
 
-.person-summary {
-  margin-bottom: 12px;
-  font-size: 15px;
-  color: #2f4b3c;
+.compare-summary {
+  margin-top: 12px;
+  padding: 12px 14px;
+
+  background: rgba(255,255,245,0.75);
+  border-radius: 14px;
+  border: 1px solid rgba(200,210,185,0.50);
+
+  color: #304c3a;
+  font-size: 14.5px;
   line-height: 1.7;
+
+  box-shadow:
+    0 6px 16px rgba(120,150,120,0.15),
+    inset 0 0 0 1px rgba(255,255,255,0.4);
+}
+/* ============================================================
+   🍵 Brew（暖金茶綠玻璃）
+============================================================ */
+
+.brew-item {
+  padding: 10px 12px;
+  background: rgba(255,255,245,0.55);
+  border: 1px solid rgba(185,200,180,0.50);
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+.brew-tips {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: rgba(250,255,245,0.65);
+  border: 1px dashed rgba(160,185,160,0.6);
+  border-radius: 12px;
+  font-size: 14px;
+  color: #3c5c46;
+}
+/* ============================================================
+   👑 Masterpick（暖金茶綠）
+============================================================ */
+
+.masterpick-block {
+  padding: 14px 16px;
+  border-radius: 16px;
+
+  background: rgba(255,255,245,0.55);
+  border: 1px solid rgba(180,200,170,0.50);
+
+  box-shadow:
+    0 10px 26px rgba(120,150,110,0.15),
+    inset 0 0 0 1px rgba(255,255,255,0.45);
+
+  line-height: 1.7;
+  color: #345c45;
+}
+/* ============================================================
+   🌿 Personality（暖金茶綠）
+============================================================ */
+
+.person-summary {
+  font-size: 15px;
+  color: #355c45;
+  opacity: .92;
+  line-height: 1.7;
+  margin-bottom: 12px;
 }
 
 
