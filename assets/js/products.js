@@ -92,8 +92,8 @@ export function renderTeaScenes() {
     sec.style.setProperty("--auroraB", cat.colorB);
 
     // ⭐ 標題字色（自動萃取更深的顏色）
-    sec.style.setProperty("--catA", darkenRGBA(cat.colorA, 0.45)); // 中文主標題
-    sec.style.setProperty("--catB", darkenRGBA(cat.colorB, 0.45)); // 英文副標題
+    sec.style.setProperty("--catA", darkenRGBA(cat.colorA, 0.75)); // 中文主標題
+    sec.style.setProperty("--catB", darkenRGBA(cat.colorB, 0.75)); // 英文副標題
 
     sec.innerHTML = `
       <header class="tea-scene-header">

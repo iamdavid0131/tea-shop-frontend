@@ -22,8 +22,8 @@ export const CATEGORY_MAP = [
     title_zh: "雲頂清香",
     title_en: "Alpine Fragrance",
     order: 3,
-    colorA: "rgba(232, 243, 237, 0.9)",
-    colorB: "rgba(215, 239, 227, 0.6)",
+    colorA: "rgba(182, 246, 211, 0.9)",
+    colorB: "rgba(47, 186, 117, 0.6)",
     profileColor: "#78cfa8"
   },
   {
@@ -41,7 +41,7 @@ export const CATEGORY_MAP = [
     title_en: "Honey Dew Aroma",
     order: 5,
     colorA: "rgba(250, 240, 220, 0.9)",
-    colorB: "rgba(240, 210, 170, 0.6)",
+    colorB: "rgba(250, 151, 22, 0.6)",
     profileColor: "#eabf74"
   },
   {
@@ -49,8 +49,8 @@ export const CATEGORY_MAP = [
     title_zh: "琥珀紅韻",
     title_en: "Amber Essence",
     order: 6,
-    colorA: "rgba(245, 225, 220, 0.9)",
-    colorB: "rgba(235, 190, 170, 0.6)",
+    colorA: "rgba(255, 153, 128, 0.9)",
+    colorB: "rgba(255, 80, 5, 0.6)",
     profileColor: "#d66b4b"
   },
   {
@@ -58,8 +58,8 @@ export const CATEGORY_MAP = [
     title_zh: "靜雪白毫",
     title_en: "White Serenity",
     order: 7,
-    colorA: "rgba(245, 245, 240, 0.9)",
-    colorB: "rgba(230, 230, 220, 0.6)",
+    colorA: "rgba(241, 241, 158, 0.9)",
+    colorB: "rgba(249, 234, 103, 0.6)",
     profileColor: "#cfcab8"
   },
   {
