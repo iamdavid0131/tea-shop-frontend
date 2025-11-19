@@ -131,7 +131,7 @@ function showAIModal() {
       // timeout 保護
       const aiPromise = callAI(q);
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("timeout")), 8000)
+        setTimeout(() => reject(new Error("timeout")), 15000)
       );
 
       let out;
