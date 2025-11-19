@@ -103,12 +103,14 @@ function createAIModal() {
 
     // 關閉
     modal.querySelector("#aiClose").onclick = () => {
+      resetSession();
       modal.classList.remove("show");
       setTimeout(() => modal.remove(), 250);
     };
 
     modal.addEventListener("click", e => {
       if (e.target === modal) {
+        resetSession();
         modal.classList.remove("show");
         setTimeout(() => modal.remove(), 250);
       }
@@ -131,9 +133,17 @@ function showAIModal() {
 
   modal.classList.add("show");
 
+  let userTaste = JSON.parse(localStorage.getItem("user_taste") || "null");
+
   // 打開時清空畫布
   chat.innerHTML = "";
+if (userTaste) {
+  appendAIBubble(chat, "歡迎回來！要使用上次的風味偏好嗎？😊");
+
+  appendAskOptions(chat, ["使用上次偏好", "重新開始"]);
+} else {
   appendAIBubble(chat, "嗨～我是 AI 侍茶師，可以推薦/送禮/泡法/搭餐/性格測驗，請問有什麼需要我幫忙的嗎？😊");
+}
 
   // 初始 session
   let session = loadSession() || null;
@@ -270,7 +280,20 @@ function appendAskOptions(chat, options) {
       const input = document.getElementById("aiInput");
       const session = JSON.parse(localStorage.getItem("ai_guide_session") || "null");
 
-      appendUserBubble(chat, opt);
+      if (opt === "重新開始") {
+        resetSession();
+        userTaste = null;
+        localStorage.removeItem("user_taste");
+        appendAIBubble(chat, "好的～我們重新開始！你想了解哪方面呢？");
+        return;
+        }
+
+        if (opt === "使用上次偏好") {
+        appendAIBubble(chat, "好的，我會根據你的偏好協助你！");
+        // 不 reset session
+        return;
+        }
+
 
       const out = await callAI(opt, session);
       saveSession(out.session || null);
