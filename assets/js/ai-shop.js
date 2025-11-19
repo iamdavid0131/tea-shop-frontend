@@ -180,6 +180,12 @@ function showAIModal() {
         bindAIActions(modal, resultBox);
         return;
       }
+      if (out.mode === "pairing") {
+        resultBox.innerHTML = buildPairingUI(out.tea, out.reason, CONFIG.PRODUCTS);
+        bindAIActions(modal, resultBox);
+        return;
+        }
+
 
       // ----------------------------------------------------
       // ⭐ 一般推薦模式
@@ -336,6 +342,30 @@ function buildPersonalityUI(teaId, summary, products) {
     </div>
   `;
 }
+
+function buildPairingUI(teaId, reason, products) {
+  const tea = products.find(p => p.id === teaId);
+  if (!tea) return `<div class="ai-error">找不到茶品</div>`;
+
+  return `
+    <div class="pair-card glassy">
+      <div class="pair-header">
+        <i class="ph ph-bowl-steam"></i>
+        與料理最搭配的茶
+      </div>
+
+      <div class="pair-main">
+        <div class="pair-title">${tea.title}</div>
+        <div class="pair-reason">${reason}</div>
+      </div>
+
+      <button class="pair-btn" data-id="${tea.id}">
+        查看 ${tea.title}
+      </button>
+    </div>
+  `;
+}
+
 
 // ------------------------------------------------------------
 // 初始化：注入 AI 按鈕
