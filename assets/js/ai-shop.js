@@ -121,6 +121,7 @@ function createAIModal() {
 // 🏁 5. 開啟 AI Modal（初始化畫面）
 // ============================================================
 function showAIModal() {
+resetSession();
   const modal = createAIModal();
   const chat = modal.querySelector("#aiChat");
   const input = modal.querySelector("#aiInput");
