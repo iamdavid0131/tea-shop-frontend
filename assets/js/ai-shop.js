@@ -1,85 +1,77 @@
 // ============================================================
-// ⭐ ai-shop.js — 祥興茶行 AI 導購模組（最佳化旗艦版）
+// ⭐ ai-shop.js（多輪對話 2.0）Part 1 — 基礎架構
 // ============================================================
 
 import { CONFIG } from "./config.js";
-import { CATEGORY_MAP } from "./category-map.js";
 import { $ } from "./dom.js";
 
-// ------------------------------------------------------------
-// 1. AI API 呼叫模組
-// ------------------------------------------------------------
-let taste = JSON.parse(localStorage.getItem("user_taste") || "null");
+// ============================================================
+// 🧠 1. 前端 Session（localStorage 保存導購狀態）
+// ============================================================
 
-async function callAI(message) {
+const AI_SESSION_KEY = "ai_guide_session";
+
+function loadSession() {
+  try {
+    return JSON.parse(localStorage.getItem(AI_SESSION_KEY)) || null;
+  } catch {
+    return null;
+  }
+}
+
+function saveSession(session) {
+  localStorage.setItem(AI_SESSION_KEY, JSON.stringify(session));
+}
+
+function resetSession() {
+  localStorage.removeItem(AI_SESSION_KEY);
+}
+
+
+// ============================================================
+// 💬 2. Chat UI：新增訊息泡泡
+// ============================================================
+
+function appendAIBubble(container, text) {
+  const bubble = document.createElement("div");
+  bubble.className = "ai-bubble ai-bubble-ai";
+  bubble.innerHTML = `<div class="ai-bubble-text">${text}</div>`;
+  container.appendChild(bubble);
+}
+
+function appendUserBubble(container, text) {
+  const bubble = document.createElement("div");
+  bubble.className = "ai-bubble ai-bubble-user";
+  bubble.innerHTML = `<div class="ai-bubble-text">${text}</div>`;
+  container.appendChild(bubble);
+}
+
+
+// ============================================================
+// 📡 3. callAI（多輪對話版）
+// ============================================================
+
+async function callAI(message, session) {
   const res = await fetch("https://tea-order-server.onrender.com/api/ai-tea", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       message,
-      previousTaste: taste,
       products: CONFIG.PRODUCTS,
-    }),
+      session,
+      previousTaste: JSON.parse(localStorage.getItem("user_taste") || "null")
+    })
   });
+
   return await res.json();
 }
 
-function saveUserTaste(preference) {
-  localStorage.setItem("user_taste", JSON.stringify(preference));
-  taste = preference;
-}
 
-// ------------------------------------------------------------
-// 2. 打開商品 Modal
-// ------------------------------------------------------------
-function openProductModal(prodId) {
-  const card = document.querySelector(`.tea-card[data-id="${prodId}"]`);
-  if (!card) {
-    console.warn("找不到商品卡片:", prodId);
-    return;
-  }
-  card.click();
-}
+// ============================================================
+// 🎨 4. 建立 AI Modal 基礎框架（聊天介面）
+// ============================================================
 
-// ------------------------------------------------------------
-// 3. AI 入口按鈕
-// ------------------------------------------------------------
-function injectAIButton() {
-  const container = $("aiEntry");
-  if (!container) return;
-
-  const btn = document.createElement("button");
-  btn.id = "aiAssistBtn";
-  btn.className = "ai-assist-btn glassy";
-  btn.textContent = "💬 AI 幫我選茶";
-
-  container.prepend(btn);
-  btn.addEventListener("click", () => showAIModal());
-}
-
-// ------------------------------------------------------------
-// ⭐ 4. 統一事件綁定（Compare / Brew / Gift / Masterpick / Personality）
-// ------------------------------------------------------------
-function bindAIActions(modal, resultBox) {
-  resultBox.addEventListener("click", (e) => {
-    const btn = e.target.closest(
-      ".compare-btn, .brew-btn, .gift-btn, .mp-btn, .person-btn, .ai-bubble-click"
-    );
-    if (!btn) return;
-
-    const id = btn.dataset.id;
-    if (!id) return;
-
-    modal.classList.remove("show");
-    setTimeout(() => modal.remove(), 250);
-    openProductModal(id);
-  });
-}
-
-// ------------------------------------------------------------
-// 5. 主 UI — AI Modal
-// ------------------------------------------------------------
-function showAIModal() {
+function createAIModal() {
   let modal = document.getElementById("aiModal");
 
   if (!modal) {
@@ -89,285 +81,421 @@ function showAIModal() {
 
     modal.innerHTML = `
       <div class="ai-box">
+
         <h2 class="ai-title">
           <i class="ph ph-chat-teardrop-dots ai-icon"></i>
-          AI 茶品推薦
+          AI 茶師導購
         </h2>
 
-        <textarea id="aiQuery" placeholder="告訴我你喜歡什麼風味…" class="ai-input"></textarea>
+        <div id="aiChat" class="ai-chat-area"></div>
 
-        <button id="aiSubmit" class="ai-submit">送出</button>
-
-        <div id="aiResult" class="ai-result" style="display:none;"></div>
+        <div class="ai-input-row">
+          <input id="aiInput" class="ai-text-input" placeholder="輸入或點選選項…" />
+          <button id="aiSend" class="ai-send-btn">送出</button>
+        </div>
 
         <button id="aiClose" class="ai-close-icon">×</button>
+
       </div>
     `;
 
     document.body.appendChild(modal);
 
+    // 關閉
     modal.querySelector("#aiClose").onclick = () => {
       modal.classList.remove("show");
       setTimeout(() => modal.remove(), 250);
     };
 
-    modal.addEventListener("click", (e) => {
+    modal.addEventListener("click", e => {
       if (e.target === modal) {
         modal.classList.remove("show");
         setTimeout(() => modal.remove(), 250);
       }
     });
-
-    // ----------------------------------------------------
-    // ⭐ 送出查詢
-    // ----------------------------------------------------
-    modal.querySelector("#aiSubmit").onclick = async () => {
-      const q = modal.querySelector("#aiQuery").value.trim();
-      if (!q) return;
-
-      const resultBox = modal.querySelector("#aiResult");
-      resultBox.style.display = "block";
-
-      resultBox.innerHTML = `
-        <div class="ai-loader">
-          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-        </div>
-        <div class="ai-loading-text">AI 正在分析風味…</div>
-      `;
-
-      let out;
-      try {
-        out = await Promise.race([
-          callAI(q),
-          new Promise((_, reject) =>
-            setTimeout(() => reject("timeout"), 20000)
-          )
-        ]);
-      } catch {
-        resultBox.innerHTML = `<div class="ai-error">⚠️ 分析較久，請再試一次…</div>`;
-        return;
-      }
-
-      // ----------------------------------------------------
-      // ⭐ 多模式處理（Compare / Brew / Gift / MP / Person）
-      // ----------------------------------------------------
-      if (out.mode === "compare") {
-        resultBox.innerHTML = buildCompareUI(out.a, out.b, out.compare, CONFIG.PRODUCTS);
-        bindAIActions(modal, resultBox);
-        return;
-      }
-
-      if (out.mode === "brew") {
-        resultBox.innerHTML = buildBrewUI(out.tea, out.brew, out.tips, CONFIG.PRODUCTS);
-        bindAIActions(modal, resultBox);
-        return;
-      }
-
-      if (out.mode === "gift") {
-        resultBox.innerHTML = buildGiftUI(out.best, out.reason, CONFIG.PRODUCTS);
-        bindAIActions(modal, resultBox);
-        return;
-      }
-
-      if (out.mode === "masterpick") {
-        resultBox.innerHTML = buildMasterPickUI(out.best, out.reason, CONFIG.PRODUCTS);
-        bindAIActions(modal, resultBox);
-        return;
-      }
-
-      if (out.mode === "personality") {
-        resultBox.innerHTML = buildPersonalityUI(out.tea, out.summary, CONFIG.PRODUCTS);
-        bindAIActions(modal, resultBox);
-        return;
-      }
-      if (out.mode === "pairing") {
-        resultBox.innerHTML = buildPairingUI(out.tea, out.reason, CONFIG.PRODUCTS);
-        bindAIActions(modal, resultBox);
-        return;
-        }
-
-
-      // ----------------------------------------------------
-      // ⭐ 一般推薦模式
-      // ----------------------------------------------------
-      const bestId = typeof out.best === "string" ? out.best : out.best?.id;
-      const best = CONFIG.PRODUCTS.find(p => p.id === bestId);
-
-      const bestReason = typeof out.best === "string"
-        ? out.reason || ""
-        : out.best?.reason || "";
-
-      let secondId = null;
-      let secondName = "";
-      let secondReason = "";
-
-      if (out.second) {
-        secondId = typeof out.second === "string" ? out.second : out.second.id;
-        const s = CONFIG.PRODUCTS.find(p => p.id === secondId);
-        secondName = s?.title || secondId;
-        secondReason = out.second?.reason || "";
-      }
-
-      resultBox.innerHTML = `
-        <div class="ai-chat">
-          <div class="ai-bubble ai-bubble-ai ai-bubble-click" data-id="${best.id}">
-            <div class="ai-bubble-label">推薦茶款</div>
-            <div class="ai-bubble-title">${best.title}</div>
-            <div class="ai-bubble-text">${bestReason}</div>
-          </div>
-
-          ${
-            secondId
-              ? `
-              <div class="ai-bubble ai-bubble-ai ai-bubble-click" data-id="${secondId}">
-                <div class="ai-bubble-label">次推薦</div>
-                <div class="ai-bubble-title">${secondName}</div>
-                <div class="ai-bubble-text">${secondReason}</div>
-              </div>
-            `
-              : ""
-          }
-        </div>
-      `;
-
-      saveUserTaste({
-        lastBest: best.id,
-        lastReason: bestReason,
-        timestamp: Date.now(),
-      });
-
-      bindAIActions(modal, resultBox);
-    };
   }
 
-  modal.classList.add("show");
+  return modal;
 }
 
-// ------------------------------------------------------------
-// ⭐ Compare / Brew / Gift / MP / Person UI Builders（不變）
-// ------------------------------------------------------------
 
-function buildCompareUI(a, b, compare, products) {
-  const teaA = products.find(p => p.id === a);
-  const teaB = products.find(p => p.id === b);
-  if (!teaA || !teaB) return `<div class="ai-error">⚠ 找不到產品</div>`;
+// ============================================================
+// 🏁 5. 打開 AI Modal
+// ============================================================
+
+function showAIModal() {
+  const modal = createAIModal();
+  const chat = modal.querySelector("#aiChat");
+  const input = modal.querySelector("#aiInput");
+  const sendBtn = modal.querySelector("#aiSend");
+
+  modal.classList.add("show");
+
+  // 打開時清空畫布
+  chat.innerHTML = "";
+  appendAIBubble(chat, "嗨～需要我幫你選茶嗎？😊");
+
+  // 初始 session
+  let session = loadSession() || null;
+
+  // 點擊送出
+  sendBtn.onclick = async () => {
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    appendUserBubble(chat, msg);
+    input.value = "";
+
+    const result = await callAI(msg, session);
+    session = result.session || null;
+    saveSession(session);
+
+    handleAIResponse(result, chat);
+  };
+}
+
+// ============================================================
+// ⭐ ai-shop.js（多輪對話 2.0）Part 2 — 回覆處理 + UI Builders
+// ============================================================
+
+
+// ============================================================
+// 🎯 6. 處理 AI 回應（核心）
+// ============================================================
+
+function handleAIResponse(out, chat) {
+
+  // -------------------------------
+  // (A) 錯誤
+  // -------------------------------
+  if (out.mode === "error") {
+    appendAIBubble(chat, "抱歉，我這邊出現問題了，請再試一次 🙏");
+    return;
+  }
+
+  // -------------------------------
+  // (B) AI 要問問題（多輪導購）
+  // -------------------------------
+  if (out.mode === "ask") {
+    appendAIBubble(chat, out.ask || "我需要更多資訊喔！");
+
+    if (out.options && out.options.length) {
+      appendAskOptions(chat, out.options);
+    }
+    return;
+  }
+
+  // -------------------------------
+  // (C) 推荐推薦模式（一般）
+// -------------------------------
+  if (out.mode === "recommend") {
+    chat.innerHTML += buildRecommendBubble(out, CONFIG.PRODUCTS);
+    enableProductClicks(chat);
+    return;
+  }
+
+  // -------------------------------
+  // (D) Pairing（搭餐）
+// -------------------------------
+  if (out.mode === "pairing") {
+    chat.innerHTML += buildPairingBubble(out, CONFIG.PRODUCTS);
+    enableProductClicks(chat);
+    return;
+  }
+
+  // -------------------------------
+  // (E) Gift（送禮）
+// -------------------------------
+  if (out.mode === "gift") {
+    chat.innerHTML += buildGiftBubble(out, CONFIG.PRODUCTS);
+    enableProductClicks(chat);
+    return;
+  }
+
+  // -------------------------------
+  // (F) Compare 比較兩款
+// -------------------------------
+  if (out.mode === "compare") {
+    chat.innerHTML += buildCompareBubble(out, CONFIG.PRODUCTS);
+    enableProductClicks(chat);
+    return;
+  }
+
+  // -------------------------------
+  // (G) 泡法
+// -------------------------------
+  if (out.mode === "brew") {
+    chat.innerHTML += buildBrewBubble(out, CONFIG.PRODUCTS);
+    enableProductClicks(chat);
+    return;
+  }
+
+  // -------------------------------
+  // (H) Masterpick（店長推薦）
+  // -------------------------------
+  if (out.mode === "masterpick") {
+    chat.innerHTML += buildMasterpickBubble(out, CONFIG.PRODUCTS);
+    enableProductClicks(chat);
+    return;
+  }
+
+  // -------------------------------
+  // (I) Personality（性格茶）
+// -------------------------------
+  if (out.mode === "personality") {
+    chat.innerHTML += buildPersonalityBubble(out, CONFIG.PRODUCTS);
+    enableProductClicks(chat);
+    return;
+  }
+
+  appendAIBubble(chat, "我收到你的訊息了，但還需要一點資訊喔！");
+}
+
+
+
+// ============================================================
+// 🧩 7. 使用者選項按鈕
+// ============================================================
+
+function appendAskOptions(chat, options) {
+  const box = document.createElement("div");
+  box.className = "ai-option-group";
+
+  options.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.className = "ai-option-btn";
+    btn.textContent = opt;
+
+    btn.onclick = async () => {
+      const input = document.getElementById("aiInput");
+      const session = JSON.parse(localStorage.getItem("ai_guide_session") || "null");
+
+      appendUserBubble(chat, opt);
+
+      const out = await callAI(opt, session);
+      saveSession(out.session || null);
+      handleAIResponse(out, chat);
+    };
+
+    box.appendChild(btn);
+  });
+
+  chat.appendChild(box);
+}
+
+
+
+// ============================================================
+// 🧩 8. 開商品 modal 點擊觸發
+// ============================================================
+
+function enableProductClicks(chat) {
+  chat.querySelectorAll("[data-prod]")?.forEach(btn => {
+    btn.onclick = () => {
+      const modal = document.getElementById("aiModal");
+      modal.classList.remove("show");
+      setTimeout(() => modal.remove(), 250);
+
+      const prodId = btn.dataset.prod;
+      const card = document.querySelector(`.tea-card[data-id="${prodId}"]`);
+      if (card) card.click();
+    };
+  });
+}
+
+
+
+// ============================================================
+// ⭐ 9. 各種模式 UI 建構（氣泡版）
+// ============================================================
+
+
+// ----------------------------
+// (1) Recommend
+// ----------------------------
+function buildRecommendBubble(out, products) {
+  const best = products.find(p => p.id === (out.best?.id || out.best));
+  const secondId = out.second?.id || out.second;
+
+  const second = products.find(p => p.id === secondId);
+
   return `
-    <div class="compare-wrapper">
-      <div class="compare-header">
-        <i class="ph ph-swap"></i> 茶品比較
+    <div class="ai-bubble ai-bubble-ai">
+      <div class="ai-bubble-title">🌟 推薦茶款</div>
+
+      <div class="ai-prod-item" data-prod="${best.id}">
+        <div class="prod-name">${best.title}</div>
+        <div class="prod-reason">${out.best.reason}</div>
       </div>
 
-      <div class="compare-table">
+      ${second ? `
+      <div class="ai-prod-item" data-prod="${second.id}">
+        <div class="prod-name">${second.title}</div>
+        <div class="prod-reason">${out.second.reason}</div>
+      </div>
+      ` : ""}
+    </div>
+  `;
+}
+
+
+
+// ----------------------------
+// (2) Pairing（搭配料理）
+// ----------------------------
+function buildPairingBubble(out, products) {
+  const tea = products.find(p => p.id === out.tea);
+
+  return `
+    <div class="ai-bubble ai-bubble-ai">
+      <div class="ai-bubble-title">🍽 搭配料理推薦</div>
+
+      <div class="ai-prod-item" data-prod="${tea.id}">
+        <div class="prod-name">${tea.title}</div>
+        <div class="prod-reason">${out.reason}</div>
+      </div>
+    </div>
+  `;
+}
+
+
+
+// ----------------------------
+// (3) Gift（送禮）
+// ----------------------------
+function buildGiftBubble(out, products) {
+  const tea = products.find(p => p.id === out.best);
+
+  return `
+    <div class="ai-bubble ai-bubble-ai">
+      <div class="ai-bubble-title">🎁 送禮建議</div>
+
+      <div class="ai-prod-item" data-prod="${tea.id}">
+        <div class="prod-name">${tea.title}</div>
+        <div class="prod-reason">${out.reason}</div>
+      </div>
+    </div>
+  `;
+}
+
+
+
+// ----------------------------
+// (4) Compare（比較兩款）
+// ----------------------------
+function buildCompareBubble(out, products) {
+  const a = products.find(p => p.id === out.a);
+  const b = products.find(p => p.id === out.b);
+
+  return `
+    <div class="ai-bubble ai-bubble-ai">
+      <div class="ai-bubble-title">🔍 茶品比較</div>
+
+      <div class="compare-block">
         <div class="compare-col">
-          <div class="tea-title">${teaA.title}</div>
-          <div class="tea-price">NT$${teaA.price}</div>
-          <div class="tea-tag tag-a">A</div>
+          <div class="compare-name" data-prod="${a.id}">${a.title}</div>
         </div>
 
         <div class="compare-middle">
-          <div class="middle-block"><div class="middle-label">香氣</div><div class="middle-text">${compare.aroma}</div></div>
-          <div class="middle-block"><div class="middle-label">厚度</div><div class="middle-text">${compare.body}</div></div>
-          <div class="middle-block"><div class="middle-label">焙火</div><div class="middle-text">${compare.roast}</div></div>
-          <div class="middle-block"><div class="middle-label">價格</div><div class="middle-text">${compare.price}</div></div>
+          <div>香氣：${out.compare.aroma}</div>
+          <div>厚度：${out.compare.body}</div>
+          <div>焙火：${out.compare.roast}</div>
+          <div>價格：${out.compare.price}</div>
         </div>
 
         <div class="compare-col">
-          <div class="tea-title">${teaB.title}</div>
-          <div class="tea-price">NT$${teaB.price}</div>
-          <div class="tea-tag tag-b">B</div>
+          <div class="compare-name" data-prod="${b.id}">${b.title}</div>
         </div>
       </div>
 
-      <div class="compare-summary">${compare.summary}</div>
+      <div class="compare-summary">${out.compare.summary}</div>
+    </div>
+  `;
+}
 
-      <div class="compare-actions">
-        <button class="compare-btn" data-id="${teaA.id}">查看 ${teaA.title}</button>
-        <button class="compare-btn" data-id="${teaB.id}">查看 ${teaB.title}</button>
+
+
+// ----------------------------
+// (5) Brew（泡法）
+// ----------------------------
+function buildBrewBubble(out, products) {
+  const tea = products.find(p => p.id === out.tea);
+
+  return `
+    <div class="ai-bubble ai-bubble-ai">
+      <div class="ai-bubble-title">🍵 ${tea.title} 泡法指南</div>
+
+      <div class="brew-item">熱泡：${out.brew.hot}</div>
+      <div class="brew-item">冰鎮：${out.brew.ice_bath}</div>
+      <div class="brew-item">冷泡：${out.brew.cold_brew}</div>
+
+      <div class="brew-tips">${out.tips}</div>
+
+      <div class="ai-prod-item" data-prod="${tea.id}">
+        查看商品 →
       </div>
     </div>
   `;
 }
 
-function buildBrewUI(teaId, brew, tips, products) {
-  const tea = products.find(p => p.id === teaId);
-  return `
-    <div class="brew-card">
-      <div class="brew-header"><i class="ph ph-tea-bag"></i>${tea.title} 泡法建議</div>
-      <div class="brew-section"><div class="brew-title">🔥 熱泡</div><div class="brew-text">${brew.hot || "無資料"}</div></div>
-      <div class="brew-section"><div class="brew-title">❄️ 冰鎮</div><div class="brew-text">${brew.ice_bath || "無資料"}</div></div>
-      <div class="brew-section"><div class="brew-title">🌙 冷泡</div><div class="brew-text">${brew.cold_brew || "無資料"}</div></div>
-      ${
-        tips
-          ? `<div class="brew-tips"><i class="ph ph-sparkle"></i>${tips}</div>`
-          : ""
-      }
-      <button class="brew-btn" data-id="${tea.id}">查看 ${tea.title}</button>
-    </div>
-  `;
-}
 
-function buildGiftUI(bestId, reason, products) {
-  const tea = products.find(p => p.id === bestId);
-  return `
-    <div class="gift-card">
-      <div class="gift-header"><i class="ph ph-gift"></i>最適合送禮</div>
-      <div class="gift-main"><div class="gift-title">${tea.title}</div><div class="gift-reason">${reason}</div></div>
-      <button class="gift-btn" data-id="${tea.id}">查看 ${tea.title}</button>
-    </div>
-  `;
-}
 
-function buildMasterPickUI(bestId, reason, products) {
-  const tea = products.find(p => p.id === bestId);
-  const limitedTag = tea.stock <= 8 ? `<div class="mp-limited">🔥 庫存僅剩 ${tea.stock} 包</div>` : "";
-  return `
-    <div class="master-card glassy">
-      <div class="mp-header"><i class="ph ph-crown-simple"></i>店長特別推薦</div>
-      ${limitedTag}
-      <div class="mp-title">${tea.title}</div>
-      <div class="mp-reason">${reason}</div>
-      <button class="mp-btn" data-id="${tea.id}">查看 ${tea.title}</button>
-    </div>
-  `;
-}
-
-function buildPersonalityUI(teaId, summary, products) {
-  const tea = products.find(p => p.id === teaId);
-  return `
-    <div class="person-card glassy">
-      <div class="person-icon">🌿</div>
-      <div class="person-title">${tea.title}</div>
-      <div class="person-summary">${summary}</div>
-      <button class="person-btn" data-id="${tea.id}">查看 ${tea.title}</button>
-    </div>
-  `;
-}
-
-function buildPairingUI(teaId, reason, products) {
-  const tea = products.find(p => p.id === teaId);
-  if (!tea) return `<div class="ai-error">找不到茶品</div>`;
+// ----------------------------
+// (6) MasterPick
+// ----------------------------
+function buildMasterpickBubble(out, products) {
+  const tea = products.find(p => p.id === out.best);
 
   return `
-    <div class="pair-card glassy">
-      <div class="pair-header">
-        <i class="ph ph-bowl-steam"></i>
-        與料理最搭配的茶
+    <div class="ai-bubble ai-bubble-ai">
+      <div class="ai-bubble-title">👑 店長特別推薦</div>
+
+      <div class="ai-prod-item" data-prod="${tea.id}">
+        <div class="prod-name">${tea.title}</div>
+        <div class="prod-reason">${out.reason}</div>
       </div>
-
-      <div class="pair-main">
-        <div class="pair-title">${tea.title}</div>
-        <div class="pair-reason">${reason}</div>
-      </div>
-
-      <button class="pair-btn" data-id="${tea.id}">
-        查看 ${tea.title}
-      </button>
     </div>
   `;
 }
 
 
-// ------------------------------------------------------------
-// 初始化：注入 AI 按鈕
-// ------------------------------------------------------------
-setTimeout(() => injectAIButton(), 300);
+
+// ----------------------------
+// (7) Personality 性格茶
+// ----------------------------
+function buildPersonalityBubble(out, products) {
+  const tea = products.find(p => p.id === out.tea);
+
+  return `
+    <div class="ai-bubble ai-bubble-ai">
+      <div class="ai-bubble-title">🌿 性格茶推薦</div>
+
+      <div class="person-summary">${out.summary}</div>
+
+      <div class="ai-prod-item" data-prod="${tea.id}">
+        ${tea.title}
+      </div>
+    </div>
+  `;
+}
+
+// ============================================================
+// 10. 注入 AI「對話助理」按鈕
+// ============================================================
+
+function injectAIAssistButton() {
+  const container = document.getElementById("aiEntry");
+  if (!container) return;
+
+  const btn = document.createElement("button");
+  btn.id = "aiAssistBtn";
+  btn.className = "ai-assist-btn";
+  btn.innerHTML = `<i class="ph ph-chat-circle-dots"></i> AI 導購聊天`;
+
+  btn.onclick = () => showAIModal();
+
+  container.prepend(btn);
+}
+
+// 啟動
+setTimeout(() => injectAIAssistButton(), 300);

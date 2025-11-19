@@ -2956,25 +2956,21 @@ textarea {
 .ai-modal-overlay {
   position: fixed;
   inset: 0;
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(6px);
   display: flex;
-  align-items: center;
   justify-content: center;
-
-  background: rgba(0, 0, 0, 0.22);
-  backdrop-filter: blur(12px) saturate(160%);
-  -webkit-backdrop-filter: blur(12px) saturate(160%);
-
-  z-index: 9999;
+  align-items: flex-end;
+  padding: 0 0 40px;
   opacity: 0;
-  visibility: hidden;
-  transition: opacity .25s ease, visibility .25s ease;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  pointer-events: none;
+  transition: .25s ease;
+  z-index: 9999;
 }
 
 .ai-modal-overlay.show {
   opacity: 1;
-  visibility: visible;
+  pointer-events: auto;
 }
 
 
@@ -2982,25 +2978,18 @@ textarea {
    AI Modal Card (主容器)
 ================================ */
 .ai-box {
-  width: 86%;
-  max-width: 430px;
+  width: 92%;
+  max-width: 450px;
+  max-height: 80vh;
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(18px) saturate(160%);
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,0.6);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.15);
 
-  background: rgba(255, 255, 255, 0.48);
-  border-radius: 26px;
-
-  padding: 28px 28px 34px;
-
-  border: 1px solid rgba(220, 235, 225, 0.55);
-
-  box-shadow:
-    0 20px 45px rgba(75, 95, 80, 0.28),
-    0 8px 18px rgba(70, 90, 80, 0.16),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.40);
-
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-
-  animation: aiPopIn .35s cubic-bezier(.25,1.4,.5,1);
+  padding: 20px 20px 16px;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 彈性開場動畫（像 iOS Modal） */
@@ -3010,7 +2999,19 @@ textarea {
   100% { transform: translateY(0px) scale(1); }
 }
 
+/* Header */
+.ai-header {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
+.ai-header i {
+  font-size: 22px;
+}
 /* ================================
    Fade In
 ================================ */
@@ -3052,6 +3053,29 @@ textarea {
   transition: all .28s ease;
   box-sizing: border-box;
 }
+
+.ai-input-row {
+  display: flex;
+  gap: 10px;
+}
+
+#aiInput {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
+
+#aiSend {
+  background: #0a84ff;
+  border: none;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 15px;
+}
+
 
 .ai-input:focus {
   border: 1.6px solid rgba(150, 180, 165, 0.9);
@@ -3117,6 +3141,15 @@ textarea {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
+
+/* Chat scroll */
+.ai-chat-box {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 6px;
+  margin: 10px 0;
+}
+
 
 /* ================================
    Close Button
@@ -3333,7 +3366,17 @@ textarea {
   animation: aiBubbleFade .25s ease;
   transition: transform .25s ease, box-shadow .25s ease;
 }
+.ai-bubble-ai {
+  background: rgba(255,255,255,0.65);
+  border: 1px solid rgba(180,180,180,0.4);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
 
+.ai-bubble-user {
+  background: #0a84ff;
+  color: white;
+  margin-left: auto;
+}
 /* ================================
    Interaction
 ================================ */
@@ -3386,6 +3429,45 @@ textarea {
   margin-bottom: 6px;
 }
 
+/* 商品 clickable */
+.ai-prod-item {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.75);
+  border: 1px solid rgba(160,160,160,0.3);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+
+.ai-prod-item:hover {
+  background: white;
+  border-color: #0a84ff;
+}
+
+/* ============================================================
+   選項按鈕組
+============================================================ */
+.ai-option-group {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ai-option-btn {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  background: rgba(0,0,0,0.05);
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid rgba(0,0,0,0.15);
+}
+
+.ai-option-btn:hover {
+  background: rgba(0,0,0,0.12);
+}
 /* ================================
    理由文字
 ================================ */
