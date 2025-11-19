@@ -282,13 +282,14 @@ function appendAskOptions(chat, options) {
 
         if (opt === "重新開始") {
         resetSession();
+        session = null;   // <-- 🔥 關鍵：前端記憶也要清掉
+        userTaste = null;
         localStorage.removeItem("user_taste");
 
-        chat.innerHTML = "";  // 清空畫面
         appendAIBubble(chat, "好的～我們重新開始！你想了解哪方面呢？😊");
-
         return;
         }
+
 
         if (opt === "使用上次偏好") {
         appendAIBubble(chat, "好的，我會根據你的偏好協助你！");
