@@ -142,7 +142,7 @@ resetSession();
   }
 
   // 初始 session
-  let session = loadSession() || null;
+  let session = null;
 
   // 送出按鈕
   sendBtn.onclick = async () => {
