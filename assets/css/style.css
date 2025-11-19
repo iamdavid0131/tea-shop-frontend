@@ -3246,7 +3246,7 @@ textarea {
 /* 🟩 輸入框：增加高度 + 文字置中 + 靠右美感 */
 .ai-text-input {
   flex: 1;
-  height: 40px;
+  height: 36px;
 
   padding: 10px 16px;
   font-size: 16px;
@@ -3278,7 +3278,7 @@ textarea {
    🔥 送出按鈕（更大、更圓、更明顯）
 ================================ */
 .ai-send-btn {
-  height: 40px;
+  height: 36px;
   padding: 0 22px;
 
   font-size: 16px;
