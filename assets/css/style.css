@@ -3907,6 +3907,115 @@ textarea {
   opacity: .88;
 }
 
+.ai-chat-area {
+  flex: 1;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 6px 2px 12px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  -webkit-overflow-scrolling: touch;
+}
+
+
+.ai-text-input {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(190, 210, 200, 0.55);
+
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+
+  font-size: 15px;
+  outline: none;
+  transition: .25s ease;
+}
+
+.ai-text-input:focus {
+  border-color: rgba(120, 160, 140, 0.85);
+  box-shadow: 0 0 0 2px rgba(180,220,200,0.35);
+}
+
+
+.ai-send-btn {
+  background: #0a84ff;
+  border: none;
+  color: white;
+
+  padding: 12px 16px;
+  border-radius: 14px;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+  transition: .25s ease;
+}
+
+.ai-send-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.22);
+}
+
+
+.prod-name {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: #244030;
+}
+
+.prod-reason {
+  font-size: 14px;
+  opacity: .85;
+  color: #2f4b3c;
+  line-height: 1.6;
+}
+
+
+.compare-block {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+
+  background: rgba(255,255,255,0.55);
+  border: 1px solid rgba(200,220,210,0.45);
+  padding: 14px;
+  border-radius: 16px;
+
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+}
+
+.compare-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #214231;
+  cursor: pointer;
+}
+.compare-name:hover {
+  color: #0a84ff;
+}
+.brew-item {
+  margin: 6px 0;
+  font-size: 14px;
+  color: #2f4b3c;
+  line-height: 1.6;
+}
+
+.person-summary {
+  margin-bottom: 12px;
+  font-size: 15px;
+  color: #2f4b3c;
+  line-height: 1.7;
+}
+
+
 /* ================================
    購物明細左滑刪除
 ================================ */
