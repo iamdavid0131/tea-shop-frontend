@@ -82,14 +82,13 @@ export function renderTeaScenes() {
     .filter((c) => c.list.length > 0)
     .sort((a, b) => (a.order || 999) - (b.order || 999));
 
-  AURORA.init();
+  if (typeof AURORA !== 'undefined') AURORA.init();
 
   sortedCats.forEach((cat) => {
     const sec = document.createElement("section");
     sec.className = "tea-scene";
     sec.dataset.cat = cat.key;
 
-    // 注入 CSS 變數供樣式使用
     sec.style.setProperty("--auroraA", cat.colorA);
     sec.style.setProperty("--auroraB", cat.colorB);
     sec.style.setProperty("--catA", darkenRGBA(cat.colorA, 0.75));
@@ -122,15 +121,11 @@ export function renderTeaScenes() {
     </div>
     `;
     
-    // 初始化該區塊的 Carousel
-    const viewport = sec.querySelector(".embla__viewport");
-    if (viewport && window.EmblaCarousel) {
-         EmblaCarousel(viewport, { align: "start", containScroll: "trimSnaps", dragFree: false });
-    }
-    
     container.appendChild(sec);
   });
 
+  // 🔥 修正點：元素都上畫面了，才執行初始化
+  initTeaScenesCarousel();
   // === 優化後的 Scroll Listener (節流版) ===
   const scenes = $$(".tea-scene");
 
@@ -404,4 +399,26 @@ function darkenRGBA(rgba, factor = 0.35) {
   b = Math.round(b * (1 - factor));
   a = a !== undefined ? a : 1;
   return `rgba(${r}, ${g}, ${b}, ${a})`;
+}
+
+// ============================================================
+// 🌌 Tea Scenes Carousel (必須在元素加入 DOM 後執行)
+// ============================================================
+function initTeaScenesCarousel() {
+  // 這裡選擇器要精準，避免選到 Modal 裡面的東西
+  const viewports = document.querySelectorAll(".tea-scene .embla__viewport");
+
+  viewports.forEach(vp => {
+    // 防止重複初始化
+    if (vp.__emblaInstance) return; 
+
+    if (window.EmblaCarousel) {
+        const embla = EmblaCarousel(vp, {
+          align: "start",
+          containScroll: "trimSnaps",
+          dragFree: false,
+        });
+        vp.__emblaInstance = embla;
+    }
+  });
 }
