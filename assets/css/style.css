@@ -324,8 +324,207 @@ body {
 
 
 /* ============================================================
-   🚑 滾動問題急救包 (Emergency Scroll Fixes)
+   ✅ 隱私同意與送出按鈕 (Premium Tea Style)
    ============================================================ */
+
+/* === 隱私同意區塊容器 === */
+.consent-row {
+  margin: 24px 0 12px;
+  padding: 18px 20px;
+  border-radius: 16px;
+  
+  /* 玻璃擬態背景 */
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(160, 180, 170, 0.45);
+  box-shadow: 
+    0 4px 12px rgba(90, 123, 104, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.consent-row:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(90, 123, 104, 0.1);
+}
+
+/* === Toggle Switch (開關本體) === */
+.sp-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sp-toggle input {
+  display: none; /* 隱藏原生 checkbox */
+}
+
+/* === 滑軌 === */
+.sp-toggle-slider {
+  position: relative;
+  flex-shrink: 0;
+  width: 46px;
+  height: 28px;
+  border-radius: 28px;
+  margin-top: 2px;
+  
+  /* OFF 狀態：茶灰綠 */
+  background: rgba(200, 215, 205, 0.6);
+  border: 1px solid rgba(180, 200, 190, 0.3);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  
+  transition: all 0.35s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+/* === 圓形按鈕 (Knob) === */
+.sp-toggle-slider::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  
+  background: #fff;
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.15),
+    0 1px 1px rgba(0, 0, 0, 0.05);
+    
+  transition: all 0.35s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+/* === ON 狀態：茶湯漸層 + 光暈 === */
+.sp-toggle input:checked + .sp-toggle-slider {
+  background: linear-gradient(135deg, #7fa38a 0%, #5a7b68 100%);
+  border-color: transparent;
+  box-shadow: 
+    0 2px 8px rgba(90, 123, 104, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.sp-toggle input:checked + .sp-toggle-slider::after {
+  transform: translateX(18px); /* 移動距離 */
+  background: #fff;
+}
+
+/* === 文字描述 === */
+.sp-toggle-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sp-toggle-label {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: #2f4b3c; /* 深茶綠 */
+  line-height: 1.4;
+}
+
+.sp-consent-note {
+  font-size: 13.5px;
+  color: #66776e; /* 淺灰綠 */
+  line-height: 1.5;
+}
+
+/* ============================================================
+   🚀 送出按鈕區域
+   ============================================================ */
+.submit-area {
+  margin-top: 32px;
+  margin-bottom: 24px;
+  padding: 0 8px;
+  display: flex;
+  justify-content: center;
+}
+
+.submit-btn {
+  width: 100%;
+  height: 56px;
+  border-radius: 18px;
+  
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #fff;
+  
+  border: none;
+  background: linear-gradient(135deg, #5a7b68, #8fb79c);
+  
+  /* 懸浮陰影 */
+  box-shadow: 
+    0 8px 20px rgba(90, 123, 104, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Hover 效果 */
+.submit-btn:not(:disabled):hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #668a75, #9cc3aa);
+  box-shadow: 
+    0 12px 28px rgba(90, 123, 104, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* Active 點擊效果 */
+.submit-btn:not(:disabled):active {
+  transform: translateY(1px);
+  box-shadow: 0 4px 10px rgba(90, 123, 104, 0.2);
+}
+
+/* ✨ 流光動畫 (Shine Effect) */
+.submit-btn:not(:disabled)::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+  animation: btnShine 3s infinite;
+}
+
+@keyframes btnShine {
+  0% { left: -100%; opacity: 0; }
+  20% { left: 200%; opacity: 1; }
+  100% { left: 200%; opacity: 0; }
+}
+
+/* 🚫 Disabled 狀態 */
+.submit-btn:disabled {
+  background: #e0e0e0;
+  color: #a0a0a0;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+.submit-btn:disabled::after {
+  display: none;
+}
+
+/* 手機版底部安全距離 */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .submit-area {
+    margin-bottom: calc(24px + env(safe-area-inset-bottom));
+  }
+}
 /* ============================================================
    🚑 行動端滾動急救包 (Mobile Scroll Fixes) - 貼在 style.css 最下方
    ============================================================ */
