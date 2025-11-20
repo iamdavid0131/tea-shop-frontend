@@ -264,7 +264,10 @@ function enableSwipeDelete(row) {
   let startX = 0;
 
   const hammer = new Hammer(row);
-  hammer.get("pan").set({ direction: Hammer.DIRECTION_HORIZONTAL });
+  hammer.get("pan").set({ 
+    direction: Hammer.DIRECTION_HORIZONTAL, 
+    touchAction: 'pan-y' 
+  });
 
   hammer.on("panstart", () => {
     startX = open ? -90 : 0;
