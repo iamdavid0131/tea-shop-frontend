@@ -3910,3 +3910,43 @@ textarea {
   width: auto; 
   min-width: 0;
 }
+
+/* === 🚑 滾動問題急救包 === */
+
+/* 1. 強制商品卡片容器可以橫向滑動 */
+/* 請將 .scrolling-wrapper 替換成你實際包住 .item-card 的容器 class 名稱 */
+.scrolling-wrapper, 
+.horizontal-scroll-container {
+  display: flex;
+  overflow-x: auto !important; /* 強制開啟橫向捲動 */
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch; /* iOS 必備：讓滑動有慣性 */
+  touch-action: pan-x; /* 告訴瀏覽器這裡允許橫向滑動 */
+  cursor: grab;
+}
+
+/* 2. 確保商品 Modal 內容可以垂直滑動 */
+/* 假設你的 Modal 內容容器叫 .modal-content 或 .modal-body */
+.modal-content, 
+.modal-body,
+.ai-box { /* AI 視窗與隱藏商品視窗 */
+  overflow-y: auto !important; /* 強制開啟垂直捲動 */
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y; /* 允許垂直滑動 */
+  max-height: 80vh; /* 限制高度，不然無法捲動 */
+}
+
+/* 3. 防止 body 被鎖死導致無法滑動 */
+/* 只有當 Modal 打開時，才鎖住 body */
+body.modal-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
+/* 4. 確保 AI 視窗內容區塊可以滑動 */
+.ai-chat-area {
+  overflow-y: auto !important;
+  touch-action: pan-y !important;
+  -webkit-overflow-scrolling: touch;
+}

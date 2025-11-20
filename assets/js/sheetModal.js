@@ -236,15 +236,24 @@ export function enableSmartSheetControl() {
 
 $("closeCartModal")?.addEventListener("click", hideCartSheet);
 
+// 在 sheetModal.js 的 initSheetModal 函式
 export function initSheetModal() {
-    const sheet = $("cartSheet");
-    const backdrop = $("cartSheetBackdrop");
-  
-    if (!sheet || !backdrop) return;
-  
-    sheet.style.transform = "translateY(100%)"; 
-    sheet.style.transition = "transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)";
-    backdrop.style.display = "none";
+  const sheet = $("cartSheet");
+  const backdrop = $("cartSheetBackdrop");
+
+  if (!sheet || !backdrop) return;
+
+  sheet.style.transform = "translateY(100%)"; 
+  sheet.style.transition = "transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)";
+  backdrop.style.display = "none";
+
+  // ✅ 在這裡綁定一次就好，防止這行代碼重複執行導致滑動鎖死
+  // 只有當點擊 backdrop 本身時，阻止滑動 (防止穿透)，但不要阻止 sheet 內部滑動
+  backdrop.addEventListener("touchmove", (e) => {
+    if (e.target === backdrop) {
+        e.preventDefault();
+    }
+  }, { passive: false });
 }
 
 function enableSwipeDelete(row) {

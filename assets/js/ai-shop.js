@@ -477,14 +477,16 @@ function openSecretModal(product) {
   modal.className = "ai-modal-overlay show"; // 直接顯示
   // 金色主題樣式
   modal.innerHTML = `
-    <div class="ai-box" style="border: 2px solid #d4af37; background: #fffbf0;">
-      <div style="text-align:center; margin-bottom:20px;">
+    <div class="ai-box" style="border: 2px solid #d4af37; background: #fffbf0; max-height: 85vh; overflow-y: auto; display: flex; flex-direction: column;">
+      
+      <div style="text-align:center; margin-bottom:20px; flex-shrink: 0;">
         <div style="font-size:3rem;">🤫</div>
         <h2 style="color:#b8860b; margin:10px 0;">${product.title}</h2>
-        <p style="color:#666; font-size:0.9rem;">${product.desc}</p>
       </div>
 
-      <div style="background:#fff; padding:15px; border-radius:12px; border:1px solid #eee; margin-bottom:20px;">
+      <div style="background:#fff; padding:15px; border-radius:12px; border:1px solid #eee; margin-bottom:20px; flex-grow: 1; overflow-y: auto;">
+        <p style="color:#666; font-size:0.9rem; margin-bottom: 15px; line-height: 1.6;">${product.desc}</p>
+        
         <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
           <span>售價</span>
           <span style="font-weight:bold; color:#b8860b;">NT$ ${product.price}</span>
@@ -499,14 +501,13 @@ function openSecretModal(product) {
         </div>
       </div>
 
-      <button id="addToSecretCartBtn" class="ai-send-btn" style="background:#b8860b; width:100%; font-weight:bold;">
+      <button id="addToSecretCartBtn" class="ai-send-btn" style="background:#b8860b; width:100%; font-weight:bold; flex-shrink: 0;">
         加入購物車 (秘密交易)
       </button>
 
       <button id="closeSecret" class="ai-close-icon" style="color:#b8860b;">×</button>
     </div>
   `;
-
   document.body.appendChild(modal);
 
   // --- 內部邏輯 ---
