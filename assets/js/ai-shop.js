@@ -124,6 +124,19 @@ function createAIModal() {
 // ============================================================
 // 🏁 5. 開啟 AI Modal（初始化畫面）
 // ============================================================
+function showTyping(container) {
+  const bubble = document.createElement("div");
+  bubble.className = "ai-bubble ai-bubble-ai ai-typing";
+  bubble.innerHTML = `<div class="dot-flashing"></div>`; // CSS 需自行加入跳動動畫
+  bubble.id = "aiTypingIndicator";
+  container.appendChild(bubble);
+  container.scrollTop = container.scrollHeight;
+}
+
+function removeTyping() {
+  const el = document.getElementById("aiTypingIndicator");
+  if (el) el.remove();
+}
 function showAIModal() {
 resetSession();
   const modal = createAIModal();
@@ -155,8 +168,10 @@ resetSession();
 
     appendUserBubble(chat, msg);
     input.value = "";
-
+    showTyping(chat);
     const result = await callAI(msg, session);
+    await new Promise(r => setTimeout(r, 800));
+    removeTyping();
     session = result.session || null;
     saveSession(session);
 
