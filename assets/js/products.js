@@ -1,11 +1,11 @@
-// ============================================================
-// 🍃 products.js — Aurora Mist（極光茶霧）完整版（Final Clean Version）
+// products.js — Aurora Mist（極光茶霧）Final Clean Version
 // ============================================================
 
 import { $, $$ } from "./dom.js";
 import { updatePackUI, initQtyControls } from "./qty.js";
 import { CATEGORY_MAP } from "./category-map.js";
 import { CONFIG } from "./config.js";
+
 // ============================================================
 // 🌌 Aurora Mist Engine — 極光茶霧
 // ============================================================
@@ -86,21 +86,18 @@ export function renderTeaScenes() {
     sec.className = "tea-scene";
     sec.dataset.cat = cat.key;
 
-      /* ⭐ 自動注入 Aurora 主色、次色 */
-    // 原始色（Aurora 背景用）
+    /* ⭐ 自動注入 Aurora 主色、次色 */
     sec.style.setProperty("--auroraA", cat.colorA);
     sec.style.setProperty("--auroraB", cat.colorB);
-
-    // ⭐ 標題字色（自動萃取更深的顏色）
-    sec.style.setProperty("--catA", darkenRGBA(cat.colorA, 0.75)); // 中文主標題
-    sec.style.setProperty("--catB", darkenRGBA(cat.colorB, 0.75)); // 英文副標題
+    sec.style.setProperty("--catA", darkenRGBA(cat.colorA, 0.75));
+    sec.style.setProperty("--catB", darkenRGBA(cat.colorB, 0.75));
+    
     sec.innerHTML = `
     <header class="tea-scene-header">
         <div class="cat-zh">${cat.title_zh}</div>
         <div class="cat-en">${cat.title_en}</div>
     </header>
 
-    <!-- Embla Carousel -->
     <div class="embla tea-scroll">
         <div class="embla__viewport">
         <div class="embla__container">
@@ -151,71 +148,136 @@ export function renderTeaScenes() {
 }
 
 // ============================================================
-// 🟩 單品 Modal（開啟）
+// 🟩 單品 Modal（開啟 / 關閉 / 拖曳）
 // ============================================================
 export function initTeaModal() {
   const modal = $("teaModal");
-  const modalC = $("teaCollection");
+  const modalC = $("teaCollection"); // 內容容器
   const modalTitle = $("modalTitle");
   const closeBtn = $("closeModalBtn");
-  const modalBg = $(".tea-modal-bg");
+  const modalBg = $(".tea-modal-bg"); // 背板
 
   if (!modal || !modalC) return;
 
+  // === 1. 開啟 Modal 邏輯 ===
   document.addEventListener("click", (e) => {
     const card = e.target.closest(".tea-card");
     if (!card) return;
-    
-    console.log("OPEN MODAL");   // ← 看看有沒有出現
+
     const id = card.dataset.id;
     const product = CONFIG.PRODUCTS.find((p) => p.id == id);
     if (!product) return;
 
     const catInfo = CATEGORY_MAP.find((c) => c.key === card.dataset.cat);
 
+    // 顯示 Modal
     modal.classList.add("show");
-    console.log("modal:", modal.classList);
     modal.setAttribute("aria-hidden", "false");
-    console.log("=== AFTER OPEN ===");
-    console.log("aria-hidden =", modal.getAttribute("aria-hidden"));
-    console.log("class =", modal.className);
-
-    setTimeout(() => {
-    console.log("=== 1 SEC LATER ===");
-    console.log("aria-hidden =", modal.getAttribute("aria-hidden"));
-    console.log("class =", modal.className);
-    }, 1000);
+    
+    // 鎖定背景捲動 (選用)
+    if (window.bodyScrollLock) window.bodyScrollLock.disableBodyScroll(modalC);
 
     modalTitle.textContent = `${product.title}｜${catInfo?.title_zh || ""}`;
-
     renderSingleProduct(product, modalC, catInfo);
 
+    // 初始化數量控制與動畫
     setTimeout(() => initQtyControls(), 50);
-
     AURORA.setColor(catInfo?.colorA, catInfo?.colorB);
   });
 
+  // === 2. 關閉 Modal 函數 ===
   const close = () => {
+    modal.style.transition = "opacity 0.3s ease";
+    modalC.style.transition = "transform 0.3s ease";
+    
     modal.classList.remove("show");
     modal.setAttribute("aria-hidden", "true");
-    modalC.innerHTML = "";
-    modalTitle.textContent = "";
+    
+    // 重置樣式 (避免拖曳殘留)
+    modalC.style.transform = "";
+    
+    // 解除鎖定
+    if (window.bodyScrollLock) window.bodyScrollLock.enableBodyScroll(modalC);
+
+    // 清空內容
+    setTimeout(() => {
+      modalC.innerHTML = "";
+      modalTitle.textContent = "";
+      modal.style.transition = ""; // 重置 transition
+      modalC.style.transition = "";
+    }, 300);
   };
 
-  [modalBg, closeBtn].forEach((el) => el?.addEventListener("click", close));
-};
+  // === 3. 綁定關閉事件 (修正背板點擊) ===
+  if (closeBtn) closeBtn.addEventListener("click", close);
+  
+  // 監聽 Modal 本體點擊
+  modal.addEventListener("click", (e) => {
+    // 如果點擊的是 modal 容器本身 (即背板區域) 或是明確的 bg class
+    if (e.target === modal || e.target.classList.contains("tea-modal-bg")) {
+      close();
+    }
+  });
+
+  // === 4. Hammer.js 拖曳下拉關閉 (仿 StorePicker) ===
+  if (window.Hammer) {
+    const hammer = new Hammer(modalC);
+    hammer.get('pan').set({ direction: Hammer.DIRECTION_VERTICAL, threshold: 10 });
+
+    let currentY = 0;
+    let isDragging = false;
+
+    hammer.on("panstart", (e) => {
+      // 只有當內容捲動在最頂部時，才允許下拉關閉
+      if (modalC.scrollTop <= 0) {
+        isDragging = true;
+        modalC.style.transition = "none"; // 拖曳時移除過渡動畫
+      } else {
+        isDragging = false;
+      }
+    });
+
+    hammer.on("panmove", (e) => {
+      if (!isDragging) return;
+
+      // 只允許向下拉 (deltaY > 0)
+      if (e.deltaY > 0) {
+        // 阻尼效果，拉動距離打折
+        currentY = e.deltaY * 0.6; 
+        modalC.style.transform = `translateY(${currentY}px)`;
+      }
+    });
+
+    hammer.on("panend", (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+
+      modalC.style.transition = "transform 0.25s ease";
+
+      // 判斷：下拉超過 120px 或 速度夠快 -> 關閉
+      if (currentY > 120 || (e.deltaY > 0 && e.velocityY > 0.5)) {
+        // 這裡讓它繼續往下滑出視窗，視覺更順暢
+        modalC.style.transform = `translateY(100%)`;
+        close();
+      } else {
+        // 回彈
+        modalC.style.transform = "";
+      }
+      currentY = 0;
+    });
+  }
+}
+
 // ============================================================
 // 🟩 Modal 內單品渲染
 // ============================================================
 function renderSingleProduct(p, container, catInfo) {
-  console.log("=== 🧪 DEBUG: Single Product ===");
-
   container.innerHTML = "";
 
   const item = document.createElement("article");
   item.className = "itemcard";
 
-  // === 讀取 saved cart（新版結構）===
+  // === 讀取 saved cart ===
   const saved = (JSON.parse(localStorage.getItem("teaOrderCart") || "{}"))[p.id] || {
     qty: 0,
     pack: false,
@@ -225,8 +287,6 @@ function renderSingleProduct(p, container, catInfo) {
   const savedQty = saved.qty || 0;
   const savedPack = saved.pack || false;
   const savedPackQty = saved.packQty || 1;
-
-// === 🔥 庫存顯示用 ===
   const stock = Number(p.stock || 0);
 
   function renderStockTag(stock) {
@@ -235,7 +295,7 @@ function renderSingleProduct(p, container, catInfo) {
     return `<div class="stock-tag ok">庫存 ${stock} 件</div>`;
   }
 
-  // === 單品 HTML 產生 ===
+  // === 裝罐 HTML ===
   const packHtml = p.packable
     ? `
       <div class="pack-row">
@@ -279,49 +339,49 @@ function renderSingleProduct(p, container, catInfo) {
 
   container.appendChild(item);
 
-    // ============================================================
-  // 🔥🔥 / 禁止購買與調整（核心）
   // ============================================================
-
+  // 🔥🔥 庫存控制 (Local Logic)
+  // ============================================================
   const qtyInput = container.querySelector(`#qty-${p.id}`);
   const plusBtn = container.querySelector(`.qty-btn[data-dir="plus"]`);
   const minusBtn = container.querySelector(`.qty-btn[data-dir="minus"]`);
 
-  // 若缺貨 → 禁用所有購買相關按鈕
   if (stock === 0) {
     qtyInput.value = 0;
     qtyInput.disabled = true;
     if (plusBtn) plusBtn.disabled = true;
     if (minusBtn) minusBtn.disabled = true;
-  }
-
-  // === 限制最大值不能超過庫存 ===
-  qtyInput.addEventListener("input", () => {
-    let v = Number(qtyInput.value) || 0;
-    if (v > stock) v = stock;
-    if (v < 0) v = 0;
-    qtyInput.value = v;
-  });
-
-  if (plusBtn) {
-    plusBtn.addEventListener("click", () => {
-      let v = Number(qtyInput.value) || 0;
-      if (v < stock) qtyInput.value = v + 1;
+  } else {
+    // 限制輸入最大值
+    qtyInput.addEventListener("input", () => {
+      let v = parseInt(qtyInput.value, 10);
+      if (isNaN(v)) v = 0;
+      if (v > stock) {
+        v = stock;
+        // 可選： toast('庫存不足');
+      }
+      if (v < 0) v = 0;
+      qtyInput.value = v;
     });
+
+    // 按鈕邏輯 (輔助，主要邏輯可能在 qty.js 但這裡做雙重防護)
+    if (plusBtn) {
+      plusBtn.addEventListener("click", (e) => {
+        let v = parseInt(qtyInput.value, 10) || 0;
+        if (v >= stock) {
+          e.stopImmediatePropagation(); // 阻止 qty.js 增加
+          e.preventDefault();
+          qtyInput.value = stock;
+        }
+      });
+    }
   }
 
-  if (minusBtn) {
-    minusBtn.addEventListener("click", () => {
-      let v = Number(qtyInput.value) || 0;
-      qtyInput.value = Math.max(0, v - 1);
-    });
-  }
-
-  // === 初始化裝罐 UI，不覆蓋本來的數值 ===
+  // === 初始化裝罐 UI ===
   setTimeout(() => updatePackUI(p.id), 10);
 
-  // === 動畫 ===
-  setTimeout(() => {
+  // === 進場動畫 ===
+  requestAnimationFrame(() => {
     const animateEls = container.querySelectorAll(
       `#detail-${p.id} .profile-bar .blk.on,
        #detail-${p.id} .brew-row`
@@ -331,15 +391,13 @@ function renderSingleProduct(p, container, catInfo) {
       el.style.opacity = 0;
       el.style.transform = "translateY(8px)";
       setTimeout(() => {
-        el.style.transition =
-          "opacity .35s var(--ease-soft), transform .35s var(--ease-soft)";
+        el.style.transition = "opacity .35s var(--ease-soft), transform .35s var(--ease-soft)";
         el.style.opacity = 1;
         el.style.transform = "translateY(0)";
-      }, i * 40);
+      }, 50 + i * 40);
     });
-  }, 50);
+  });
 }
-
 
 // ============================================================
 // 🟩 Profile 條
@@ -379,6 +437,7 @@ function renderProfileGroup(p, color) {
     </div>
   `;
 }
+
 // ============================================================
 // 🫧 Brew Guide（泡法）
 // ============================================================
@@ -401,30 +460,13 @@ function renderBrewGuide(p) {
 
   return `
     <div class="brew-section open" id="brew-${p.id}">
-
       <div class="brew-title">♨️ 熱泡 Hot Brew</div>
-      ${hot
-        .map(
-          (h) => `
-        <div class="brew-row"><span>${h[0]}</span><span>${h[1]}</span></div>
-      `
-        )
-        .join("")}
+      ${hot.map(h => `<div class="brew-row"><span>${h[0]}</span><span>${h[1]}</span></div>`).join("")}
 
-      ${
-        cold.length
-          ? `
+      ${cold.length ? `
       <div class="brew-title" style="margin-top:12px;">🧊 冷泡 Cold Brew</div>
-      ${cold
-        .map(
-          (c) => `
-        <div class="brew-row"><span>${c[0]}</span><span>${c[1]}</span></div>
-      `
-        )
-        .join("")}
-      `
-          : ""
-      }
+      ${cold.map(c => `<div class="brew-row"><span>${c[0]}</span><span>${c[1]}</span></div>`).join("")}
+      ` : ""}
     </div>
   `;
 }
@@ -449,7 +491,7 @@ function initTeaScenesCarousel() {
   const viewports = document.querySelectorAll(".embla__viewport");
 
   viewports.forEach(vp => {
-    if (vp.__emblaInstance) return; // 避免重複初始化
+    if (vp.__emblaInstance) return; 
 
     const embla = EmblaCarousel(vp, {
       align: "start",
