@@ -253,6 +253,24 @@ function handleAIResponse(out, chat) {
     return;
   }
 
+  // -------------------------------
+  // (H) Masterpick —— 店長推薦 (含隱藏版支援)
+  // -------------------------------
+  if (out.mode === "masterpick") {
+    // 如果是隱藏版 (後端傳來 tea_data)，直接用它；否則去 products 列表找
+    let teaData;
+    if (out.tea_data) {
+      teaData = out.tea_data; // 使用後端傳來的神秘物件
+    } else {
+      teaData = CONFIG.PRODUCTS.find(p => p.id === out.best);
+    }
+
+    // 呼叫 UI 建構器，多傳一個 isSecret 參數
+    chat.innerHTML += buildMasterpickBubble(out, teaData, out.isSecret);
+    enableProductClicks(chat);
+    return;
+  }
+
   if (out.mode === "recommend") {
     chat.innerHTML += buildRecommendBubble(out, CONFIG.PRODUCTS);
   } else if (out.mode === "pairing") {
@@ -405,6 +423,25 @@ function buildPersonalityBubble(out, products) {
         <div class="prod-reason" style="color:var(--tea-green-deep)">查看詳情 →</div>
       </div>
     </div>`;
+}
+
+function buildMasterpickBubble(out, tea, isSecret = false) {
+  // 如果是隱藏版，我們加一個特殊的 CSS class
+  const specialClass = isSecret ? "secret-card" : "";
+  const icon = isSecret ? "🤫" : "👑";
+  const title = isSecret ? "阿興師的私房貨" : "店長特別推薦";
+
+  return `
+    <div class="ai-bubble ai-bubble-ai">
+      <div class="ai-bubble-title">${icon} ${title}</div>
+
+      <div class="ai-prod-item ${specialClass}" data-prod="${tea.id}">
+        <div class="prod-name">${tea.title}</div>
+        <div class="prod-reason">${out.reason}</div>
+        ${isSecret ? `<div style="font-size:0.8rem; color:#b8860b; margin-top:5px;">NT$ ${tea.price}</div>` : ""}
+      </div>
+    </div>
+  `;
 }
 
 function injectAIAssistButton(retry = 0) {
