@@ -326,15 +326,49 @@ body {
 /* ============================================================
    🚑 滾動問題急救包 (Emergency Scroll Fixes)
    ============================================================ */
-.scrolling-wrapper, .horizontal-scroll-container {
-  display: flex; overflow-x: auto !important; overflow-y: hidden;
-  -webkit-overflow-scrolling: touch; touch-action: pan-x; cursor: grab;
+/* ============================================================
+   🚑 行動端滾動急救包 (Mobile Scroll Fixes) - 貼在 style.css 最下方
+   ============================================================ */
+
+/* 1. 解鎖橫向滑動 (針對首頁商品列表) */
+.tea-scroll, 
+.embla__container {
+  display: flex !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  /* iOS 慣性滑動必備 */
+  -webkit-overflow-scrolling: touch !important;
+  /* 告訴瀏覽器：這裡允許橫向操作，不要攔截 */
+  touch-action: pan-x !important; 
+  cursor: grab;
+  pointer-events: auto !important; /* 確保能點擊 */
 }
 
-.modal-content, .modal-body, .ai-box {
-  overflow-y: auto !important; -webkit-overflow-scrolling: touch;
-  touch-action: pan-y; max-height: 80vh;
+/* 2. 解鎖垂直滑動 (針對 Modal 內容) */
+.tea-modal-content, 
+.ai-box, 
+.sp-sheet,
+.sheet, 
+.ai-chat-area {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  /* iOS 慣性滑動必備 */
+  -webkit-overflow-scrolling: touch !important;
+  /* 告訴瀏覽器：這裡允許垂直操作 */
+  touch-action: pan-y !important;
+  /* 防止滑到底部時，連帶捲動到後面的 body */
+  overscroll-behavior: contain !important; 
 }
 
-body.modal-open { overflow: hidden; position: fixed; width: 100%; }
-.ai-chat-area { overflow-y: auto !important; touch-action: pan-y !important; -webkit-overflow-scrolling: touch; }
+/* 3. 確保 Modal 內部內容有高度限制，否則無法捲動 */
+.tea-modal.show .tea-modal-content {
+  max-height: 85vh !important; /* 限制高度 */
+  height: auto !important;
+}
+
+/* 4. 確保 AI 視窗內容可以滑 */
+.ai-chat-area {
+  flex-grow: 1;
+  height: 0; /* Flexbox trick: 讓它吃滿剩餘空間並允許捲動 */
+  min-height: 200px; 
+}
