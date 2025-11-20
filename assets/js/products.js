@@ -405,18 +405,16 @@ function darkenRGBA(rgba, factor = 0.35) {
 // 🌌 Tea Scenes Carousel (必須在元素加入 DOM 後執行)
 // ============================================================
 function initTeaScenesCarousel() {
-  // 這裡選擇器要精準，避免選到 Modal 裡面的東西
   const viewports = document.querySelectorAll(".tea-scene .embla__viewport");
 
   viewports.forEach(vp => {
-    // 防止重複初始化
     if (vp.__emblaInstance) return; 
 
     if (window.EmblaCarousel) {
         const embla = EmblaCarousel(vp, {
           align: "start",
           containScroll: "trimSnaps",
-          dragFree: false,
+          dragFree: true, // ✅ 改成 true，滑起來更像原生 App 的商品列
         });
         vp.__emblaInstance = embla;
     }

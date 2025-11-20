@@ -3669,33 +3669,46 @@ textarea {
   transform: translateX(100%);
   transition: transform .25s cubic-bezier(.25,.8,.5,1);
 }
+/* ==========================================
+   Embla Carousel 核心樣式 (必須加入)
+   ========================================== */
 
-/* 整體容器 */
+//* 整體容器 */
 .embla {
   position: relative;
   width: 100%;
+  /* 防止意外撐開頁面 */
+  max-width: 100vw; 
 }
 
 /* 可視區域 */
 .embla__viewport {
   overflow: hidden;
   width: 100%;
+  /* 如果 JS 尚未載入，至少允許原生滾動 (防呆) */
+  overflow-x: scroll; 
+  /* 隱藏原生滾動條 */
+  scrollbar-width: none; 
+  -ms-overflow-style: none;
+}
+.embla__viewport::-webkit-scrollbar {
+  display: none;
 }
 
 /* 滑動容器 */
 .embla__container {
   display: flex;
-  gap: 14px; /* 與你茶卡間距一致 */
-  padding: 6px 4px;
+  gap: 14px; 
+  padding: 6px 20px; /* 左右留一點邊距比較好看 */
+  
+  /* ✅ 關鍵：讓滑動更順暢 */
+  touch-action: pan-y pinch-zoom;
 }
 
-/* 每張卡片 */
+/* 每張卡片 (Slide) */
 .embla__slide {
+  /* ✅ 關鍵：不要設 82%，改成 auto 讓內部 tea-card 決定寬度 */
   flex: 0 0 auto;
-  width: 82%;
-  max-width: 420px;
-}
-
-.embla__viewport::-webkit-scrollbar {
-  display: none;
+  width: auto; 
+  min-width: 0;
 }
