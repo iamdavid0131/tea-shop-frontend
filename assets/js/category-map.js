@@ -4,71 +4,79 @@ export const CATEGORY_MAP = [
     title_zh: "花霧香茗",
     title_en: "Floral Veil",
     order: 1,
-    colorA: "rgba(255, 245, 230, 0.9)",
-    colorB: "rgba(255, 233, 200, 0.6)",
-    profileColor: "#e9cfa8"
+    // 香檳金 -> 杏仁白
+    colorA: "rgba(243, 230, 213, 0.9)", 
+    colorB: "rgba(230, 210, 190, 0.6)",
+    profileColor: "#D9C2A8" // 暖杏色
   },
   {
     key: "文山包種",
     title_zh: "青嵐清韻",
     title_en: "Wenshan Mist",
     order: 2,
-    colorA: "rgba(224, 245, 235, 0.9)",
-    colorB: "rgba(200, 235, 215, 0.6)",
-    profileColor: "#8bcfb0"
+    // 青瓷色 -> 薄霧綠
+    colorA: "rgba(212, 229, 223, 0.9)",
+    colorB: "rgba(168, 194, 184, 0.6)",
+    profileColor: "#8FA89F" // 汝窯青
   },
   {
     key: "清香高山茶",
     title_zh: "雲頂清香",
     title_en: "Alpine Fragrance",
     order: 3,
-    colorA: "rgba(182, 246, 211, 0.9)",
-    colorB: "rgba(47, 186, 117, 0.6)",
-    profileColor: "#78cfa8"
+    // 柳茶色 -> 嫩草黃
+    colorA: "rgba(225, 232, 210, 0.9)",
+    colorB: "rgba(184, 196, 156, 0.6)",
+    profileColor: "#A8B38E" // 苔綠
   },
   {
     key: "焙香烏龍茶",
     title_zh: "暖韻焙香",
     title_en: "Roasted Harmony",
     order: 4,
-    colorA: "rgba(245, 235, 220, 0.9)",
-    colorB: "rgba(235, 210, 185, 0.6)",
-    profileColor: "#d4985b"
+    // 淺駝色 -> 暖岩灰
+    colorA: "rgba(227, 221, 212, 0.9)",
+    colorB: "rgba(196, 182, 166, 0.6)",
+    profileColor: "#B0A08E" // 陶土色
   },
   {
     key: "蜜香茶品",
     title_zh: "晨露蜜香",
     title_en: "Honey Dew Aroma",
     order: 5,
-    colorA: "rgba(250, 240, 220, 0.9)",
-    colorB: "rgba(250, 151, 22, 0.6)",
-    profileColor: "#eabf74"
+    // 琥珀金 -> 枯葉黃
+    colorA: "rgba(237, 222, 193, 0.9)",
+    colorB: "rgba(219, 185, 136, 0.6)",
+    profileColor: "#C9A66B" // 古金
   },
   {
     key: "紅茶",
     title_zh: "琥珀紅韻",
     title_en: "Amber Essence",
     order: 6,
-    colorA: "rgba(255, 153, 128, 0.9)",
-    colorB: "rgba(255, 80, 5, 0.6)",
-    profileColor: "#d66b4b"
+    // 豆沙紅 -> 鐵鏽紅 (降低飽和度，不刺眼)
+    colorA: "rgba(235, 210, 205, 0.9)",
+    colorB: "rgba(196, 118, 102, 0.6)",
+    profileColor: "#BC7F72" // 珊瑚灰
   },
   {
     key: "白茶",
     title_zh: "靜雪白毫",
     title_en: "White Serenity",
     order: 7,
-    colorA: "rgba(241, 241, 158, 0.9)",
-    colorB: "rgba(249, 234, 103, 0.6)",
-    profileColor: "#cfcab8"
+    // 月光白 -> 雲母色
+    colorA: "rgba(245, 245, 240, 0.9)",
+    colorB: "rgba(220, 220, 210, 0.6)",
+    profileColor: "#BFBFB6" // 銀灰
   },
   {
     key: "加購",
     title_zh: "茶室選物",
     title_en: "Tea Atelier",
     order: 8,
-    colorA: "rgba(240, 245, 255, 0.9)",
-    colorB: "rgba(215, 230, 255, 0.6)",
-    profileColor: "#90aadd"
+    // 霧霾藍 -> 靛青灰
+    colorA: "rgba(220, 228, 235, 0.9)",
+    colorB: "rgba(165, 180, 200, 0.6)",
+    profileColor: "#8898A8" // 石板藍
   },
 ];

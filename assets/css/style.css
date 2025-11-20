@@ -145,16 +145,18 @@ body {
 /* ============================================================
 🌌 祥興自然霧 Aurora Mist — 極光茶霧系統
 ============================================================ */
+/* ---- 背景底色：宣紙白 / 羊脂玉 ---- */
+/* 讓整體像是一張高級信紙，而非強烈的色塊 */
 .aurora-bg {
   position: fixed;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
-  background: #eadaa9;
+  background: #F2F0EB; /* 調整：更溫潤的米灰色 */
   z-index: 0; 
 }
 
-/* ✨ 三層極光光霧 */
+/* ✨ 三層極光光霧：模擬光線穿透茶霧的質感 */
 .aurora-layer {
   position: absolute;
   width: 160%;
@@ -162,23 +164,28 @@ body {
   top: -30%;
   left: -30%;
   opacity: 0.38;
-  filter: blur(120px);
+  filter: blur(100px); /* 調整：模糊度稍微降低，保留一點流動紋理 */
+  
+  /* 調整：加入極淡的色彩傾向，而非純白，製造珠光感 */
   background: radial-gradient(
-    circle at 30% 30%,
-    rgba(255,255,255,0.4),
-    rgba(0,0,0,0)
+    circle at 40% 40%,
+    rgba(255, 250, 240, 0.8), /* 暖白高光 */
+    rgba(230, 235, 230, 0.2), /* 淡青韻味 */
+    rgba(255, 255, 255, 0)
   );
-  mix-blend-mode: screen;
+  
+  /* 調整：使用 soft-light 或 overlay 讓光影更自然地融合 */
+  mix-blend-mode: hard-light; 
   transform: translate3d(0,0,0);
   pointer-events: none;
 }
 
-/* 三層不同起點 */
-.layer-1 { opacity: 0.32; }
-.layer-2 { opacity: 0.28; }
-.layer-3 { opacity: 0.24; }
+/* 三層不同透明度與位置，堆疊出空氣感 */
+.layer-1 { opacity: 0.40; } 
+.layer-2 { opacity: 0.30; filter: blur(140px); }
+.layer-3 { opacity: 0.20; }
 
-/* iOS 阻止縮放抖動 */
+/* iOS 效能優化 (保留原設定) */
 @supports (-webkit-touch-callout: none) {
   .aurora-layer {
     will-change: transform;
@@ -187,32 +194,46 @@ body {
   }
 }
 
-/* ---- 全域變數 ---- */
+/* ---- 全域變數：高級感莫蘭迪色系 ---- */
 :root {
-  --mist-glass: rgba(255,255,255,0.65);
-  --mist-border: rgba(180,195,185,0.35);
-  --mist-shadow: rgba(80,110,90,0.10);
+  /* 玻璃質感：更通透，減少白霧感，強調清澈 */
+  --mist-glass: rgba(255, 255, 255, 0.55);
+  
+  /* 邊框：改為極淡的暖岩灰，比原本的綠色更中性 */
+  --mist-border: rgba(160, 155, 150, 0.25);
+  
+  /* 陰影：使用暖灰色調，更乾淨 */
+  --mist-shadow: rgba(60, 55, 50, 0.05);
+  --mist-shadow-hover: rgba(60, 55, 50, 0.08);
 
-  --tea-green-light: #e8f3ed;
-  --tea-green-deep: #cfe7db;
-  --tea-gold-soft: #f3e7c6;
-  --tea-rose: #f2e6e4;
+  /* 主題色 - 低飽和度 (Morandi / Earthy) */
+  --tea-green-light: #E6EBE5; /* 雲霧綠 - 接近白色的淺綠 */
+  --tea-green-deep: #98A698;  /* 乾燥茶葉綠 */
+  --tea-gold-soft: #E8E2D2;   /* 燕麥金 */
+  --tea-rose: #E6DCD8;        /* 陶土粉 - 極淡 */
+  
+  /* 文字顏色：避免純黑，使用深炭灰 */
+  --text-primary: #3E3A36;    /* 墨色 */
+  --text-secondary: #706B66;  /* 淺墨 */
 
-  --radius-lg: 20px;
-  --radius-md: 14px;
+  /* UI 圓角與動態 (保留原設定) */
+  --radius-lg: 24px; /* 稍微加大圓角，更優雅 */
+  --radius-md: 16px;
 
-  --blur-lg: blur(18px);
-  --blur-md: blur(12px);
+  --blur-lg: blur(24px); /* 增加磨砂感 */
+  --blur-md: blur(16px);
 
-  --ease-soft: cubic-bezier(.25, .12, .15, 1);
+  --ease-soft: cubic-bezier(.22, .61, .36, 1); /* 更絲滑的動態曲線 */
 }
 
 /* ---- 頁面底層 ---- */
 body {
-  background: transparent;
+  background: transparent; /* 背景交給 .aurora-bg */
   margin: 0;
-  font-family: -apple-system, "PingFang TC", "Noto Sans TC", sans-serif;
+  color: var(--text-primary); /* 預設文字顏色 */
+  font-family: "Noto Serif TC", "Songti TC", -apple-system, serif; /* 建議：標題可嘗試宋體/明體，更有茶文化感 */
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
 }
 
