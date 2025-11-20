@@ -3,6 +3,7 @@
 // ============================================================
 
 import { CONFIG } from "./config.js";
+import { saveCartItem, updateTotals } from "./cart.js";
 
 // ============================================================
 // 🧠 1. Session（localStorage）
@@ -330,13 +331,22 @@ function appendAskOptions(chat, options) {
 function enableProductClicks(chat) {
   chat.querySelectorAll("[data-prod]")?.forEach(btn => {
     btn.onclick = () => {
-      // 關閉 Modal 並跳轉商品
-      const modal = document.getElementById("aiModal");
-      if(modal) modal.classList.remove("show");
-      const prodId = btn.dataset.prod;
-      // 假設原本網頁有這個邏輯
-      const card = document.querySelector(`.tea-card[data-id="${prodId}"]`);
-      if (card) card.click();
+      // 1. 檢查是否有隱藏版資料
+      const secretRaw = btn.getAttribute("data-secret");
+
+      if (secretRaw) {
+        // 🕵️ 是隱藏商品！解碼資料並打開專屬 Modal
+        const productData = JSON.parse(decodeURIComponent(secretRaw));
+        openSecretModal(productData);
+      } else {
+        // 🍵 普通商品：維持原本邏輯 (模擬點擊網頁上的卡片)
+        const modal = document.getElementById("aiModal");
+        if (modal) modal.classList.remove("show");
+        
+        const prodId = btn.dataset.prod;
+        const card = document.querySelector(`.tea-card[data-id="${prodId}"]`);
+        if (card) card.click();
+      }
     };
   });
 }
@@ -431,17 +441,128 @@ function buildMasterpickBubble(out, tea, isSecret = false) {
   const icon = isSecret ? "🤫" : "👑";
   const title = isSecret ? "阿興師的私房貨" : "店長特別推薦";
 
+// 🔥 關鍵修改：如果是隱藏版，把整包 tea 物件轉成字串，藏在 data-secret 屬性裡
+  // 我們用 encodeURIComponent 避免引號造成的 HTML 格式錯誤
+  const secretDataAttr = isSecret 
+    ? `data-secret="${encodeURIComponent(JSON.stringify(tea))}"` 
+    : "";
+
   return `
     <div class="ai-bubble ai-bubble-ai">
       <div class="ai-bubble-title">${icon} ${title}</div>
 
-      <div class="ai-prod-item ${specialClass}" data-prod="${tea.id}">
+      <div class="ai-prod-item ${specialClass}" data-prod="${tea.id}" ${secretDataAttr}>
         <div class="prod-name">${tea.title}</div>
         <div class="prod-reason">${out.reason}</div>
-        ${isSecret ? `<div style="font-size:0.8rem; color:#b8860b; margin-top:5px;">NT$ ${tea.price}</div>` : ""}
+        ${isSecret ? `<div style="font-size:0.9rem; color:#b8860b; margin-top:5px; font-weight:bold;">NT$ ${tea.price} / 珍藏罐</div>` : ""}
       </div>
     </div>
   `;
+}
+
+// 🕵️ 開啟隱藏版專屬購買視窗
+function openSecretModal(product) {
+  // 1. 先移除舊的 AI Modal (暫時隱藏，保持體驗流暢)
+  const aiModal = document.getElementById("aiModal");
+  if (aiModal) aiModal.classList.remove("show");
+
+  // 2. 建立新的 Secret Modal
+  const modalId = "secretModal";
+  let modal = document.getElementById(modalId);
+  
+  if (modal) modal.remove(); // 避免重複
+
+  modal = document.createElement("div");
+  modal.id = modalId;
+  modal.className = "ai-modal-overlay show"; // 直接顯示
+  // 金色主題樣式
+  modal.innerHTML = `
+    <div class="ai-box" style="border: 2px solid #d4af37; background: #fffbf0;">
+      <div style="text-align:center; margin-bottom:20px;">
+        <div style="font-size:3rem;">🤫</div>
+        <h2 style="color:#b8860b; margin:10px 0;">${product.title}</h2>
+        <p style="color:#666; font-size:0.9rem;">${product.desc}</p>
+      </div>
+
+      <div style="background:#fff; padding:15px; border-radius:12px; border:1px solid #eee; margin-bottom:20px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+          <span>售價</span>
+          <span style="font-weight:bold; color:#b8860b;">NT$ ${product.price}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span>數量</span>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <button class="qty-btn" onclick="adjustSecretQty(-1)">-</button>
+            <span id="secretQty" style="font-weight:bold; width:30px; text-align:center;">1</span>
+            <button class="qty-btn" onclick="adjustSecretQty(1)">+</button>
+          </div>
+        </div>
+      </div>
+
+      <button id="addToSecretCartBtn" class="ai-send-btn" style="background:#b8860b; width:100%; font-weight:bold;">
+        加入購物車 (秘密交易)
+      </button>
+
+      <button id="closeSecret" class="ai-close-icon" style="color:#b8860b;">×</button>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // --- 內部邏輯 ---
+  
+  // 關閉事件
+  const close = () => {
+    modal.remove();
+    // 如果原本 AI 視窗還在，把它叫回來 (Optional)
+    if (aiModal) aiModal.classList.add("show");
+  };
+  modal.querySelector("#closeSecret").onclick = close;
+  modal.addEventListener("click", e => { if(e.target === modal) close(); });
+
+  // 數量調整 (掛在 window 上以便 onclick 呼叫，或直接綁定)
+  let qty = 1;
+  window.adjustSecretQty = (delta) => {
+    qty += delta;
+    if (qty < 1) qty = 1;
+    document.getElementById("secretQty").textContent = qty;
+  };
+
+  // 🔥 加入購物車核心邏輯
+  document.getElementById("addToSecretCartBtn").onclick = () => {
+    addToGlobalCart(product, qty); // 呼叫外部的購物車函式
+    close();
+    
+    // 顯示成功提示
+    alert(`🤫 已將 ${qty} 份「${product.title}」偷偷放入您的購物車...`);
+  };
+}
+
+// 🛒 橋接器：把商品推入主網站的購物車
+function addToGlobalCart(product, quantity) {
+  console.log("🤫 加入隱藏商品:", product.title);
+
+  // 1. 把隱藏商品「偷渡」進全域商品列表
+  // 這樣 cart.js 的 buildOrderItems() 才能透過 CONFIG.PRODUCTS.find() 找到它
+  const existsInConfig = CONFIG.PRODUCTS.find(p => p.id === product.id);
+  if (!existsInConfig) {
+    CONFIG.PRODUCTS.push(product);
+    console.log("✅ 已將隱藏商品註冊至 CONFIG.PRODUCTS");
+  }
+
+  // 2. 取得目前的購物車狀態 (從 localStorage)
+  const cart = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
+  const currentData = cart[product.id] || { qty: 0, pack: false, packQty: 0 };
+  
+  // 3. 更新數量 (累加)
+  const newQty = currentData.qty + quantity;
+
+  // 4. 呼叫 cart.js 的標準儲存函式
+  // saveCartItem(id, qty, pack, packQty)
+  saveCartItem(product.id, newQty, currentData.pack, currentData.packQty);
+
+  // 5. 強制更新 UI 金額
+  updateTotals();
 }
 
 function injectAIAssistButton(retry = 0) {

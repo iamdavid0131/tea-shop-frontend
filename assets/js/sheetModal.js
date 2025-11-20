@@ -5,12 +5,29 @@
 import { $, toast } from "./dom.js";
 import { CONFIG } from "./config.js";
 import { api } from "./app.api.js";
-import { buildOrderItems,updateTotals,refreshSheetTotals } from "./cart.js";
+import { buildOrderItems, updateTotals, refreshSheetTotals } from "./cart.js";
+
+// 🤫 定義隱藏商品備份 (防止 F5 重新整理後 CONFIG 被重置導致找不到商品)
+// 必須跟 aiTea.js 裡的定義一致
+const SECRET_PRODUCT_DEF = {
+  id: "secret_888",
+  title: "👑 傳奇・80年代老凍頂",
+  price: 8800,
+  tags: "老饕限定",
+  desc: "阿興師爺爺留下來的壓箱寶。"
+};
 
 // ========================================================
 // 顯示購物明細 Sheet
 // ========================================================
 export async function showCartSheet() {
+  // 🛠️ FIX: 在顯示前，檢查 CONFIG 是否遺失了隱藏商品？如果有，補回去
+  const cart = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
+  if (cart[SECRET_PRODUCT_DEF.id] && !CONFIG.PRODUCTS.find(p => p.id === SECRET_PRODUCT_DEF.id)) {
+    CONFIG.PRODUCTS.push(SECRET_PRODUCT_DEF);
+    console.log("♻️ sheetModal: 已自動補回隱藏商品定義");
+  }
+
   const backdrop = $("cartSheetBackdrop");
   const sheet = $("cartSheet");
   const list = $("cartItems");
@@ -28,23 +45,18 @@ export async function showCartSheet() {
 
   list.innerHTML = "";
 
-  // ⭐⭐ 用統一格式建構購物車（包含 name, price, packQty）
   const items = buildOrderItems();
   console.log("🧪 sheetModal items =", items);
 
-  // 🚨 這裡一定要早退，否則會觸發 /preview 的 400
   if (!items.length) {
     list.innerHTML = `<div class="muted" style="padding:12px;">尚未選購商品</div>`;
-
-    // optional：順便把下方金額區清空，避免殘留舊資料
     $("cartSub").textContent = "NT$ 0";
     $("cartDiscRow").style.display = "none";
     $("cartDisc").textContent = "";
     $("cartShip").textContent = "NT$ 0";
     $("cartTotal").textContent = "NT$ 0";
     $("promoMsg").textContent = "";
-
-    return;   // ⭐ 關鍵：不要再 call api.previewTotals
+    return; 
   }
 
   // 有商品才畫明細
@@ -56,10 +68,14 @@ export async function showCartSheet() {
 
     const packStr = i.packQty > 0 ? `（裝罐 ${i.packQty}）` : "";
 
+    // ✨ 針對隱藏商品加一點特殊標記 (金色字體)
+    const isSecret = i.id === "secret_888";
+    const titleHtml = isSecret ? `<span style="color:#b8860b">🤫 ${i.name}</span>` : i.name;
+
     row.innerHTML = `
         <div class="swipe-content">
         <div class="swipe-info">
-            <div class="li-title">${i.name}</div>
+            <div class="li-title">${titleHtml}</div>
             <div class="li-qty">× ${i.qty} ${packStr}</div>
         </div>
             <div class="li-sub">NT$ ${(i.price * i.qty).toLocaleString("zh-TW")}</div>
@@ -93,20 +109,39 @@ export async function showCartSheet() {
     $("promoMsg").textContent = "⚠️ 無法取得折扣資料";
   }
 
-  backdrop.addEventListener("touchmove", e => e.preventDefault(), { passive: false });
-  document.addEventListener("click", (e) => {
+  // 🛑 防止重複綁定 click 事件 (你的原始碼直接放在 showCartSheet 裡，每次打開都會重複綁定)
+  // 建議改為在 initSheetModal 綁定一次，或者用具名函數移除。
+  // 這裡我做個簡單的 Flag 保護
+  if (!sheet.dataset.listenerAdded) {
+      document.addEventListener("click", handleItemClick);
+      sheet.dataset.listenerAdded = "true";
+  }
+}
+
+// 🛠️ 獨立出來的點擊處理函式
+function handleItemClick(e) {
   const row = e.target.closest(".line-item.clickable");
-  if (!row) return;
+  // 如果點到刪除按鈕，不觸發
+  if (!row || e.target.classList.contains("swipe-delete")) return;
+
+  // 只有當 sheet 開啟時才作用
+  const sheet = $("cartSheet");
+  if (!sheet || sheet.dataset.open !== "true") return;
 
   const id = row.dataset.id;
+
+  // 🕵️ 針對隱藏商品的特殊處理
+  if (id === "secret_888") {
+    alert("🤫 這是阿興師的私房茶，請透過 AI 聊天室調整數量喔！");
+    return;
+  }
 
   // 關閉 sheet
   hideCartSheet();
 
-  // 開啟該商品 modal（你的產品 modal 事件是全局監聽的）
+  // 開啟該商品 modal
   const productCard = document.querySelector(`.tea-card[data-id="${id}"]`);
   if (productCard) productCard.click();
-});
 }
 
 // ========================================================
@@ -123,111 +158,94 @@ export function hideCartSheet() {
     document.body.classList.remove("modal-open");
   }, 400);
 
-  sheet.addEventListener(
-    "transitionend",
-    () => {
-      backdrop.setAttribute("aria-hidden", "true");
-      backdrop.style.display = "none";
-      document.body.classList.remove("modal-open");
-      document.body.style.overflow = "";
-      document.body.style.position = "";
-      document.body.style.width = "";
-    },
-    { once: true }
-  );
+  // 移除一次性監聽器，避免重複堆疊 (這裡不需移除 document click，因為上面加了 flag 保護)
 }
 
-// ========================================================
-// 點擊背景關閉
-// ========================================================
+// ... (enableSmartSheetControl, initSheetModal 維持原樣，不需要動) ...
 export function enableSmartSheetControl() {
-  const sheet = $("cartSheet");
-  const backdrop = $("cartSheetBackdrop");
-  if (!sheet || !backdrop) return;
-
-  // ✅ 點 backdrop 關閉
-  backdrop.addEventListener("click", (e) => {
-    if (e.target === backdrop) hideCartSheet();
-  });
-
-  // ✅ 手勢拖曳判定
-  let startY = 0;
-  let currentY = 0;
-  let startTime = 0;
-  let isDragging = false;
-  let isScrollable = false;
-
-  const CLOSE_THRESHOLD = 100;
-  const VELOCITY_THRESHOLD = 0.6;
-
-  sheet.addEventListener("touchstart", (e) => {
-    startY = e.touches[0].clientY;
-    currentY = startY;
-    startTime = Date.now();
-    isDragging = false;
-    isScrollable = sheet.scrollTop > 0;
-    sheet.style.transition = "none";
-  });
-
-  sheet.addEventListener(
-    "touchmove",
-    (e) => {
-      const touchY = e.touches[0].clientY;
-      const deltaY = touchY - startY;
-      if (deltaY > 0 && !isScrollable) {
-        e.preventDefault();
-        isDragging = true;
-        currentY = touchY;
-
-        sheet.classList.add("dragging");
-        sheet.style.transform = `translateY(${deltaY * 0.6}px)`;
-        backdrop.style.opacity = `${Math.max(0, 1 - deltaY / 400)}`;
+    // ... 維持你原本的代碼 ...
+    const sheet = $("cartSheet");
+    const backdrop = $("cartSheetBackdrop");
+    if (!sheet || !backdrop) return;
+  
+    // ✅ 點 backdrop 關閉
+    backdrop.addEventListener("click", (e) => {
+      if (e.target === backdrop) hideCartSheet();
+    });
+  
+    // ✅ 手勢拖曳判定
+    let startY = 0;
+    let currentY = 0;
+    let startTime = 0;
+    let isDragging = false;
+    let isScrollable = false;
+  
+    const CLOSE_THRESHOLD = 100;
+    const VELOCITY_THRESHOLD = 0.6;
+  
+    sheet.addEventListener("touchstart", (e) => {
+      startY = e.touches[0].clientY;
+      currentY = startY;
+      startTime = Date.now();
+      isDragging = false;
+      isScrollable = sheet.scrollTop > 0;
+      sheet.style.transition = "none";
+    });
+  
+    sheet.addEventListener(
+      "touchmove",
+      (e) => {
+        const touchY = e.touches[0].clientY;
+        const deltaY = touchY - startY;
+        if (deltaY > 0 && !isScrollable) {
+          e.preventDefault();
+          isDragging = true;
+          currentY = touchY;
+  
+          sheet.classList.add("dragging");
+          sheet.style.transform = `translateY(${deltaY * 0.6}px)`;
+          backdrop.style.opacity = `${Math.max(0, 1 - deltaY / 400)}`;
+        }
+      },
+      { passive: false }
+    );
+  
+    sheet.addEventListener("touchend", () => {
+      if (!isDragging) return;
+  
+      sheet.classList.remove("dragging");
+      const deltaY = currentY - startY;
+      const elapsed = Date.now() - startTime;
+      const velocity = deltaY / elapsed;
+  
+      const shouldClose = deltaY > CLOSE_THRESHOLD || velocity > VELOCITY_THRESHOLD;
+  
+      sheet.style.transition = "transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)";
+      backdrop.style.transition = "opacity 0.35s ease";
+  
+      if (shouldClose) {
+        sheet.style.transform = "translateY(100%)";
+        backdrop.style.opacity = "0";
+        setTimeout(() => hideCartSheet(), 350);
+      } else {
+        sheet.style.transform = "translateY(0)";
+        backdrop.style.opacity = "1";
       }
-    },
-    { passive: false }
-  );
-
-  sheet.addEventListener("touchend", () => {
-    if (!isDragging) return;
-
-    sheet.classList.remove("dragging");
-    const deltaY = currentY - startY;
-    const elapsed = Date.now() - startTime;
-    const velocity = deltaY / elapsed;
-
-    const shouldClose = deltaY > CLOSE_THRESHOLD || velocity > VELOCITY_THRESHOLD;
-
-    sheet.style.transition = "transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)";
-    backdrop.style.transition = "opacity 0.35s ease";
-
-    if (shouldClose) {
-      sheet.style.transform = "translateY(100%)";
-      backdrop.style.opacity = "0";
-      setTimeout(() => hideCartSheet(), 350);
-    } else {
-      sheet.style.transform = "translateY(0)";
-      backdrop.style.opacity = "1";
-    }
-  });
+    });
 }
-
-// ========================================================
-// 綁定 UI 按鈕事件（交由 main app.js 呼叫）
-// ========================================================
 
 $("closeCartModal")?.addEventListener("click", hideCartSheet);
 
 export function initSheetModal() {
-  const sheet = $("cartSheet");
-  const backdrop = $("cartSheetBackdrop");
-
-  if (!sheet || !backdrop) return;
-
-  sheet.style.transform = "translateY(100%)"; // ✅ 正確初始位置
-  sheet.style.transition = "transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)";
-  backdrop.style.display = "none";
+    const sheet = $("cartSheet");
+    const backdrop = $("cartSheetBackdrop");
+  
+    if (!sheet || !backdrop) return;
+  
+    sheet.style.transform = "translateY(100%)"; 
+    sheet.style.transition = "transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)";
+    backdrop.style.display = "none";
 }
-
 
 function enableSwipeDelete(row) {
   const content = row.querySelector(".swipe-content");
@@ -245,8 +263,6 @@ function enableSwipeDelete(row) {
 
   hammer.on("panmove", (e) => {
     let x = startX + e.deltaX;
-
-    // 限制拖動範圍
     if (x < -90) x = -90;
     if (x > 0) x = 0;
 
@@ -255,7 +271,7 @@ function enableSwipeDelete(row) {
   });
 
   hammer.on("panend", (e) => {
-    const shouldOpen = e.deltaX < -40;   // 左滑超過 40px 打開
+    const shouldOpen = e.deltaX < -40;
     open = shouldOpen;
 
     const x = open ? -90 : 0;
@@ -263,18 +279,16 @@ function enableSwipeDelete(row) {
     deleteBtn.style.transform = `translateX(${x + 90}px)`;
   });
 
-    deleteBtn.addEventListener("click", (e) => {
+  deleteBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     e.preventDefault();
 
     const id = deleteBtn.dataset.id;
 
-    // 更新 localStorage
     const cart = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
     delete cart[id];
     localStorage.setItem("teaOrderCart", JSON.stringify(cart));
 
-    // 動畫關閉 item
     row.style.height = row.offsetHeight + "px";
     row.style.transition = "height .25s ease, opacity .25s ease";
     row.style.opacity = "0";
@@ -282,18 +296,13 @@ function enableSwipeDelete(row) {
 
     setTimeout(() => {
         row.remove();
-
-        // 🟩 Step 1：更新 StickyBar
         updateTotals();
-
-
-        // 🟩 Step 2：重新渲染購物明細（sheetModal 內容）
-        //    避免重複動畫，我們只 refresh list，不開關 modal
-        import("./sheetModal.js").then(m => m.showCartSheet());
-
-        refreshSheetTotals();
-
+        
+        // 🛠️ FIX: 不用 import，直接遞迴呼叫自己即可
+        showCartSheet(); 
+        
+        // refreshSheetTotals 其實在 showCartSheet 裡已經包含了 (call api.previewTotals)，所以這行可以省略
+        // refreshSheetTotals(); 
     }, 250);
-    });
-
+  });
 }

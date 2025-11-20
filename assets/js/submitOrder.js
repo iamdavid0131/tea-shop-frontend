@@ -10,6 +10,25 @@ import { CONFIG } from "./config.js";
 // -------------------------------
 // 格式化品項
 // -------------------------------
+
+// 🤫 隱藏版商品備份 (防止 F5 重整後找不到商品導致無法結帳)
+const SECRET_PRODUCT_DEF = {
+  id: "secret_888",
+  title: "👑 傳奇・80年代老凍頂",
+  price: 8800,
+  tags: "老饕限定",
+  desc: "阿興師爺爺留下來的壓箱寶。"
+};
+
+// 🛠️ 修復 CONFIG 的輔助函式
+function ensureSecretProductInConfig() {
+  const cart = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
+  // 如果購物車裡有隱藏商品 ID，但 CONFIG 列表裡沒有
+  if (cart[SECRET_PRODUCT_DEF.id] && !CONFIG.PRODUCTS.find(p => p.id === SECRET_PRODUCT_DEF.id)) {
+    CONFIG.PRODUCTS.push(SECRET_PRODUCT_DEF);
+    console.log("♻️ submitOrder: 已自動補回隱藏商品定義，確保結帳順利");
+  }
+}
 function formatCartItems(rawItems) {
   return rawItems.map((i) => {
     const product = CONFIG.PRODUCTS.find((p) => p.id === i.id);
@@ -26,6 +45,7 @@ function formatCartItems(rawItems) {
 // 封裝 validate（export 給外部使用）
 // -------------------------------
 export function validateSubmit() {
+  ensureSecretProductInConfig();
   const btn = $("submitOrderBtn");
   if (!btn) return;
 
@@ -62,6 +82,7 @@ export function validateSubmit() {
 // 主送出流程（後端直接開綠界版本）
 // -------------------------------
 export async function submitOrder() {
+  ensureSecretProductInConfig();
   const btn = $("submitOrderBtn");
   const loadingOverlay = $("globalLoading");
   if (!btn || btn.disabled) return;
