@@ -3648,3 +3648,33 @@ textarea {
   transform: translateX(100%);
   transition: transform .25s cubic-bezier(.25,.8,.5,1);
 }
+
+/* 整體容器 */
+.embla {
+  position: relative;
+  width: 100%;
+}
+
+/* 可視區域 */
+.embla__viewport {
+  overflow: hidden;
+  width: 100%;
+}
+
+/* 滑動容器 */
+.embla__container {
+  display: flex;
+  gap: 14px; /* 與你茶卡間距一致 */
+  padding: 6px 4px;
+}
+
+/* 每張卡片 */
+.embla__slide {
+  flex: 0 0 auto;
+  width: 82%;
+  max-width: 420px;
+}
+
+.embla__viewport::-webkit-scrollbar {
+  display: none;
+}

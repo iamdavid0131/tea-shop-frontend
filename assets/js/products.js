@@ -94,28 +94,34 @@ export function renderTeaScenes() {
     // ⭐ 標題字色（自動萃取更深的顏色）
     sec.style.setProperty("--catA", darkenRGBA(cat.colorA, 0.75)); // 中文主標題
     sec.style.setProperty("--catB", darkenRGBA(cat.colorB, 0.75)); // 英文副標題
-
     sec.innerHTML = `
-      <header class="tea-scene-header">
+    <header class="tea-scene-header">
         <div class="cat-zh">${cat.title_zh}</div>
         <div class="cat-en">${cat.title_en}</div>
-      </header>
+    </header>
 
-      <div class="tea-scroll">
-        ${cat.list
-          .map(
-            (p) => `
-          <article class="tea-card" data-id="${p.id}" data-cat="${cat.key}">
-            <div class="title">${p.title}</div>
-            <div class="meta">${p.tagline || ""}</div>
-            <div class="meta price-line">NT$ ${p.price} / ${p.unit || ""}</div>
-          </article>
-        `
-          )
-          .join("")}
-      </div>
+    <!-- Embla Carousel -->
+    <div class="embla tea-scroll">
+        <div class="embla__viewport">
+        <div class="embla__container">
+            ${cat.list
+            .map(
+                (p) => `
+                <div class="embla__slide">
+                <article class="tea-card" data-id="${p.id}" data-cat="${cat.key}">
+                    <div class="title">${p.title}</div>
+                    <div class="meta">${p.tagline || ""}</div>
+                    <div class="meta price-line">NT$ ${p.price} / ${p.unit || ""}</div>
+                </article>
+                </div>
+                `
+            )
+            .join("")}
+        </div>
+        </div>
+    </div>
     `;
-
+    initTeaScenesCarousel();
     container.appendChild(sec);
   });
 
@@ -434,4 +440,23 @@ function darkenRGBA(rgba, factor = 0.35) {
   a = a !== undefined ? a : 1;
 
   return `rgba(${r}, ${g}, ${b}, ${a})`;
+}
+
+// ============================================================
+// 🌌 Tea Scenes Carousel
+// ============================================================
+function initTeaScenesCarousel() {
+  const viewports = document.querySelectorAll(".embla__viewport");
+
+  viewports.forEach(vp => {
+    if (vp.__emblaInstance) return; // 避免重複初始化
+
+    const embla = EmblaCarousel(vp, {
+      align: "start",
+      containScroll: "trimSnaps",
+      dragFree: false,
+    });
+
+    vp.__emblaInstance = embla;
+  });
 }
