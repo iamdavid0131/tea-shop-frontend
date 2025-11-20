@@ -1,0 +1,264 @@
+/* ============================================================
+   🏪 門市選擇、地圖、表單輸入樣式 (Store & Form)
+   ============================================================ */
+
+/* === 1. Store Picker (地圖 Modal) === */
+#store-picker { position: fixed; inset: 0; z-index: 2000; display: none; }
+#store-picker[aria-hidden="false"] { display: block; }
+
+/* 背景霧化 */
+.sp-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(30, 35, 30, 0.45);
+  backdrop-filter: blur(6px) saturate(130%);
+  transition: opacity 0.3s ease;
+}
+
+/* 主面板 */
+.sp-sheet {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -4px 16px rgba(90, 123, 104, 0.12);
+  backdrop-filter: blur(14px);
+  padding: 16px 20px 24px;
+  max-height: 85vh;
+  transform: translateY(110%);
+  transition: transform 0.35s cubic-bezier(0.25, 1, 0.4, 1);
+  display: flex; flex-direction: column; gap: 14px;
+  touch-action: pan-y;
+}
+.sp-sheet.sp-open { transform: translateY(0); }
+
+/* 拉桿 */
+.sp-handle {
+  width: 40px; height: 4px;
+  background: linear-gradient(90deg, #cfcfcf, #e6e6e6);
+  border-radius: 999px; margin: 10px auto 14px; opacity: 0.9; cursor: grab;
+}
+
+/* Header & Close */
+.sp-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(180,190,185,0.4); padding-bottom: 4px; }
+.sp-header h3 { font-size: 17px; font-weight: 700; color: #2e3e35; }
+.sp-close { font-size: 20px; background: transparent; border: none; color: #6b7d6f; cursor: pointer; }
+
+/* Map Container */
+#sp-map {
+  width: 100%; height: 240px; border-radius: 12px; background: #eee;
+  overflow: hidden; position: relative; margin: 12px 0;
+}
+
+/* 🔍 搜尋結果列表 */
+.sp-results { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; margin-top: 6px; border-radius: 14px; }
+.sp-item { padding: 12px 10px; border-bottom: 1px solid rgba(0,0,0,0.06); background: #fff; cursor: pointer; }
+.sp-item:hover { background: #f2f8ff; }
+
+/* 🗺️ Leaflet Map 客製化 (這段很重要，不然地圖控制項會很醜) */
+.leaflet-container { z-index: 1 !important; font-family: inherit; }
+.leaflet-control-zoom { border: none !important; box-shadow: none !important; }
+.leaflet-control-zoom a {
+  width: 36px !important; height: 36px !important; line-height: 36px !important;
+  border-radius: 50% !important; background: #fff !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; color: #333 !important; margin-bottom: 10px !important;
+}
+.leaflet-popup-content-wrapper { border-radius: 14px; padding: 10px; }
+
+/* === 2. Form Styles (表單通用) === */
+.section {
+  box-sizing: border-box; padding: 22px 20px 26px; margin: 16px 0; border-radius: 16px;
+  background: rgba(255, 255, 255, 0.78); border: 1px solid rgba(185, 200, 190, 0.35);
+  box-shadow: 0 4px 14px rgba(90, 123, 104, 0.08);
+  backdrop-filter: blur(10px); opacity: 0; animation: sectionFade 0.6s forwards;
+}
+@keyframes sectionFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.section-title {
+  font-size: 21px; font-weight: 800; color: #2a3a32; margin: 0 0 18px; position: relative;
+}
+/* 金茶光底線 */
+.section-title::after {
+  content: ""; display: block; width: 48px; height: 3px;
+  background: linear-gradient(90deg, #a8b78f 0%, #c7d6b3 100%);
+  border-radius: 999px; margin-top: 6px; opacity: 0.9; transition: width 0.3s;
+}
+.section:hover .section-title::after { width: 68px; }
+
+.form-group { margin-bottom: 16px; }
+.form-group label { font-size: 20px; font-weight: 700; color: #305c46; display: block; margin-bottom: 8px; }
+
+/* Inputs & Selects */
+.sp-input, .sp-select, textarea {
+  width: 100%; font-size: 16px; padding: 12px 14px; border-radius: 12px;
+  border: 1.5px solid rgba(170, 190, 180, 0.55); background: rgba(255, 255, 255, 0.9);
+  color: #2b2b2b; transition: all 0.3s ease; box-sizing: border-box;
+}
+/* Focus 動畫 */
+.sp-input:focus, .sp-select:focus, textarea:focus {
+  border-color: rgba(90, 123, 104, 0.85);
+  box-shadow: 0 0 0 4px rgba(90, 123, 104, 0.15);
+  outline: none; background: rgba(255, 255, 255, 0.97);
+}
+/* 下拉箭頭修正 */
+.sp-select {
+  appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%238aa596' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center;
+}
+
+/* Store Search Row (門市搜尋按鈕) */
+.store-row { display: flex; gap: 10px; align-items: center; }
+.sp-search-title {
+  flex-shrink: 0; height: 48px; padding: 0 22px; font-weight: 600; color: #fff;
+  background: linear-gradient(135deg, #8fb89e, #6d9f83); border: none; border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08); cursor: pointer; transition: all 0.3s;
+}
+.sp-search-title:hover { background: linear-gradient(135deg, #7cae90, #5b8e76); transform: translateY(-1px); }
+
+/* Promo Code Row (優惠碼按鈕) */
+.promo-row { display: flex; gap: 10px; align-items: center; }
+.promo-row button {
+  flex-shrink: 0; padding: 12px 18px; font-weight: 600; color: #fff;
+  background: linear-gradient(135deg, #7fa38a, #a4c3ae); border: none; border-radius: 12px; cursor: pointer;
+}
+
+/* Error Message */
+.error-msg { color: #c9544d; font-size: 13px; margin-top: 6px; display: none; }
+.error-msg.show { display: block; animation: fadeIn 0.3s; }
+
+
+/* === 3. Delivery Options (宅配/超商切換) === */
+.ship-options { display: flex; justify-content: center; gap: 16px; margin-top: 8px; }
+
+.ship-radio {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  padding: 10px 26px; border-radius: 14px; font-size: 16px; font-weight: 600;
+  background: rgba(255,255,255,0.6); border: 1.5px solid rgba(200,200,200,0.4);
+  color: #333; cursor: pointer; transition: all 0.3s ease;
+}
+
+/* Checked State + Tea Glow Animation */
+.ship-radio:has(input:checked) {
+  border-color: rgba(90,123,104,0.45);
+  background: linear-gradient(135deg, rgba(245,250,246,0.95), rgba(230,240,235,0.8));
+  box-shadow: 0 0 8px rgba(90,123,104,0.25);
+  overflow: hidden; /* for glow */
+}
+
+/* 流光特效 */
+.ship-radio:has(input:checked)::after {
+  content: ""; position: absolute; top: 0; left: -75%; width: 50%; height: 100%;
+  background: linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+  transform: skewX(-25deg); animation: teaGlow 3s infinite;
+}
+@keyframes teaGlow { 0% { left: -75%; opacity: 0; } 50% { left: 120%; opacity: 1; } 100% { left: 120%; opacity: 0; } }
+
+.ship-radio input { display: none; }
+
+
+/* === 3.1 Delivery Row (縣市/區域 並排) === */
+.delivery-row {
+  display: flex; gap: 0; align-items: flex-end;
+  border: 1px solid rgba(170, 190, 180, 0.4); border-radius: 14px;
+  overflow: hidden; background: rgba(255, 255, 255, 0.85);
+}
+.delivery-col { flex: 1; display: flex; flex-direction: column; padding: 14px 16px; position: relative; }
+.delivery-col:first-child::after {
+  content: ""; position: absolute; top: 12%; right: 0; width: 1px; height: 76%;
+  background: rgba(160, 180, 165, 0.35);
+}
+.delivery-col .sp-label { margin-bottom: 8px; font-size: 14px; }
+.delivery-col .sp-select { border: none; background: transparent; padding-left: 0; height: auto; box-shadow: none; }
+
+
+/* === 4. Payment Options (付款按鈕) === */
+.pay-options { display: flex; flex-direction: column; gap: 12px; }
+
+.pay-btn {
+  position: relative; overflow: hidden;
+  border: 1.5px solid rgba(255,255,255,0.6); border-radius: 16px;
+  background: rgba(255,255,255,0.6); padding: 16px; cursor: pointer;
+  transition: all 0.35s; color: #2c2c2c;
+}
+
+.pay-btn:hover { background: rgba(255,255,255,0.8); transform: translateY(-1px); }
+
+.pay-btn.active {
+  border-color: #5a7b68;
+  background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(230,240,235,0.75));
+  box-shadow: 0 0 12px rgba(90,123,104,0.25);
+}
+
+/* 茶湯流光動畫 */
+.pay-btn.active::after {
+  content: ""; position: absolute; top: 0; left: -75%; width: 50%; height: 100%;
+  background: linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+  transform: skewX(-25deg); animation: teaShine 3.5s infinite;
+}
+@keyframes teaShine { 0% { left: -75%; opacity: 0; } 50% { left: 120%; opacity: 1; } 100% { left: 120%; opacity: 0; } }
+
+.pay-title { display: block; font-size: 18px; font-weight: 700; color: #305c46; }
+.pay-sub { display: block; font-size: 14px; color: #666; margin-top: 4px; }
+
+
+/* === 5. Toggle Switch (同意條款) === */
+.sp-toggle { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
+.sp-toggle input { display: none; }
+
+.sp-toggle-slider {
+  flex-shrink: 0; width: 44px; height: 26px; border-radius: 26px;
+  background: rgba(200, 215, 205, 0.6); border: 1px solid rgba(180, 200, 190, 0.3);
+  position: relative; transition: all 0.3s;
+}
+/* 圓點 */
+.sp-toggle-slider::after {
+  content: ""; width: 22px; height: 22px; border-radius: 50%;
+  background: #fff; position: absolute; top: 1px; left: 1px;
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* 開啟狀態 */
+.sp-toggle input:checked + .sp-toggle-slider {
+  background: linear-gradient(120deg, #7fa38a 0%, #a9c7b6 100%);
+  border-color: transparent;
+  box-shadow: 0 0 8px rgba(90, 123, 104, 0.3);
+}
+.sp-toggle input:checked + .sp-toggle-slider::after { left: 19px; }
+
+.sp-toggle-text { font-size: 15px; line-height: 1.4; color: #2f4b3c; }
+
+
+/* === 6. Recent Address (常用地址) === */
+.recent-box {
+  background: rgba(255,255,255,0.82); border: 1px solid rgba(200, 190, 175, 0.35);
+  border-radius: 18px; padding: 20px 18px; margin-bottom: 28px;
+  backdrop-filter: blur(12px);
+}
+.recent-box.hidden { display: none !important; }
+
+.recent-title { font-weight: 700; font-size: 1.18rem; color: #3e3a37; margin-bottom: 14px; border-bottom: 1px solid rgba(190,180,160,0.35); padding-bottom: 6px; }
+
+/* Tabs */
+.recent-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+.recent-tab {
+  flex: 1; padding: 8px 0; text-align: center; font-weight: 600; color: #6b604f;
+  background: rgba(245, 240, 230, 0.85); border: 1px solid rgba(220, 210, 190, 0.7);
+  border-radius: 10px; cursor: pointer; transition: all 0.25s;
+}
+.recent-tab.active {
+  background: linear-gradient(135deg, #e6dbc8, #d9cdbb); border-color: #c8b79e; color: #2e2a27;
+}
+
+/* List Items */
+.recent-item {
+  background: rgba(255,255,255,0.92); border-radius: 14px; padding: 12px 16px;
+  margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px;
+  border: 1px solid rgba(230, 220, 200, 0.75); transition: all 0.25s;
+}
+.recent-item:hover { transform: translateY(-2px); box-shadow: 0 3px 10px rgba(90, 80, 60, 0.08); }
+
+/* Highlight Effect */
+.recent-item.highlight {
+  background: linear-gradient(135deg, #fffaf4, #f5ede3);
+  box-shadow: 0 0 0 4px rgba(190, 170, 130, 0.35);
+}

@@ -1,0 +1,182 @@
+/* ============================================================
+   🛒 購物車、結帳、成功畫面樣式 (Cart & Success)
+   ============================================================ */
+
+/* === 1. StickyBar (底部固定列) === */
+.stickybar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 999;
+  padding: 10px 14px 12px;
+  transition: all 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+  transform-origin: bottom;
+}
+/* 玻璃質感 */
+.stickybar.glassy {
+  background: linear-gradient(180deg, rgba(255,255,255,0.82), rgba(245,248,245,0.9));
+  backdrop-filter: blur(18px) saturate(1.5);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  border-top: 1px solid rgba(170, 190, 180, 0.25);
+  box-shadow: 0 -4px 16px rgba(90, 123, 104, 0.08), 0 -1px 3px rgba(90, 123, 104, 0.05);
+}
+.stickybar.hide { transform: translateY(120%); opacity: 0; }
+.stickybar.show { transform: translateY(0); opacity: 1; }
+
+.sticky-inner { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.amounts { flex: 1; min-width: 120px; font-weight: 700; color: #2f4b3c; font-size: 16px; }
+
+/* 金額彈跳動畫 */
+@keyframes moneyPop { 0% { transform: scale(1); } 50% { transform: scale(1.18); color: #305c46; } 100% { transform: scale(1); color: #2f4b3c; } }
+.money-pop { animation: moneyPop 0.45s cubic-bezier(.25,.8,.25,1); }
+
+/* 按鈕組 */
+.sticky-inner button { flex: 1; font-size: 16px; border-radius: 12px; padding: 12px 0; font-weight: 600; transition: all 0.3s ease; }
+#viewCartBtn {
+  border: 2px solid rgba(90, 123, 104, 0.85); color: #305c46; background: rgba(255,255,255,0.95);
+  box-shadow: 0 2px 4px rgba(90,123,104,0.08);
+}
+#viewCartBtn:hover { background: linear-gradient(180deg, rgba(240,247,242,0.9), rgba(255,255,255,1)); transform: translateY(-1px); }
+
+.submit-btn {
+  color: #fff; border: none; background: linear-gradient(135deg, #5a7b68, #7fa38a);
+  box-shadow: 0 5px 14px rgba(90,123,104,0.3); position: relative; overflow: hidden;
+}
+.submit-btn:hover { background: linear-gradient(135deg, #6d8f79, #93b29b); transform: translateY(-2px); }
+/* 按鈕流光 */
+.submit-btn:not(:disabled)::after {
+  content: ""; position: absolute; top: 0; left: -75%; width: 50%; height: 100%;
+  background: linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.45) 50%, rgba(255,255,255,0) 100%);
+  transform: skewX(-25deg); opacity: 0;
+}
+.submit-btn:hover::after { animation: teaShine 2.8s ease-in-out 1; opacity: 1; }
+
+/* 免運進度條 */
+.progress-bar-wrap { width: 100%; height: 6px; background: rgba(180, 200, 190, 0.25); border-radius: 999px; margin-top: 6px; overflow: hidden; }
+#freeProgressBar { height: 100%; width: 0%; background: linear-gradient(90deg, #8fb79c, #4f7b61); border-radius: 999px; transition: width 0.6s; }
+.flash-free { animation: flashFree 1s infinite alternate; }
+@keyframes flashFree { 0% { background: linear-gradient(90deg, #b4e3c0, #7dcba3); } 100% { background: linear-gradient(90deg, #b4e3c0, #7dcba3); } }
+
+/* 免運提示文字 */
+.free-hint {
+  font-size: 14.5px; color: #3f6b53; font-weight: 600; text-align: left; margin-top: 4px;
+  opacity: 0; transform: translateY(4px); transition: all 0.5s;
+  background: linear-gradient(90deg, #bcd7c6, #e4f3e9); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.free-hint.show { opacity: 1; transform: translateY(0); }
+
+
+/* === 2. Shopping Sheet (購物明細 Modal) === */
+.sheet-backdrop {
+  position: fixed; inset: 0; display: none; align-items: flex-end; justify-content: center;
+  background: rgba(0, 0, 0, 0.45); backdrop-filter: blur(8px); z-index: 2000!important;
+  opacity: 0; transition: opacity 0.4s ease;
+}
+.sheet-backdrop[aria-hidden="false"] { display: flex; opacity: 1; }
+
+.sheet {
+  position: fixed; left: 0; right: 0; bottom: 0; max-height: 80vh;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.82));
+  border-radius: 20px 20px 0 0; box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(150, 170, 160, 0.25);
+  transform: translateY(110%); transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+  z-index: 2001!important; padding: 18px 18px calc(28px + env(safe-area-inset-bottom));
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+}
+.sheet[data-open="true"] { transform: translateY(0); }
+
+/* 🍵 茶霧動畫：開啟時柔光上升 */
+.sheet::before {
+  content: ""; position: absolute; inset: 0; border-radius: 20px 20px 0 0;
+  background: radial-gradient(circle at 50% 90%, rgba(190, 220, 200, 0.25) 0%, rgba(255, 255, 255, 0.95) 60%);
+  opacity: 0; transform: translateY(20px) scale(0.98); pointer-events: none; z-index: 0; mix-blend-mode: lighten;
+}
+.sheet[data-open="true"]::before { animation: teaMistRise 1.2s ease forwards; }
+.sheet[data-open="false"]::before { animation: teaMistFade 0.8s ease forwards; }
+
+@keyframes teaMistRise { 0% { opacity: 0; transform: translateY(20px); filter: blur(6px); } 100% { opacity: 1; transform: translateY(0); filter: blur(0); } }
+@keyframes teaMistFade { 0% { opacity: 1; } 100% { opacity: 0; transform: translateY(20px); filter: blur(8px); } }
+
+/* 內容延遲浮出 */
+.sheet[data-open="true"] > * { position: relative; z-index: 1; animation: contentLift 0.6s ease 0.25s both; }
+@keyframes contentLift { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Sheet Handle */
+.sheet-handle {
+  width: 40px; height: 5px; background: linear-gradient(90deg, #cbd9d0, #e3eee7);
+  border-radius: 999px; margin: 8px auto 16px; transition: all 0.3s;
+}
+.sheet.dragging .sheet-handle { transform: scaleX(1.8); background: linear-gradient(90deg, #9bb7a6, #bcd7c6); }
+
+/* Title */
+.sheet h3 {
+  font-size: 1.25rem; text-align: center; font-weight: 800; color: #2f4b3c; margin-bottom: 12px;
+  background: linear-gradient(90deg, #4e6b58, #8fb79c); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+/* Items */
+.line-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.05); position: relative; overflow: hidden; transition: background 0.25s; }
+.line-item:hover { background: rgba(245, 250, 246, 0.7); border-radius: 8px; }
+.line-item .li-title { flex: 1; font-size: 15.5px; font-weight: 600; color: #2a2a2a; }
+.line-item .li-sub { font-size: 15.5px; font-weight: 700; color: #305c46; }
+
+/* Total Lines */
+.sheet .line { display: flex; justify-content: space-between; margin: 6px 0; font-size: 15px; color: #333; }
+.sheet .line.total { font-weight: 800; font-size: 16.5px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 10px; margin-top: 8px; color: #2f4b3c; }
+
+/* Close Button */
+#closeCartModal {
+  width: 100%; margin-top: 18px; padding: 12px 0; border-radius: 12px;
+  background: linear-gradient(135deg, #e9f1ec, #f8fbf9); border: 1px solid rgba(150, 170, 160, 0.35);
+  font-size: 15px; color: #2f4b3c; font-weight: 600; transition: all 0.25s;
+}
+#closeCartModal:hover { background: linear-gradient(135deg, #d7e6dc, #eef6f0); transform: translateY(-1px); }
+
+
+/* === 3. Success Modal (成功畫面) === */
+.success-backdrop {
+  position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: rgba(20, 32, 25, 0.25); backdrop-filter: blur(12px) saturate(160%);
+  opacity: 0; visibility: hidden; transition: all 0.45s; z-index: 10050;
+}
+.success-backdrop.show { opacity: 1; visibility: visible; }
+
+.success-card.glass-success {
+  width: 86%; max-width: 420px; padding: 32px 28px 38px; border-radius: 24px;
+  background: rgba(255, 255, 255, 0.55); border: 1px solid rgba(220, 235, 225, 0.6);
+  backdrop-filter: blur(22px) saturate(180%); box-shadow: 0 20px 48px rgba(70, 90, 80, 0.22);
+  animation: glassPop .45s cubic-bezier(.18,.89,.32,1.28);
+}
+
+/* 成功勾勾 */
+.success-check { width: 94px; height: 94px; margin: 0 auto 16px; }
+.check-circle { stroke: #7fa38a; stroke-width: 3.5; stroke-dasharray: 320; stroke-dashoffset: 320; animation: drawCircle 0.7s forwards; }
+.check-mark { stroke: #4f705c; stroke-width: 4; stroke-dasharray: 80; stroke-dashoffset: 80; animation: drawCheck 0.4s 0.55s forwards; }
+@keyframes drawCircle { to { stroke-dashoffset: 0; } }
+@keyframes drawCheck { to { stroke-dashoffset: 0; } }
+
+.success-title {
+  font-size: 23px; font-weight: 800; margin-bottom: 6px;
+  background: linear-gradient(90deg, #4e6b58, #8fb79c); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.success-sub { font-size: 15px; color: #3a5846; opacity: 0.85; margin-bottom: 22px; }
+
+.success-info {
+  background: rgba(255,255,255,0.65); border-radius: 18px; padding: 14px 18px; margin-bottom: 20px;
+  border: 1px solid rgba(150,180,165,0.35); font-size: 15px; line-height: 1.75;
+  box-shadow: 0 6px 18px rgba(70, 90, 80, 0.1);
+}
+.success-close {
+  width: 100%; height: 48px; border-radius: 16px; font-size: 17px; font-weight: 750; color: #fff; border: none;
+  background: linear-gradient(135deg, #5a7b68, #8fb79c); box-shadow: 0 10px 28px rgba(90,123,104,0.25); transition: all 0.25s;
+}
+.success-close:hover { transform: translateY(-2px); background: linear-gradient(135deg, #6d927c, #9fc7ab); }
+
+
+/* === 4. Global Loading Overlay === */
+.loading-overlay {
+  position: fixed; inset: 0; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(4px);
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}
+.loading-overlay.show { opacity: 1; pointer-events: auto; }
+.loading-spinner { width: 48px; height: 48px; border: 4px solid #ccc; border-top-color: #1e90ff; border-radius: 50%; animation: spin 1s linear infinite; }
+.loading-text { margin-top: 16px; font-size: 15px; font-weight: 600; color: #333; }
+@keyframes spin { to { transform: rotate(360deg); } }

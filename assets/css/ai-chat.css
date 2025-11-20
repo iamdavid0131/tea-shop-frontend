@@ -1,0 +1,173 @@
+/* ============================================================
+   🤖 祥興茶行 AI 導購與隱藏菜單樣式表 (完整版)
+   ============================================================ */
+
+/* === Modal Overlay (遮罩) === */
+.ai-modal-overlay {
+  position: fixed; inset: 0; display: flex; justify-content: center; align-items: flex-end;
+  padding: 0 0 40px; background: rgba(0,0,0,0.25);
+  backdrop-filter: blur(8px) saturate(140%); -webkit-backdrop-filter: blur(8px) saturate(140%);
+  opacity: 0; pointer-events: none; transition: opacity .28s ease; z-index: 9999;
+}
+.ai-modal-overlay.show { opacity: 1; pointer-events: auto; }
+
+/* === AI Modal Card (主視窗) === */
+.ai-box {
+  width: 92%; max-width: 450px; max-height: 80vh;
+  display: flex; flex-direction: column; padding: 20px 20px 16px; border-radius: 22px;
+  background: rgba(255,255,255,0.60);
+  backdrop-filter: blur(22px) saturate(180%); -webkit-backdrop-filter: blur(22px) saturate(180%);
+  box-shadow: 0 20px 42px rgba(50,70,60,0.22), 0 6px 14px rgba(50,70,60,0.15), inset 0 0 0 1px rgba(255,255,255,0.55);
+  border: 1px solid rgba(255,255,255,0.65);
+  animation: aiPopIn .36s cubic-bezier(.18,.9,.32,1.2);
+  overflow-y: auto !important; -webkit-overflow-scrolling: touch; touch-action: pan-y;
+}
+@keyframes aiPopIn {
+  0% { transform: translateY(20px) scale(.92); opacity: 0; filter: blur(3px); }
+  55% { transform: translateY(-4px) scale(1.02); opacity: 1; filter: blur(0); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+/* === AI Title === */
+.ai-title {
+  font-size: 1.2rem; font-weight: 800; color: #2f4b3c; text-align: center; margin-bottom: 15px;
+  display: flex; align-items: center; justify-content: center; gap: 8px; flex-shrink: 0;
+}
+
+/* === Close Button === */
+.ai-close-icon {
+  position: absolute; top: 12px; right: 14px; width: 38px; height: 38px;
+  display: flex; justify-content: center; align-items: center;
+  font-size: 18px; font-weight: 700; color: #3a5c48;
+  background: rgba(255,255,255,0.48); border: 1px solid rgba(200,220,210,0.55); border-radius: 50%;
+  box-shadow: 0 8px 20px rgba(70,100,80,0.20), inset 0 0 0 1px rgba(255,255,255,0.55);
+  backdrop-filter: blur(12px); cursor: pointer; transition: .25s ease;
+}
+.ai-close-icon:hover { transform: scale(1.08); box-shadow: 0 14px 34px rgba(70,100,80,0.28); }
+
+/* === AI 入口按鈕 === */
+.ai-assist-btn {
+  width: 100%; padding: 16px 24px; margin-bottom: 22px;
+  font-size: 17px; font-weight: 760; color: #2f4b3c; letter-spacing: 0.4px;
+  background: rgba(255, 255, 240, 0.55); border: 1px solid rgba(190, 205, 180, 0.60); border-radius: 18px;
+  box-shadow: 0 14px 28px rgba(120,150,110,0.20), inset 0 0 0 1px rgba(255,255,255,0.45);
+  backdrop-filter: blur(18px); display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: all .28s ease; cursor: pointer;
+}
+.ai-assist-btn:hover {
+  background: rgba(255, 255, 250, 0.70); border-color: #bcd8a2; transform: translateY(-3px);
+}
+
+/* === Chat Area === */
+.ai-chat-area {
+  display: flex; flex-direction: column; gap: 14px; margin-top: 14px;
+  max-height: 70vh; overflow-y: auto !important; scroll-behavior: smooth;
+  padding-right: 4px; touch-action: pan-y; -webkit-overflow-scrolling: touch; flex-grow: 1;
+}
+
+/* === Bubbles === */
+.ai-bubble {
+  max-width: 90%; margin: 10px 0; padding: 16px 18px; border-radius: 18px;
+  line-height: 1.65; font-size: 15px; color: #2f4b3c;
+  background: rgba(245, 255, 245, 0.55); border: 1px solid rgba(165, 190, 165, 0.50);
+  box-shadow: 0 8px 30px rgba(120,150,120,0.20); backdrop-filter: blur(18px);
+  animation: aiBubbleFade .25s ease; word-break: break-word;
+}
+.ai-bubble-ai { align-self: flex-start; border-top-left-radius: 6px; background: rgba(250,255,245,0.60); }
+.ai-bubble-user {
+  align-self: flex-end; background: linear-gradient(135deg, #9ac89f, #c6d8a4);
+  color: #ffffff; border: none; box-shadow: 0 6px 22px rgba(130,160,130,0.28);
+}
+.ai-bubble-title {
+  font-size: 17px; font-weight: 800; margin-bottom: 8px;
+  background: linear-gradient(90deg, #688e63, #bacc8b); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+@keyframes aiBubbleFade { from { opacity: 0; transform: translateY(6px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+/* === Input Area === */
+.ai-input-row {
+  display: flex; align-items: center; gap: 5px; margin-top: 12px; padding: 10px 14px;
+  background: #fff; border: 1px solid rgba(180, 200, 185, 0.35); border-radius: 16px; backdrop-filter: blur(14px); flex-shrink: 0;
+}
+.ai-text-input {
+  flex: 1; height: 36px; padding: 10px 16px; font-size: 16px;
+  border-radius: 12px; border: 1px solid rgba(160, 180, 170, 0.45);
+  background: rgba(255, 255, 255, 0.55); transition: all .28s ease;
+}
+.ai-text-input:focus { border: 1px solid rgba(120, 160, 145, 0.85); outline: none; }
+
+/* === Camera & Send Buttons === */
+.ai-icon-btn { background: transparent; border: none; color: #888; font-size: 1.4rem; cursor: pointer; padding: 0 10px; display: flex; align-items: center; justify-content: center; transition: color 0.3s ease; }
+.ai-icon-btn:hover { color: #4CAF50; transform: scale(1.1); }
+.ai-bubble-img { max-width: 100%; width: 200px; border-radius: 12px; display: block; margin: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+.ai-send-btn {
+  height: 36px; padding: 0 22px; font-size: 16px; font-weight: 700; color: white;
+  border: none; border-radius: 12px;
+  background: linear-gradient(135deg, rgba(122, 150, 110, 0.95), rgba(162, 190, 150, 0.98));
+  box-shadow: 0 6px 14px rgba(60, 90, 70, 0.18); cursor: pointer; transition: all .22s ease;
+}
+.ai-send-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 18px rgba(60, 90, 70, 0.25); }
+
+/* === Loading Animation === */
+.dot-flashing { position: relative; width: 8px; height: 8px; border-radius: 5px; background-color: #999; color: #999; animation: dot-flashing 1s infinite linear alternate; animation-delay: 0.5s; margin: 0 12px; }
+.dot-flashing::before, .dot-flashing::after { content: ""; display: inline-block; position: absolute; top: 0; width: 8px; height: 8px; border-radius: 5px; background-color: #999; color: #999; animation: dot-flashing 1s infinite alternate; }
+.dot-flashing::before { left: -12px; animation-delay: 0s; }
+.dot-flashing::after { left: 12px; animation-delay: 1s; }
+@keyframes dot-flashing { 0% { background-color: #999; } 50%, 100% { background-color: #e0e0e0; } }
+
+/* === 🕵️ Secret Card (隱藏版商品) === */
+.secret-card {
+  background: linear-gradient(135deg, #fff9f0 0%, #fff 100%);
+  border: 1px solid #d4af37; box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+  position: relative; overflow: hidden;
+}
+.secret-card::before {
+  content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0) 100%);
+  transform: rotate(45deg); animation: shine 3s infinite; pointer-events: none;
+}
+@keyframes shine { 0% { transform: translateX(-150%) rotate(45deg); } 100% { transform: translateX(150%) rotate(45deg); } }
+.secret-card .prod-name { color: #b8860b; font-weight: bold; }
+
+/* === AI Options & Products === */
+.ai-option-group { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+.ai-option-btn {
+  padding: 8px 14px; font-size: 14px; border-radius: 12px;
+  background: rgba(255,255,245,0.65); border: 1px solid rgba(180,200,170,0.50);
+  color: #2f4b3c; box-shadow: 0 5px 14px rgba(130,160,130,0.18); cursor: pointer; transition: .25s ease;
+}
+.ai-option-btn:hover { background: rgba(255,255,255,0.82); border-color: #bcd99f; transform: translateY(-2px); }
+
+.ai-prod-item {
+  margin-top: 12px; padding: 12px 14px; background: rgba(255,255,250,0.65);
+  border: 1px solid rgba(170,190,170,0.50); border-radius: 14px; cursor: pointer;
+  box-shadow: 0 6px 18px rgba(120,150,110,0.20); transition: all .25s ease;
+}
+.ai-prod-item:hover { background: rgba(255,255,255,0.85); transform: translateY(-2px); border-color: #9ac89f; }
+
+/* === 📦 Blocks (Brew, Compare, etc.) === */
+.brew-item { padding: 10px 12px; background: rgba(255,255,245,0.55); border: 1px solid rgba(185,200,180,0.50); border-radius: 12px; margin-bottom: 10px; }
+.brew-tips { margin-top: 10px; padding: 10px 12px; background: rgba(250,255,245,0.65); border: 1px dashed rgba(160,185,160,0.6); border-radius: 12px; font-size: 14px; color: #3c5c46; }
+
+.compare-block { margin-top: 12px; padding: 16px; background: rgba(255,255,245,0.65); border: 1px solid rgba(190,205,180,0.50); border-radius: 16px; display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 10px; }
+.compare-summary { margin-top: 12px; padding: 12px 14px; background: rgba(255,255,245,0.75); border-radius: 14px; border: 1px solid rgba(200,210,185,0.50); font-size: 14.5px; line-height: 1.7; color: #304c3a; }
+
+/* 🔥【補全】其他 AI 區塊樣式 */
+.pairing-summary { font-size: 14.5px; color: #3c5c46; margin-bottom: 10px; line-height: 1.7; }
+.gift-summary { font-size: 15px; color: #35543d; margin-bottom: 10px; line-height: 1.7; }
+
+.masterpick-block {
+  padding: 14px 16px; border-radius: 16px; background: rgba(255,255,245,0.55);
+  border: 1px solid rgba(180,200,170,0.50); box-shadow: 0 10px 26px rgba(120,150,110,0.15);
+  line-height: 1.7; color: #345c45;
+}
+
+.person-summary { font-size: 15px; color: #355c45; opacity: .92; line-height: 1.7; margin-bottom: 12px; }
+
+/* 🔥【補全】隱藏版 Modal 專用按鈕 (Gold Theme) */
+.qty-btn {
+  width: 30px; height: 30px; border: 1px solid #ddd; background: #fff; border-radius: 50%;
+  cursor: pointer; font-size: 1.2rem; line-height: 1; display: flex; align-items: center; justify-content: center; color: #b8860b;
+}
+.qty-btn:hover { background: #fffbf0; border-color: #b8860b; }

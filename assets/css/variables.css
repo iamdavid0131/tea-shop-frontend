@@ -1,0 +1,50 @@
+/* ============================================================
+   🎨 祥興茶行 - 核心變數系統 (Variables)
+   ============================================================ */
+:root {
+  /* --- 1. 玻璃質感系統 (Glassmorphism) --- */
+  --mist-glass: rgba(255, 255, 255, 0.55);
+  --mist-border: rgba(160, 155, 150, 0.25);
+  --mist-shadow: rgba(60, 55, 50, 0.05);
+  --mist-shadow-hover: rgba(60, 55, 50, 0.08);
+
+  /* --- 2. 莫蘭迪茶色系 (Backgrounds & Accents) --- */
+  --tea-green-light: #E6EBE5; /* 雲霧綠 (淺背景) */
+  --tea-green-deep: #98A698;  /* 乾燥茶葉綠 (裝飾) */
+  --tea-gold-soft: #E8E2D2;   /* 燕麥金 (溫暖點綴) */
+  --tea-rose: #E6DCD8;        /* 陶土粉 (極淡) */
+  
+  /* --- 3. 品牌核心色 (Brand Colors) --- */
+  /* 這是你原本散落在各處的深綠色 #2f4b3c, #305c46 */
+  --tea-dark: #2f4b3c;        /* 主標題、重要文字 */
+  --tea-main: #5a7b68;        /* 按鈕主色 */
+  --tea-accent: #8fb79c;      /* 亮綠點綴 */
+  
+  /* 這是隱藏版商品的金色 #b8860b, #d4af37 */
+  --tea-gold: #b8860b;        /* 隱藏版文字 */
+  --tea-gold-border: #d4af37; /* 隱藏版邊框 */
+
+  /* --- 4. 文字顏色 (Text) --- */
+  --text-primary: #3E3A36;    /* 墨色 (內文) */
+  --text-secondary: #706B66;  /* 淺墨 (次要資訊) */
+  --text-light: #ffffff;      /* 反白字 */
+
+  /* --- 5. 功能色 (Functional) --- */
+  --color-error: #ff3b30;     /* 刪除、錯誤 */
+  --color-success: #4cd964;   /* 成功勾勾 */
+
+  /* --- 6. 字體系統 (Typography) --- */
+  /* 統一設定，避免表單(input)和內文(body)字體不一致 */
+  --font-primary: "Noto Serif TC", "Songti TC", -apple-system, serif; /* 標題用宋體 */
+  --font-ui: system-ui, -apple-system, "PingFang TC", "Noto Sans TC", sans-serif; /* 介面用黑體 */
+
+  /* --- 7. UI 數值 (Metrics) --- */
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --blur-lg: blur(24px);
+  --blur-md: blur(16px);
+  
+  --ease-soft: cubic-bezier(.22, .61, .36, 1);
+  --sticky-height: 90px;      /* 底部結帳條高度 */
+  --pcolor: #5a7b68;          /* Profile Bar 預設顏色 (JS 會覆蓋，但設個預設值比較安全) */
+}
