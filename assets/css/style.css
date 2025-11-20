@@ -3388,6 +3388,83 @@ textarea {
   backdrop-filter: blur(14px) saturate(160%);
   -webkit-backdrop-filter: blur(14px) saturate(160%);
 }
+/* --- AI 相機按鈕與圖片樣式 --- */
+
+/* 相機按鈕 */
+.ai-icon-btn {
+  background: transparent;
+  border: none;
+  color: #888;
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease;
+}
+
+.ai-icon-btn:hover {
+  color: var(--tea-green-deep, #4CAF50);
+  transform: scale(1.1);
+}
+
+/* 上傳後的圖片預覽 (在對話框內) */
+.ai-bubble-img {
+  max-width: 100%;
+  width: 200px; /* 限制最大寬度 */
+  border-radius: 12px;
+  display: block;
+  margin: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* 調整輸入框樣式，讓它跟按鈕排好 */
+.ai-input-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  /* 確保背景色正確 */
+  background: #fff; 
+  padding: 10px;
+  border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+.ai-text-input {
+  flex: 1; /* 佔滿剩餘空間 */
+}
+
+/* Loading 動畫 (Dot Flashing) */
+.dot-flashing {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 5px;
+  background-color: #999;
+  color: #999;
+  animation: dot-flashing 1s infinite linear alternate;
+  animation-delay: 0.5s;
+  margin: 0 12px;
+}
+.dot-flashing::before, .dot-flashing::after {
+  content: "";
+  display: inline-block;
+  position: absolute;
+  top: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 5px;
+  background-color: #999;
+  color: #999;
+  animation: dot-flashing 1s infinite alternate;
+}
+.dot-flashing::before { left: -12px; animation-delay: 0s; }
+.dot-flashing::after { left: 12px; animation-delay: 1s; }
+
+@keyframes dot-flashing {
+  0% { background-color: #999; }
+  50%, 100% { background-color: #e0e0e0; }
+}
 
 /* 🟩 輸入框：增加高度 + 文字置中 + 靠右美感 */
 .ai-text-input {
