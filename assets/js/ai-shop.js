@@ -543,12 +543,17 @@ function openSecretModal(product) {
   };
 }
 
-// 產生「領取茶籤」按鈕 HTML
+
+// 產生「領取茶籤」按鈕 HTML (安全版)
 function getCardButtonHtml(teaTitle, cardText) {
   if (!cardText) return "";
-  // 我們把文案藏在 data-text 屬性裡
+  
+  // 🔒 安全處理：把單引號替換掉，避免破壞 onclick 語法
+  const safeTitle = teaTitle.replace(/'/g, "\\'");
+  const safeText = cardText.replace(/'/g, "\\'").replace(/\n/g, " "); // 也順便處理換行
+
   return `
-    <button class="ai-card-btn" onclick="drawTeaCard('${teaTitle}', '${cardText}')">
+    <button class="ai-card-btn" onclick="drawTeaCard('${safeTitle}', '${safeText}')">
       📩 收藏阿興師的手寫信
     </button>
   `;
