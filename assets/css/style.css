@@ -363,6 +363,8 @@ body {
   padding-bottom: 6px;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
+  margin-left: -4px; /* 抵銷上面的 padding-left */
+  width: calc(100% + 4px); /* 補回寬度 */
 }
 
 .tea-scroll::-webkit-scrollbar {
@@ -3673,7 +3675,7 @@ textarea {
    Embla Carousel 核心樣式 (必須加入)
    ========================================== */
 
-//* 整體容器 */
+/* 整體容器 */
 .embla {
   position: relative;
   width: 100%;
@@ -3699,7 +3701,7 @@ textarea {
 .embla__container {
   display: flex;
   gap: 14px; 
-  padding: 6px 20px; /* 左右留一點邊距比較好看 */
+  padding: 6px 4px 10px 0px; /* 左右留一點邊距比較好看 */
   
   /* ✅ 關鍵：讓滑動更順暢 */
   touch-action: pan-y pinch-zoom;
