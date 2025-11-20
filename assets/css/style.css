@@ -3183,6 +3183,18 @@ textarea {
     0 8px 18px rgba(100,130,100,0.18),
     inset 0 0 0 1px rgba(255,255,255,0.40);
 }
+.ai-chat-area {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 14px;
+
+  max-height: 70vh;      /* 🔥 限制最高高度（重要）*/
+  overflow-y: auto;      /* 🔥 啟動捲軸 */
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  padding-right: 4px;
+}
 
 .ai-bubble {
   max-width: 90%;

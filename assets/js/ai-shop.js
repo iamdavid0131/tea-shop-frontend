@@ -34,6 +34,8 @@ function appendAIBubble(container, text) {
   bubble.className = "ai-bubble ai-bubble-ai";
   bubble.innerHTML = `<div class="ai-bubble-text">${text}</div>`;
   container.appendChild(bubble);
+  const chat = document.querySelector(".ai-chat-area");
+  chat.scrollTop = chat.scrollHeight;
 }
 
 function appendUserBubble(container, text) {
@@ -41,6 +43,8 @@ function appendUserBubble(container, text) {
   bubble.className = "ai-bubble ai-bubble-user";
   bubble.innerHTML = `<div class="ai-bubble-text">${text}</div>`;
   container.appendChild(bubble);
+  const chat = document.querySelector(".ai-chat-area");
+  chat.scrollTop = chat.scrollHeight;
 }
 
 
