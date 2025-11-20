@@ -66,46 +66,40 @@ function handlePackBtn(btn) {
 }
 
 /** 裝罐 Checkbox */
+/** 裝罐 Checkbox */
 function handlePackToggle(e) {
   const chk = e.target;
   const id = chk.id.replace("pack-", "");
+  
+  // 取得數量輸入框容器
   const wrap = $(`packQtyWrap-${id}`);
+  // 取得最外層 row
   const row = chk.closest(".pack-row");
 
   if (chk.checked) {
-    // 1. 顯示邏輯：移除 hidden，加入 open
+    // 🟢 開啟：顯示數量輸入區
     wrap.classList.remove("hidden");
-    row.classList.remove("close");
-    row.classList.add("open");
+    wrap.classList.add("fade-in"); // 可選：加上淡入動畫 class
     $(`packQty-${id}`).value = 1;
+    
+    // row 保持開啟樣式 (如果有需要)
+    row.classList.add("active");
   } else {
-    // 2. 隱藏邏輯：移除 open，加入 close
-    row.classList.remove("open");
-    row.classList.add("close");
+    // 🔴 關閉：隱藏數量輸入區
+    wrap.classList.add("hidden");
+    wrap.classList.remove("fade-in");
     
-    // ⭐️ 修正處 1：不使用 setTimeout 處理 wrap 的 hidden 類別
-    // 讓 CSS (透過 .close 類別) 來處理動畫和最終的隱藏效果。
-    
-    // ⭐️ 修正處 2：立即重置值（在保存之前）
     $(`packQty-${id}`).value = 0; 
-    
-    // 為了確保 wrap 在動畫完成後被隱藏，我們可以在 row 元素上監聽 CSS 動畫結束事件
-    // 或者，我們將 wrap 元素放入 setTimeout 內隱藏的邏輯移除，改為
-    // 讓 row.classList.add("close") 配合 CSS 樣式來控制 wrap 的顯示/隱藏。
-
+    row.classList.remove("active");
   }
   
-  // 由於我們修改了 else 區塊，這裡確保 packQty 的值已經是 0 或 1
+  // 儲存邏輯
   const qtyEl = getQtyEl(id);
   const qty = parseInt(qtyEl?.value || 0);
   const pack = chk.checked;
-  
-  // 這裡需要根據 chk.checked 來決定 packQty 的值
-  const packQty = chk.checked 
-    ? Number($(`packQty-${id}`)?.value || 0)
-    : 0; // 取消打勾時，packQty 必須傳 0
+  const packQty = chk.checked ? Number($(`packQty-${id}`)?.value || 0) : 0;
 
-  updatePackUI(id);
+  // updatePackUI(id); // ⚠️ 這裡暫時不呼叫 updatePackUI，避免邏輯打架
   saveCartItem(id, qty, pack, packQty);
   updateTotals();
 }
@@ -116,26 +110,34 @@ export function updatePackUI(id) {
   const qty = parseInt(qtyEl?.value || 0);
 
   const packToggle = $(`pack-${id}`);
-  const packInput = $(`packQty-${id}`);
   const wrap = $(`packQtyWrap-${id}`);
+  const row = packToggle?.closest(".pack-row");
 
-  if (!packToggle || !packInput) return;
+  if (!packToggle || !wrap) return;
 
+  // 如果數量為 0，禁用並淡化整個裝罐區
   if (qty === 0) {
     packToggle.disabled = true;
-    wrap.classList.add("disabled-wrap");
+    packToggle.checked = false; // 數量為 0 強制取消勾選
+    wrap.classList.add("hidden");
+    if (row) row.classList.add("disabled");
     return;
   }
 
+  // 恢復可用狀態
   packToggle.disabled = false;
-  wrap.classList.remove("disabled-wrap");
+  if (row) row.classList.remove("disabled");
 
+  // 根據是否勾選來決定顯示狀態
   if (packToggle.checked) {
     wrap.classList.remove("hidden");
+    if (row) row.classList.add("active");
   } else {
     wrap.classList.add("hidden");
+    if (row) row.classList.remove("active");
   }
 }
+
 
 
 /* ============================================================
