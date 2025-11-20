@@ -90,15 +90,13 @@
 
 <!-- ✅ Step 1: 商品步驟 -->
 
-
-<!-- 商品分類＆橫向卡片 -->
 <main id="teaScenes" class="tea-scenes"></main>
 
-<!-- Modal -->
 <div id="teaModal" class="tea-modal" aria-hidden="true">
   <div class="tea-modal-bg"></div>
 
-  <div class="tea-modal-content">
+  <div id="teaSheet" class="tea-modal-content">
+    
     <header class="tea-modal-header">
       <h2 id="modalTitle"></h2>
       <button id="closeModalBtn" class="close-btn">✕</button>
@@ -107,7 +105,6 @@
     <div id="teaCollection" class="tea-collection"></div>
   </div>
 </div>
-
 
 
 
@@ -372,7 +369,34 @@
 
 
  
+<script>
+    // 簡單的範例：讓 Header 載入時有茶霧滑入效果
+    document.addEventListener("DOMContentLoaded", () => {
+        const header = document.querySelector('.ios-header');
+        // CSS 動畫會自動播放 (teaHeaderEnter)
+        
+        // 測試：點擊茶卡片會有反應
+        const cards = document.querySelectorAll('.tea-card');
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                // 這裡可以加入打開 Modal 的邏輯
+                console.log('茶卡片被點擊');
+            });
+        });
+    });
 
+    // 讓 Aurora 背景隨滑鼠輕微移動 (視差效果)
+    document.addEventListener('mousemove', (e) => {
+        const layers = document.querySelectorAll('.aurora-layer');
+        const x = (window.innerWidth - e.pageX * 2) / 100;
+        const y = (window.innerHeight - e.pageY * 2) / 100;
+
+        layers.forEach((layer, index) => {
+            const speed = (index + 1) * 2;
+            layer.style.transform = `translateX(${x * speed}px) translateY(${y * speed}px)`;
+        });
+    });
+</script>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/body-scroll-lock/lib/bodyScrollLock.min.js"></script>
