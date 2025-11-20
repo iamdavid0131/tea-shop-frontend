@@ -364,6 +364,7 @@ function buildRecommendBubble(out, products) {
         <div class="prod-reason">${out.best.reason}</div>
       </div>
       ${second ? `<div class="ai-prod-item" data-prod="${second.id}"><div class="prod-name">${second.title}</div><div class="prod-reason">${out.second.reason}</div></div>` : ""}
+      ${getCardButtonHtml(best.title, out.card_text)}
     </div>`;
 }
 
@@ -376,6 +377,7 @@ function buildPairingBubble(out, products) {
         <div class="prod-name">${tea.title}</div>
         <div class="prod-reason">${out.reason}</div>
       </div>
+      ${getCardButtonHtml(tea.title, out.card_text)}
     </div>`;
 }
 
@@ -388,6 +390,7 @@ function buildGiftBubble(out, products) {
         <div class="prod-name">${tea.title}</div>
         <div class="prod-reason">${out.reason}</div>
       </div>
+      ${getCardButtonHtml(tea.title, out.card_text)}
     </div>`;
 }
 
@@ -432,6 +435,7 @@ function buildPersonalityBubble(out, products) {
         <div class="prod-name">${tea.title}</div>
         <div class="prod-reason" style="color:var(--tea-green-deep)">查看詳情 →</div>
       </div>
+      ${getCardButtonHtml(tea.title, out.card_text)}
     </div>`;
 }
 
@@ -539,6 +543,17 @@ function openSecretModal(product) {
   };
 }
 
+// 產生「領取茶籤」按鈕 HTML
+function getCardButtonHtml(teaTitle, cardText) {
+  if (!cardText) return "";
+  // 我們把文案藏在 data-text 屬性裡
+  return `
+    <button class="ai-card-btn" onclick="drawTeaCard('${teaTitle}', '${cardText}')">
+      📩 收藏阿興師的手寫信
+    </button>
+  `;
+}
+
 // 🛒 橋接器：把商品推入主網站的購物車
 function addToGlobalCart(product, quantity) {
   console.log("🤫 加入隱藏商品:", product.title);
@@ -583,3 +598,107 @@ function injectAIAssistButton(retry = 0) {
 }
 
 document.addEventListener("DOMContentLoaded", () => injectAIAssistButton());
+
+// 🎨 繪製靈魂茶籤 (Canvas)
+window.drawTeaCard = function(title, text) {
+  // 1. 建立 Canvas
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  const width = 600;
+  const height = 900;
+  canvas.width = width;
+  canvas.height = height;
+
+  // 2. 繪製背景 (米黃宣紙質感)
+  ctx.fillStyle = "#F9F7F0"; // 底色
+  ctx.fillRect(0, 0, width, height);
+  
+  // 加一點雜訊紋理 (模擬紙張)
+  // 這裡用簡單的漸層代替
+  const grd = ctx.createLinearGradient(0, 0, width, height);
+  grd.addColorStop(0, "rgba(255,255,255,0.2)");
+  grd.addColorStop(1, "rgba(200,190,170,0.15)");
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, width, height);
+
+  // 3. 繪製邊框
+  ctx.strokeStyle = "#8FBC8F"; // 茶綠色
+  ctx.lineWidth = 4;
+  ctx.strokeRect(20, 20, width - 40, height - 40);
+  
+  ctx.strokeStyle = "#D4AF37"; // 內層金線
+  ctx.lineWidth = 2;
+  ctx.strokeRect(30, 30, width - 60, height - 60);
+
+  // 4. 繪製標題
+  ctx.fillStyle = "#2F4B3C"; // 深綠
+  ctx.font = "bold 48px 'Noto Serif TC', serif";
+  ctx.textAlign = "center";
+  ctx.fillText(title, width / 2, 150);
+
+  // 5. 繪製分隔線
+  ctx.beginPath();
+  ctx.moveTo(width / 2 - 50, 180);
+  ctx.lineTo(width / 2 + 50, 180);
+  ctx.strokeStyle = "#ccc";
+  ctx.stroke();
+
+  // 6. 繪製金句 (自動換行)
+  ctx.fillStyle = "#555";
+  ctx.font = "32px 'Noto Serif TC', serif";
+  const lineHeight = 50;
+  const maxWidth = 480;
+  let y = 300;
+
+  // 簡單的換行演算法
+  const words = text.split("");
+  let line = "";
+  for (let n = 0; n < words.length; n++) {
+    let testLine = line + words[n];
+    let metrics = ctx.measureText(testLine);
+    let testWidth = metrics.width;
+    if (testWidth > maxWidth && n > 0) {
+      ctx.fillText(line, width / 2, y);
+      line = words[n];
+      y += lineHeight;
+    } else {
+      line = testLine;
+    }
+  }
+  ctx.fillText(line, width / 2, y);
+
+  // 7. 落款 (阿興師)
+  y += 120;
+  ctx.fillStyle = "#b8860b"; // 金色
+  ctx.font = "bold 28px 'Noto Serif TC', serif";
+  ctx.fillText("—— 祥興茶行", width / 2, y);
+
+  // 8. 印章 (用紅圈+字模擬)
+  const sealY = y + 40;
+  ctx.strokeStyle = "#B22222"; // 印泥紅
+  ctx.lineWidth = 3;
+  ctx.strokeRect(width / 2 - 25, sealY, 50, 50);
+  ctx.fillStyle = "#B22222";
+  ctx.font = "24px serif";
+  ctx.fillText("祥興", width / 2, sealY + 34);
+
+  // 9. 顯示圖片 Modal
+  const dataUrl = canvas.toDataURL("image/png");
+  showCardModal(dataUrl);
+};
+
+// 顯示圖片的 Modal
+function showCardModal(imgUrl) {
+  // 借用 secretModal 的邏輯，或者新建一個簡單的 overlay
+  const modal = document.createElement("div");
+  modal.className = "ai-modal-overlay show";
+  modal.style.zIndex = "10000";
+  modal.innerHTML = `
+    <div class="ai-box" style="background:transparent; box-shadow:none; border:none; align-items:center;">
+      <img src="${imgUrl}" style="width:100%; max-width:400px; border-radius:8px; box-shadow:0 10px 30px rgba(0,0,0,0.3);">
+      <p style="color:#fff; margin-top:10px; font-size:14px; text-shadow:0 1px 2px rgba(0,0,0,0.5);">長按圖片即可儲存 ✨</p>
+      <button class="ai-close-icon" style="position:static; margin-top:10px; background:rgba(255,255,255,0.9);" onclick="this.closest('.ai-modal-overlay').remove()">×</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
