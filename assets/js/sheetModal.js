@@ -162,79 +162,97 @@ export function hideCartSheet() {
 }
 
 // ... (enableSmartSheetControl, initSheetModal 維持原樣，不需要動) ...
+// ========================================================
+// 智慧型手勢控制 (下拉關閉 + 列表滾動 完美共存版)
+// ========================================================
 export function enableSmartSheetControl() {
-    // ... 維持你原本的代碼 ...
-    const sheet = $("cartSheet");
-    const backdrop = $("cartSheetBackdrop");
-    if (!sheet || !backdrop) return;
-  
-    // ✅ 點 backdrop 關閉
-    backdrop.addEventListener("click", (e) => {
-      if (e.target === backdrop) hideCartSheet();
-    });
-  
-    // ✅ 手勢拖曳判定
-    let startY = 0;
-    let currentY = 0;
-    let startTime = 0;
-    let isDragging = false;
-    let isScrollable = false;
-  
-    const CLOSE_THRESHOLD = 100;
-    const VELOCITY_THRESHOLD = 0.6;
-  
-    sheet.addEventListener("touchstart", (e) => {
-      startY = e.touches[0].clientY;
-      currentY = startY;
-      startTime = Date.now();
-      isDragging = false;
-      isScrollable = sheet.scrollTop > 0;
-      sheet.style.transition = "none";
-    });
-  
-    sheet.addEventListener(
-      "touchmove",
-      (e) => {
-        const touchY = e.touches[0].clientY;
-        const deltaY = touchY - startY;
-        if (deltaY > 0 && !isScrollable) {
-          e.preventDefault();
-          isDragging = true;
-          currentY = touchY;
-  
-          sheet.classList.add("dragging");
-          sheet.style.transform = `translateY(${deltaY * 0.6}px)`;
-          backdrop.style.opacity = `${Math.max(0, 1 - deltaY / 400)}`;
-        }
-      },
-      { passive: false }
-    );
-  
-    sheet.addEventListener("touchend", () => {
-      if (!isDragging) return;
-  
-      sheet.classList.remove("dragging");
+  const sheet = $("cartSheet");
+  const backdrop = $("cartSheetBackdrop");
+  const handle = sheet?.querySelector(".sheet-handle"); // 抓取拉桿(如果有的話)
+
+  if (!sheet || !backdrop) return;
+
+  // ✅ 1. 點擊背景關閉 (這部分不變)
+  backdrop.addEventListener("click", (e) => {
+    if (e.target === backdrop) hideCartSheet();
+  });
+
+  // --- 👇 手勢核心邏輯開始 👇 ---
+
+  let startY = 0;
+  let currentY = 0;
+  let isDragging = false;
+  let isAtTop = true; // 標記是否在頂部
+
+  // A. 手指按下
+  sheet.addEventListener("touchstart", (e) => {
+    startY = e.touches[0].clientY;
+    isDragging = false;
+    
+    // 關鍵判斷：檢查目前捲軸是否在最頂端
+    // scrollTop <= 0 代表在頂部 (有的瀏覽器會有彈性效果變成負的，所以用 <=)
+    isAtTop = sheet.scrollTop <= 0;
+
+    // 移除過渡動畫，讓拖曳跟手沒有延遲
+    sheet.style.transition = "none";
+  }, { passive: true });
+
+  // B. 手指移動 (最關鍵的地方)
+  sheet.addEventListener("touchmove", (e) => {
+    const touchY = e.touches[0].clientY;
+    const deltaY = touchY - startY;
+
+    // 情況 1: 如果手指按在「拉桿 (handle)」上，無條件允許拖曳
+    const isHandle = e.target === handle || e.target.closest('.sheet-handle');
+
+    // 情況 2: 在頂端 + 往下拉 (deltaY > 0)
+    if (isHandle || (isAtTop && deltaY > 0)) {
+        // 🚫 阻止瀏覽器原生捲動 (這行最重要，不然會變成重新整理網頁)
+        if (e.cancelable) e.preventDefault();
+        
+        isDragging = true;
+        currentY = touchY;
+
+        // 阻尼效果：讓拉動感覺有點重量 (乘 0.7)
+        const translateY = deltaY * 0.7;
+        
+        sheet.style.transform = `translateY(${translateY}px)`;
+        
+        // 背景漸漸變透明
+        const opacity = Math.max(0, 1 - translateY / 500);
+        backdrop.style.opacity = opacity;
+    }
+    // 其他情況 (往上滑、或是還沒到頂端)：
+    // 什麼都不做，讓瀏覽器處理原生捲動 (Native Scroll)
+  }, { passive: false }); // ⚠️ 這裡必須是 false 才能呼叫 preventDefault
+
+  // C. 手指放開
+  sheet.addEventListener("touchend", () => {
+    // 恢復動畫曲線
+    sheet.style.transition = "transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)";
+    backdrop.style.transition = "opacity 0.35s ease";
+
+    if (isDragging) {
       const deltaY = currentY - startY;
-      const elapsed = Date.now() - startTime;
-      const velocity = deltaY / elapsed;
-  
-      const shouldClose = deltaY > CLOSE_THRESHOLD || velocity > VELOCITY_THRESHOLD;
-  
-      sheet.style.transition = "transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)";
-      backdrop.style.transition = "opacity 0.35s ease";
-  
-      if (shouldClose) {
+      const CLOSE_THRESHOLD = 120; // 拉超過 120px 就關閉
+
+      if (deltaY > CLOSE_THRESHOLD) {
+        // 🚪 關閉
         sheet.style.transform = "translateY(100%)";
         backdrop.style.opacity = "0";
-        setTimeout(() => hideCartSheet(), 350);
+        setTimeout(() => hideCartSheet(), 300);
       } else {
+        // ↩️ 回彈 (沒拉過門檻)
         sheet.style.transform = "translateY(0)";
         backdrop.style.opacity = "1";
       }
-    });
+    }
+    
+    // 重置狀態
+    isDragging = false;
+  });
 }
 
-$("closeCartModal")?.addEventListener("click", hideCartSheet);
 
 // 在 sheetModal.js 的 initSheetModal 函式
 export function initSheetModal() {
