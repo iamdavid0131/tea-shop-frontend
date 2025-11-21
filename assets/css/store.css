@@ -4,15 +4,18 @@
 /* ============================================================
    1. Store Picker (地圖選擇器 - 旗艦美化版)
    ============================================================ */
+/* ============================================================
+   1. Store Picker (地圖選擇器 - 最終完美版)
+   ============================================================ */
 
 /* === 容器與遮罩 === */
 #store-picker { position: fixed; inset: 0; z-index: 9999; display: none; }
 #store-picker[aria-hidden="false"] { display: block; }
 
-/* 背景霧化：加重模糊度，營造景深感 */
+/* 背景霧化 */
 .sp-backdrop {
   position: absolute; inset: 0;
-  background: rgba(20, 30, 25, 0.4); /* 深墨綠遮罩 */
+  background: rgba(20, 30, 25, 0.45); /* 深墨綠遮罩 */
   backdrop-filter: blur(8px) saturate(120%);
   transition: opacity 0.4s ease;
 }
@@ -23,15 +26,16 @@
   
   /* 頂級玻璃質感 */
   background: rgba(255, 255, 255, 0.94);
-  border-radius: 28px 28px 0 0; /* 更大的圓角 */
+  border-radius: 28px 28px 0 0;
   border-top: 1px solid rgba(255, 255, 255, 0.8);
-  
-  /* 帶有環境色的陰影 */
   box-shadow: 0 -10px 40px rgba(90, 123, 104, 0.2);
   
   backdrop-filter: blur(20px);
   padding: 12px 20px 32px;
-  max-height: 90vh; /* 讓地圖視野更大 */
+  
+  /* 高度控制：最大 90vh，但需透過 Flexbox 撐開 */
+  max-height: 90vh; 
+  height: 90vh; /* 建議：直接設高一點，體驗較好 */
   
   transform: translateY(110%);
   transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -45,97 +49,68 @@
 .sp-handle {
   width: 48px; height: 5px;
   background: #dbebe2; /* 淺茶綠 */
-  border-radius: 10px; margin: 6px auto 10px;
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
-  opacity: 1; cursor: grab; transition: background 0.3s;
+  border-radius: 10px; margin: 6px auto 4px; flex-shrink: 0;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); opacity: 1; cursor: grab;
 }
-.sp-sheet:active .sp-handle { background: #b8d1c3; width: 56px; } /* 拖曳時變寬 */
 
 /* === 標題列 === */
 .sp-header {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 0 4px 12px;
+  padding: 0 4px 8px; flex-shrink: 0;
   border-bottom: 1px solid rgba(0,0,0,0.06);
 }
 .sp-header h3 {
   font-size: 18px; font-weight: 700; color: #2f4b3c; letter-spacing: 0.5px;
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; gap: 6px; margin: 0;
 }
 .sp-header h3::before { content: "📍"; font-size: 16px; }
 
-/* 關閉按鈕 */
 .sp-close {
-  font-size: 22px; width: 36px; height: 36px;
-  display: flex; align-items: center; justify-content: center;
-  background: rgba(0,0,0,0.04); border-radius: 50%; border: none;
-  color: #5a7b68; cursor: pointer; transition: all 0.2s;
+  font-size: 22px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.04); border-radius: 50%; border: none; color: #5a7b68; cursor: pointer; transition: all 0.2s;
 }
 .sp-close:hover { background: rgba(0,0,0,0.08); transform: rotate(90deg); color: #2f4b3c; }
 
-/* === 地圖容器 === */
-#sp-map {
-  width: 100%; height: 280px; /* 加高地圖 */
-  border-radius: 20px;
-  background: #eef2f0; /* 地圖載入前的底色 */
-  overflow: hidden; position: relative; margin: 4px 0 12px;
-  /* 內陰影讓地圖看起來是嵌進去的 */
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03);
-  z-index: 1;
+/* === 工具列 (搜尋框) === */
+.sp-toolbar {
+  flex-shrink: 0; /* 防止被壓縮 */
 }
 
-/* === 搜尋結果列表 === */
-.sp-results {
-  flex: 1;
-  overflow-y: auto; -webkit-overflow-scrolling: touch;
-  margin-top: 0; 
-  /* 讓列表有漂亮的捲軸 */
-  padding-right: 4px;
-}
-.sp-results::-webkit-scrollbar { width: 4px; }
-.sp-results::-webkit-scrollbar-thumb { background: #d0dcd5; border-radius: 4px; }
-/* 1. 強制地圖高度 & 禁止縮小 */
+/* === 地圖容器 (強制顯影 + 美化) === */
 #sp-map {
   display: block !important;
   width: 100%;
   
-  /* 🔥 關鍵：強制給定高度，且加上 !important 防止被覆蓋 */
-  height: 260px !important; 
-  min-height: 260px !important;
+  /* 🔥 強制高度：確保 Leaflet 有空間渲染 */
+  height: 280px !important; 
+  min-height: 280px !important;
+  flex-shrink: 0 !important; /* 禁止被 Flexbox 壓扁 */
   
-  /* 🔥 關鍵：禁止 Flexbox 把它擠扁 */
-  flex-shrink: 0 !important; 
+  border-radius: 20px;
+  background: #eef2f0; /* 載入前底色 */
+  overflow: hidden; position: relative; margin: 4px 0;
   
-  border-radius: 16px;
-  background: #eef2f0; /* 載入前的底色 */
-  margin: 12px 0;
-  position: relative;
+  /* 內陰影質感 */
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03);
   z-index: 1;
 }
 
-/* 2. 搜尋結果容器 (填滿剩餘空間) */
+/* === 搜尋結果容器 (填滿剩餘空間) === */
 .sp-scroll {
-  /* 讓它吃掉地圖以外的所有空間 */
-  flex: 1;
-  
-  /* 確保可以滾動 */
+  flex: 1; /* 吃掉剩餘空間 */
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
   
-  /* 加上一點邊距 */
-  margin-top: 4px;
-  padding-bottom: 20px;
-  
-  /* Flexbox 防爆裂設定 */
-  min-height: 0; 
+  margin-top: 8px; padding-right: 4px;
+  min-height: 0; /* Flexbox 溢出防護 */
 }
+.sp-scroll::-webkit-scrollbar { width: 4px; }
+.sp-scroll::-webkit-scrollbar-thumb { background: #d0dcd5; border-radius: 4px; }
 
-/* 3. 搜尋結果列表 */
-#sp-results {
-  display: flex;
-  flex-direction: column;
-}
-/* 單一門市項目 */
+/* === 搜尋結果列表 === */
+#sp-results { display: flex; flex-direction: column; }
+
 .sp-item {
   padding: 16px 14px; margin-bottom: 8px;
   border-radius: 14px;
@@ -143,17 +118,12 @@
   cursor: pointer; transition: all 0.2s ease;
   display: flex; justify-content: space-between; align-items: center;
 }
-
-/* Hover & Active 效果 */
 .sp-item:hover {
   background: linear-gradient(135deg, #f5f9f7, #fff);
-  border-color: #8fb79c;
-  box-shadow: 0 4px 12px rgba(90, 123, 104, 0.08);
-  transform: translateY(-1px);
+  border-color: #8fb79c; box-shadow: 0 4px 12px rgba(90, 123, 104, 0.08); transform: translateY(-1px);
 }
 .sp-item:active { transform: scale(0.98); }
 
-/* 內容文字優化 (StorePicker.js 渲染 HTML 時會用到) */
 .sp-item b { color: #2f4b3c; font-size: 15.5px; }
 .sp-item .muted { color: #7a8c82; font-size: 13px; margin-top: 4px; display: block; }
 .sp-item .distance { 
@@ -161,38 +131,25 @@
   background: #e8f3ed; padding: 4px 8px; border-radius: 8px; 
 }
 
-/* === Leaflet Map 覆蓋樣式 (讓地圖控制項變漂亮) === */
+/* === Leaflet Map 美化 === */
 .leaflet-container { z-index: 1 !important; font-family: inherit; }
-
-/* 移除原本醜醜的方框 */
 .leaflet-control-zoom { border: none !important; box-shadow: none !important; margin-top: 12px !important; margin-right: 12px !important; }
-
-/* 圓形懸浮按鈕 */
 .leaflet-control-zoom a {
   width: 40px !important; height: 40px !important; line-height: 40px !important;
-  border-radius: 50% !important;
-  background: rgba(255, 255, 255, 0.95) !important;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.15) !important;
-  color: #2f4b3c !important;
-  font-size: 18px !important;
-  margin-bottom: 10px !important;
-  backdrop-filter: blur(4px);
+  border-radius: 50% !important; background: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15) !important; color: #2f4b3c !important;
+  font-size: 18px !important; margin-bottom: 10px !important; backdrop-filter: blur(4px);
 }
-.leaflet-control-zoom a:hover { background: #fff !important; color: #000 !important; }
-
-/* Popup 氣泡 */
 .leaflet-popup-content-wrapper {
   border-radius: 12px !important; padding: 8px !important;
   box-shadow: 0 6px 18px rgba(90, 123, 104, 0.25) !important;
 }
 .leaflet-popup-tip { box-shadow: none !important; }
 
-/* 底部安全距離 (針對 iPhone X+) */
+/* 底部安全距離 */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .sp-sheet { padding-bottom: calc(32px + env(safe-area-inset-bottom)); }
 }
-
-
 /* ============================================================
    2. Form Styles (收件資料表單 - 旗艦極致版)
    ============================================================ */
