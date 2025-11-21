@@ -48,3 +48,73 @@
   --sticky-height: 90px;      /* 底部結帳條高度 */
   --pcolor: #5a7b68;          /* Profile Bar 預設顏色 (JS 會覆蓋，但設個預設值比較安全) */
 }
+
+/* ============================================================
+   🌙 深夜茶館模式 (Midnight Zen Theme)
+   ============================================================ */
+body.night-mode {
+  /* --- 背景：深沉的墨色與茶褐色 --- */
+  --aurora-bg: #1a2622; /* 深墨綠背景 */
+  
+  /* --- 玻璃質感：變暗，帶點金光 --- */
+  --mist-glass: rgba(30, 40, 35, 0.65);
+  --mist-border: rgba(212, 175, 55, 0.2); /* 金色邊框 */
+  --mist-shadow: rgba(0, 0, 0, 0.4);
+  
+  /* --- 文字顏色：反白與金色 --- */
+  --text-primary: #e0e5e2;    /* 月光白 */
+  --text-secondary: #a0b0a5;  /* 灰綠 */
+  
+  /* --- 品牌色：轉為沈穩與奢華 --- */
+  --tea-dark: #f0f7f3;        /* 標題變亮 */
+  --tea-main: #d4af37;        /* 按鈕變金 */
+  --tea-accent: #4e6b58;      /* 裝飾變深 */
+  
+  /* --- 特殊覆蓋 --- */
+  background-color: var(--aurora-bg) !important;
+  transition: background-color 1.5s ease; /* 慢慢變暗 */
+}
+
+/* 🌙 夜間模式下的極光 (變更暗、更神祕) */
+body.night-mode .aurora-layer {
+  mix-blend-mode: overlay;
+  opacity: 0.2;
+  filter: blur(120px) saturate(150%);
+}
+
+/* 🌙 夜間模式下的卡片與區塊 */
+body.night-mode .tea-card,
+body.night-mode .section,
+body.night-mode .ai-box,
+body.night-mode .sp-sheet,
+body.night-mode .sheet,
+body.night-mode .stickybar.glassy {
+  background: rgba(40, 50, 45, 0.75);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  color: #e0e5e2;
+}
+
+/* 🌙 文字顏色強制修正 */
+body.night-mode .title,
+body.night-mode .section-title,
+body.night-mode .ai-title,
+body.night-mode .grand-total b {
+  color: #f0f7f3 !important;
+  text-shadow: 0 0 10px rgba(255,255,255,0.2);
+}
+
+body.night-mode .ai-bubble-ai {
+  background: rgba(255,255,255,0.1);
+  color: #eee;
+  border-color: rgba(255,255,255,0.2);
+}
+
+/* 🌙 按鈕變成流金風格 */
+body.night-mode .submit-btn,
+body.night-mode .ai-send-btn,
+body.night-mode .ai-assist-btn {
+  background: linear-gradient(135deg, #8e6e23, #c4a048); /* 金色漸層 */
+  color: #fff;
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+}

@@ -707,3 +707,40 @@ function showCardModal(imgUrl) {
   `;
   document.body.appendChild(modal);
 }
+
+// 🌙 切換深夜模式
+function toggleMidnightMode(enable) {
+  const body = document.body;
+  
+  if (enable) {
+    if (!body.classList.contains("night-mode")) {
+      body.classList.add("night-mode");
+      // 播放一點環境音 (選用)
+      // playAmbientSound("night_rain.mp3"); 
+      
+      // 改變 Aurora 背景顏色 (如果原本是用 inline style)
+      const bg = document.querySelector(".aurora-bg");
+      if(bg) bg.style.background = "#1a2622";
+    }
+  } else {
+    body.classList.remove("night-mode");
+    const bg = document.querySelector(".aurora-bg");
+    if(bg) bg.style.background = ""; // 還原
+  }
+}
+
+// 🕒 初始化檢查時間
+function checkTimeForMidnight() {
+  const hour = new Date().getHours();
+  // 晚上 10 點 (22) 到 早上 5 點 (5)
+  if (hour >= 22 || hour < 5) {
+    console.log("🌙 深夜茶館模式啟動...");
+    toggleMidnightMode(true);
+  }
+}
+
+// 在初始化時呼叫
+document.addEventListener("DOMContentLoaded", () => {
+  injectAIAssistButton();
+  checkTimeForMidnight(); // 👈 新增這行
+});
