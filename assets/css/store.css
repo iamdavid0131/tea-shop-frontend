@@ -1,283 +1,145 @@
 /* ============================================================
-   🏪 門市選擇、地圖、表單輸入樣式 (Flagship Edition)
+   🏪 門市選擇、地圖、表單輸入樣式 (Store & Form - 終極修復版)
    ============================================================ */
 
-/* === 1. Store Picker (地圖 Modal) === */
+/* === 1. Store Picker (地圖 Modal) - 維持原樣 === */
 #store-picker { position: fixed; inset: 0; z-index: 2000; display: none; }
 #store-picker[aria-hidden="false"] { display: block; }
-
-/* 背景霧化 */
-.sp-backdrop {
-  position: absolute; inset: 0;
-  background: rgba(30, 35, 30, 0.45);
-  backdrop-filter: blur(8px) saturate(120%);
-  transition: opacity 0.4s ease;
-}
-
-/* 主面板 */
+.sp-backdrop { position: absolute; inset: 0; background: rgba(30, 35, 30, 0.45); backdrop-filter: blur(6px); transition: opacity 0.3s ease; }
 .sp-sheet {
   position: absolute; bottom: 0; left: 0; right: 0;
-  background: rgba(255, 255, 255, 0.92);
-  border-radius: 28px 28px 0 0;
-  box-shadow: 0 -8px 32px rgba(90, 123, 104, 0.15);
-  backdrop-filter: blur(16px);
-  padding: 20px 24px 32px;
-  max-height: 85vh;
-  transform: translateY(110%);
-  transition: transform 0.4s cubic-bezier(0.25, 1, 0.3, 1);
-  display: flex; flex-direction: column; gap: 18px;
-  touch-action: pan-y;
+  background: rgba(255, 255, 255, 0.9); border-radius: 24px 24px 0 0;
+  box-shadow: 0 -8px 32px rgba(90, 123, 104, 0.15); backdrop-filter: blur(16px);
+  padding: 16px 20px 24px; max-height: 85vh;
+  transform: translateY(110%); transition: transform 0.35s cubic-bezier(0.25, 1, 0.4, 1);
+  display: flex; flex-direction: column; gap: 14px; touch-action: pan-y;
 }
 .sp-sheet.sp-open { transform: translateY(0); }
-
-/* 拉桿 */
-.sp-handle {
-  width: 48px; height: 5px;
-  background: linear-gradient(90deg, #d0dcd5, #e6f0ea);
-  border-radius: 999px; margin: 8px auto 20px; opacity: 0.9; cursor: grab;
-}
-
-/* Header & Close */
-.sp-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid rgba(180,190,185,0.3); }
-.sp-header h3 { font-size: 18px; font-weight: 700; color: #2e3e35; letter-spacing: 0.5px; }
-.sp-close { font-size: 22px; background: transparent; border: none; color: #6b7d6f; cursor: pointer; transition: transform 0.2s; }
-.sp-close:hover { transform: rotate(90deg); color: #2f4b3c; }
-
-/* Map */
-#sp-map {
-  width: 100%; height: 260px; border-radius: 16px; background: #f0f0f0;
-  overflow: hidden; position: relative; margin: 16px 0;
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);
-}
-
-/* 搜尋結果 */
-.sp-results { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; margin-top: 8px; border-radius: 16px; }
-.sp-item { padding: 14px 12px; border-bottom: 1px solid rgba(0,0,0,0.04); background: #fff; cursor: pointer; transition: background 0.2s; }
-.sp-item:hover { background: #f4f9f6; }
-
-/* Leaflet 優化 */
+.sp-handle { width: 40px; height: 4px; background: linear-gradient(90deg, #cfcfcf, #e6e6e6); border-radius: 999px; margin: 10px auto 14px; opacity: 0.9; cursor: grab; }
+.sp-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(180,190,185,0.4); padding-bottom: 4px; }
+.sp-header h3 { font-size: 17px; font-weight: 700; color: #2e3e35; }
+.sp-close { font-size: 20px; background: transparent; border: none; color: #6b7d6f; cursor: pointer; }
+#sp-map { width: 100%; height: 240px; border-radius: 12px; background: #eee; overflow: hidden; position: relative; margin: 12px 0; }
+.sp-results { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; margin-top: 6px; border-radius: 14px; }
+.sp-item { padding: 12px 10px; border-bottom: 1px solid rgba(0,0,0,0.06); background: #fff; cursor: pointer; }
+.sp-item:hover { background: #f2f8ff; }
 .leaflet-container { z-index: 1 !important; font-family: inherit; }
-.leaflet-control-zoom a {
-  width: 40px !important; height: 40px !important; line-height: 40px !important;
-  border-radius: 50% !important; background: rgba(255,255,255,0.95) !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12) !important; color: #333 !important; margin-bottom: 12px !important;
-}
+.leaflet-control-zoom { border: none !important; box-shadow: none !important; }
+.leaflet-control-zoom a { width: 36px !important; height: 36px !important; line-height: 36px !important; border-radius: 50% !important; background: #fff !important; box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; color: #333 !important; margin-bottom: 10px !important; }
+.leaflet-popup-content-wrapper { border-radius: 14px; padding: 10px; }
 
-/* === 2. Form Styles (表單核心樣式) === */
 
-/* 區塊容器 (玻璃卡片) */
+/* === 2. Form Styles (表單樣式 - 強制美化) === */
+
+/* 區塊容器 */
 .section {
-  box-sizing: border-box; 
-  padding: 28px 24px 32px; 
-  margin: 24px 0; 
-  border-radius: 20px;
-  
-  /* 高級玻璃質感 */
-  background: rgba(255, 255, 255, 0.75); 
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 
-    0 8px 32px rgba(90, 123, 104, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
-    
-  backdrop-filter: blur(16px) saturate(120%);
-  opacity: 0; animation: sectionFade 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  box-sizing: border-box; padding: 24px 20px 28px; margin: 20px 0; border-radius: 20px;
+  background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 14px rgba(90, 123, 104, 0.06); backdrop-filter: blur(12px);
+  animation: sectionFade 0.6s forwards;
 }
-@keyframes sectionFade { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes sectionFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-/* 區塊標題 */
-.section-title {
-  font-size: 22px; font-weight: 800; color: #2a3a32; margin: 0 0 24px; position: relative; letter-spacing: 1px;
-}
-/* 金茶流光底線 */
-.section-title::after {
-  content: ""; display: block; width: 48px; height: 4px;
-  background: linear-gradient(90deg, #a8b78f 0%, #c7d6b3 100%);
-  border-radius: 999px; margin-top: 8px; opacity: 0.9; transition: width 0.4s ease;
-}
-.section:hover .section-title::after { width: 72px; }
+/* 標題 */
+.section-title { font-size: 21px; font-weight: 800; color: #2a3a32; margin: 0 0 20px; position: relative; }
+.section-title::after { content: ""; display: block; width: 48px; height: 3px; background: linear-gradient(90deg, #a8b78f 0%, #c7d6b3 100%); border-radius: 999px; margin-top: 6px; opacity: 0.9; transition: width 0.3s; }
+.section:hover .section-title::after { width: 68px; }
 
-/* 表單間距優化 */
-.form-group { margin-bottom: 22px; } /* 加大間距，不擠 */
-.form-group label { 
-  font-size: 16px; font-weight: 700; color: #305c46; 
-  display: block; margin-bottom: 10px; letter-spacing: 0.5px; 
-}
-.form-group .muted { 
-  font-size: 13.5px; color: #7a8c82; margin-top: 6px; display: block; font-weight: 400; 
+/* 表單標籤 */
+.sp-label, .form-group label {
+  font-size: 16px; font-weight: 700; color: #305c46; display: block; margin-bottom: 8px; letter-spacing: 0.5px;
 }
 
-/* 輸入框與選單 (共用) */
-.section input[type="text"],
-.section input[type="tel"],
-.section input[type="number"],
+/* 🔥 輸入框與選單 (強制統一風格) */
+.section input:not([type="radio"]):not([type="checkbox"]),
 .section select,
 .section textarea,
 .sp-input, .sp-select {
-  width: 100%; 
-  font-size: 16px; 
-  padding: 14px 18px; 
-  border-radius: 14px;
-  
-  /* 霧面背景 */
-  border: 1.5px solid rgba(170, 190, 180, 0.45); 
-  background: rgba(255, 255, 255, 0.6);
-  
-  color: #2b3b33; 
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
-  box-sizing: border-box;
+  width: 100%; height: 48px; /* 統一高度 */
+  font-size: 16px; padding: 0 16px; border-radius: 12px;
+  border: 1.5px solid rgba(170, 190, 180, 0.55); background: rgba(255, 255, 255, 0.7);
+  color: #2b2b2b; transition: all 0.3s ease; box-sizing: border-box;
   appearance: none; -webkit-appearance: none;
-  
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+  display: block; /* 確保佔滿 */
 }
 
-/* 聚焦動畫 (茶湯暈染) */
-.section input:focus, 
-.section select:focus, 
-.section textarea:focus,
-.sp-input:focus, .sp-select:focus {
-  border-color: #5a7b68;
-  background: rgba(255, 255, 255, 0.95);
-  box-shadow: 
-    0 0 0 4px rgba(90, 123, 104, 0.15),
-    0 4px 12px rgba(90, 123, 104, 0.08);
-  outline: none;
-  transform: translateY(-1px);
+/* 輸入框聚焦 */
+.section input:focus, .section select:focus, .section textarea:focus {
+  border-color: #5a7b68; background: #fff;
+  box-shadow: 0 0 0 4px rgba(90, 123, 104, 0.12); outline: none;
 }
 
 /* Textarea */
-textarea.sp-input { min-height: 120px; resize: vertical; line-height: 1.6; }
+.section textarea { height: auto; min-height: 100px; padding: 12px 16px; line-height: 1.6; }
 
-/* 下拉箭頭 (更精緻) */
-.sp-select {
+/* 下拉箭頭 */
+.section select, .sp-select {
   background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%235a7b68' stroke-width='1' d='M1 2l5 5 5-5'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 18px center; padding-right: 40px;
+  background-repeat: no-repeat; background-position: right 16px center; padding-right: 36px;
 }
 
-/* 優惠碼按鈕 */
-.promo-row { display: flex; gap: 12px; align-items: center; margin-bottom: 22px; }
-.promo-row button {
-  flex-shrink: 0; padding: 0 20px; height: 50px; /* 對齊 Input 高度 */
-  font-weight: 600; color: #fff; border: none; border-radius: 14px;
-  background: linear-gradient(135deg, #7fa38a, #9bbba6);
-  box-shadow: 0 4px 12px rgba(90,123,104,0.2); cursor: pointer;
-  transition: all 0.25s ease; letter-spacing: 1px;
-}
-.promo-row button:hover { transform: translateY(-2px); background: linear-gradient(135deg, #6d8f79, #8db09a); box-shadow: 0 6px 16px rgba(90,123,104,0.3); }
 
+/* === 3. 運送方式 & 超商欄位 (Layout Fix) === */
 
-/* === 3. 運送方式選擇 (視覺優化) === */
-.ship-options { 
-  display: flex; justify-content: center; gap: 18px; margin-top: 8px; margin-bottom: 28px; 
-}
-
+/* 運送按鈕 (Radio Cards) */
+.ship-options { display: flex; justify-content: center; gap: 14px; margin-bottom: 24px; }
 .ship-radio {
-  position: relative; display: flex; align-items: center; justify-content: center;
-  padding: 14px 32px; border-radius: 16px; font-size: 16px; font-weight: 600;
-  
-  /* 未選中：極簡白 */
-  background: rgba(255,255,255,0.5); 
-  border: 1.5px solid rgba(200,210,205,0.6);
-  color: #66776e; 
-  
-  cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  flex: 1; text-align: center;
+  flex: 1; position: relative; display: flex; align-items: center; justify-content: center;
+  padding: 14px 0; border-radius: 14px; font-size: 16px; font-weight: 600;
+  background: rgba(255,255,255,0.5); border: 1.5px solid rgba(200,210,205,0.5);
+  color: #66776e; cursor: pointer; transition: all 0.3s;
 }
-
-/* 選中狀態：茶光膠囊 */
 .ship-radio:has(input:checked) {
-  border-color: transparent;
-  background: linear-gradient(135deg, #f0f7f3 0%, #e6f0ea 100%);
-  color: #2f4b3c;
-  box-shadow: 
-    0 4px 12px rgba(90, 123, 104, 0.15),
-    inset 0 0 0 1.5px #8fb79c; /* 內光暈邊框 */
-  transform: translateY(-1px);
+  border-color: #8fb79c; background: linear-gradient(135deg, #f0f7f3, #ffffff);
+  color: #2f4b3c; box-shadow: 0 4px 12px rgba(90, 123, 104, 0.15); transform: translateY(-1px);
 }
-
-/* 選中時的流光動畫 */
-.ship-radio:has(input:checked)::after {
-  content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-  background: linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0) 100%);
-  transform: skewX(-25deg); animation: radioShine 3s infinite;
-}
-@keyframes radioShine { 0% { left: -100%; opacity: 0; } 20% { left: 200%; opacity: 1; } 100% { left: 200%; opacity: 0; } }
-
 .ship-radio input { display: none; }
 
-
-/* === 3.1 超商與宅配欄位佈局 (Layout) === */
-.store-form, .delivery-form {
-  animation: formSlideDown 0.5s ease forwards;
+/* 🔥【關鍵修復】Store Row 排版智慧調整 */
+/* 預設：橫向排列 (給 Select + Button 用) */
+.store-row {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
 }
-@keyframes formSlideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* 選擇超商 Row */
-.store-row { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+/* 變體：如果是「標籤 + 輸入框」的組合，改為直排，避免擠壓 */
+.store-row:has(label) {
+  flex-direction: column; align-items: stretch; gap: 6px;
+}
 
-/* 附近門市按鈕 (強調) */
+/* 附近門市按鈕 (美化) */
 .sp-search-title {
-  flex-shrink: 0; height: 50px; padding: 0 20px; font-weight: 600; color: #fff;
-  background: linear-gradient(135deg, #5a7b68, #7fa38a);
-  border: none; border-radius: 14px;
-  box-shadow: 0 4px 12px rgba(90,123,104,0.2); cursor: pointer; transition: all 0.3s;
+  flex-shrink: 0; height: 48px; padding: 0 18px; font-weight: 600; color: #fff;
+  background: linear-gradient(135deg, #5a7b68, #7fa38a); border: none; border-radius: 12px;
+  box-shadow: 0 3px 8px rgba(90,123,104,0.2); cursor: pointer; white-space: nowrap;
 }
-.sp-search-title:hover { transform: translateY(-2px); background: linear-gradient(135deg, #4e6b58, #6d8f79); box-shadow: 0 6px 16px rgba(90,123,104,0.3); }
+.sp-search-title:hover { transform: translateY(-1px); background: linear-gradient(135deg, #4e6b58, #6d8f79); }
 
-/* 宅配兩欄並排 (更寬鬆) */
+
+/* === 4. 宅配欄位 (Layout) === */
 .delivery-row {
-  display: flex; gap: 0; align-items: flex-end;
+  display: flex; gap: 0; align-items: flex-end; margin-bottom: 16px;
   border: 1.5px solid rgba(170, 190, 180, 0.45); border-radius: 14px;
-  overflow: hidden; background: rgba(255, 255, 255, 0.8); margin-bottom: 22px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  overflow: hidden; background: rgba(255, 255, 255, 0.6);
 }
-.delivery-col { flex: 1; display: flex; flex-direction: column; padding: 16px 18px; position: relative; }
+.delivery-col { flex: 1; display: flex; flex-direction: column; padding: 12px 16px; position: relative; }
 /* 中隔線 */
 .delivery-col:first-child::after {
   content: ""; position: absolute; top: 15%; right: 0; width: 1px; height: 70%;
   background: rgba(160, 180, 165, 0.3);
 }
-.delivery-col .sp-label { font-size: 14px; margin-bottom: 6px; color: #506b58; }
-.delivery-col .sp-select { 
-  border: none; background: transparent; padding: 4px 0; height: auto; 
-  box-shadow: none; font-size: 16px; font-weight: 600; color: #2f4b3c;
-}
-.delivery-col .sp-select:focus { box-shadow: none; transform: none; background: transparent; }
+/* 移除框線，融入背景 */
+.delivery-col select { border: none; background: transparent; padding-left: 0; height: auto; box-shadow: none; font-weight: 600; }
+.delivery-col select:focus { box-shadow: none; background: transparent; }
+.delivery-col label { font-size: 13px; margin-bottom: 2px; color: #6b7d6f; }
 
 
-/* === 6. Recent Address (常用地址 - 膠囊風) === */
-.recent-box {
-  background: rgba(255,255,255,0.65); border: 1px dashed rgba(180, 190, 180, 0.5);
-  border-radius: 18px; padding: 20px; margin-bottom: 32px;
-  backdrop-filter: blur(8px);
-}
-.recent-box.hidden { display: none !important; }
-
-.recent-title { 
-  font-weight: 700; font-size: 15px; color: #506b58; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
-}
-.recent-title::before { content: "⚡"; font-size: 14px; }
-
-.recent-tabs { display: flex; gap: 8px; margin-bottom: 14px; background: rgba(0,0,0,0.03); padding: 4px; border-radius: 12px; }
-.recent-tab {
-  flex: 1; padding: 8px 0; text-align: center; font-weight: 600; color: #6b7d6f; font-size: 14px;
-  background: transparent; border: none; border-radius: 10px; cursor: pointer; transition: all 0.25s;
-}
-.recent-tab.active {
-  background: #fff; color: #2f4b3c; box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+/* === 5. 優惠碼 & 其他 === */
+.promo-row { display: flex; gap: 8px; align-items: center; }
+.promo-row button {
+  flex-shrink: 0; height: 48px; padding: 0 18px; font-weight: 600; color: #fff;
+  background: linear-gradient(135deg, #7fa38a, #a4c3ae); border: none; border-radius: 12px; cursor: pointer;
 }
 
-.recent-item {
-  background: #fff; border-radius: 12px; padding: 14px 16px;
-  margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; gap: 12px;
-  border: 1px solid rgba(0,0,0,0.05); transition: all 0.25s;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-}
-.recent-item:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(90, 80, 60, 0.08); border-color: #8fb79c; }
-
-/* 錯誤訊息 */
-.error-msg { 
-  color: #e74c3c; font-size: 13px; margin-top: 6px; display: none; font-weight: 500;
-  padding-left: 2px; animation: shake 0.4s ease;
-}
-.error-msg.show { display: block; }
-@keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-4px);} 75%{transform:translateX(4px);} }
+.error-msg { color: #c9544d; font-size: 13px; margin-top: 4px; display: none; padding-left: 4px; }
+.error-msg.show { display: block; animation: fadeIn 0.3s; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-2px); } to { opacity: 1; transform: translateY(0); } }
