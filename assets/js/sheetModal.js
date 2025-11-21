@@ -79,24 +79,50 @@ export async function showCartSheet() {
   });
 
   // 金額試算
+  // 金額試算
   try {
-    const preview = await api.previewTotals(items, "store", promoCode);
+    // 🔥【優化 1】預填：先偷看 StickyBar 已經算好的數字 (讓體感變快)
+    if (document.getElementById("total_s")) {
+      $("cartTotal").textContent = $("total_s").textContent;
+      $("cartShip").textContent = $("ship_s").textContent;
+      // 小計跟折扣也順便偷看一下
+      $("cartSub").textContent = $("sub_s").textContent;
+      // 如果 StickyBar 有顯示折扣，這裡也先顯示
+      const stickyDisc = $("disc_s").textContent;
+      if (stickyDisc && stickyDisc !== "—" && stickyDisc !== "NT$ 0") {
+         $("cartDiscRow").style.display = "flex";
+         $("cartDisc").textContent = `- ${stickyDisc}`;
+      }
+    }
+
+    // 🔥【關鍵修正 1】動態抓取目前勾選的運送方式 (跟 cart.js 邏輯同步)
+    // 如果找不到 radio (例如還沒 render)，就預設 "store"
+    const selectedShip = document.querySelector("input[name='shipping']:checked")?.value || "store";
+    
+    // 呼叫後端
+    const preview = await api.previewTotals(items, selectedShip, promoCode);
     const data = preview.data || preview;
 
+    // 更新準確數值
     $("cartSub").textContent = `NT$ ${(data.subtotal || 0).toLocaleString("zh-TW")}`;
     
+    // ✅【補回折扣邏輯】
     if($("cartDiscRow")) {
-        $("cartDiscRow").style.display = data.discount > 0 ? "flex" : "none";
-        $("cartDisc").textContent = data.discount > 0 ? `- NT$ ${data.discount.toLocaleString("zh-TW")}` : "";
+        // 只有當折扣大於 0 時才顯示這一行
+        const hasDiscount = data.discount > 0;
+        $("cartDiscRow").style.display = hasDiscount ? "flex" : "none";
+        $("cartDisc").textContent = hasDiscount ? `- NT$ ${data.discount.toLocaleString("zh-TW")}` : "";
     }
     
-    // 🔥【關鍵修正】這裡要同時檢查 shippingFee 和 shipping
-    // 後端回傳的 data 物件裡，欄位名稱是 "shipping"
+    // ✅【運費修正】兼容 shipping / shippingFee
     const shipFee = data.shippingFee ?? data.shipping ?? 0;
     $("cartShip").textContent = `NT$ ${shipFee.toLocaleString("zh-TW")}`;
 
-    $("cartTotal").textContent = `NT$ ${(data.total || 0).toLocaleString("zh-TW")}`;
+    // 總金額
+    const total = data.total ?? data.totalAfterDiscount ?? 0;
+    $("cartTotal").textContent = `NT$ ${total.toLocaleString("zh-TW")}`;
 
+    // 優惠碼提示
     $("promoMsg").textContent =
       promoCode && data.discount > 0 ? `🎉 已套用優惠碼：${promoCode}` : 
       promoCode ? "❌ 無效的優惠碼" : "";

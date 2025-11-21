@@ -7,7 +7,7 @@
    ============================================================ */
 
 .stickybar {
-  overflow: hidden !important;
+  overflow: visible !important;
   position: fixed; 
   bottom: 20px; /* 懸浮距離 */
   left: 16px; 
@@ -146,10 +146,13 @@
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  height: 4px; /* 極細 */
-  background: transparent;
-  border-radius: 24px 24px 0 0; /* 跟隨卡片圓角 */
+  width: 100%;
+  height: 4px; /* 細一點 */
+  background: rgba(0, 0, 0, 0.05);
+  z-index: 10;
+  
+  /* 🔥 關鍵：這裡設圓角 + hidden，才不會切到氣泡 */
+  border-radius: 24px 24px 0 0; 
   overflow: hidden;
 }
 

@@ -130,31 +130,30 @@ export async function updateTotals() {
   stickyBar.classList.remove("hide");
 
   try {
-    // 4. 呼叫後端試算
-    // 這裡 shippingMethod 傳空字串或預設值，讓後端回傳預設運費
-    const preview = await api.previewTotals(items, "store", "");
+    // 🔥【關鍵修正 1】抓取目前勾選的運送方式，而不是寫死 "store"
+    // 邏輯：先找有沒有被勾選的 radio，沒有的話預設 "store"
+    const selectedShip = document.querySelector("input[name='shipping']:checked")?.value || "store";
+    const promoCode = document.getElementById("promoCode")?.value || "";
+
+    // 🔥【關鍵修正 2】呼叫後端時傳入正確參數
+    const preview = await api.previewTotals(items, selectedShip, promoCode);
     const data = preview?.data ?? preview ?? {};
 
+    // Debug: 看看後端回傳了什麼
+    // console.log("💰 試算結果:", data);
+
+    // 顯示金額 (使用後端回傳的正確運費)
     const fmt = n => `NT$ ${Number(n || 0).toLocaleString("zh-TW")}`;
     
-    // --- 🔥 修正點開始：兼容各種變數名稱 ---
-    
-    // 小計
     if($("sub_s")) $("sub_s").textContent = fmt(data.subtotal);
-    
-    // 折扣
     if($("disc_s")) $("disc_s").textContent = fmt(data.discount);
     
-    // 運費 (同時檢查 shipping 和 shippingFee)
     const shipVal = data.shipping ?? data.shippingFee ?? 0;
     if($("ship_s")) $("ship_s").textContent = fmt(shipVal);
     
-    // 總金額 (同時檢查 total 和 totalAfterDiscount)
     const totalVal = data.total ?? data.totalAfterDiscount ?? 0;
     if($("total_s")) $("total_s").textContent = fmt(totalVal);
     
-    // --- 🔥 修正點結束 ---
-
     animateMoney();
 
     // 5. 控制折扣標籤顯示
