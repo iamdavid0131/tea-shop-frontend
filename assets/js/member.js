@@ -14,235 +14,268 @@ export function initMemberLookup() {
   const recentList = recentBox?.querySelector(".recent-list");
 
   // 預設隱藏常用收件地區塊
-if (recentBox) {
-recentBox.classList.add("hidden");
-}
-
+  if (recentBox) {
+    recentBox.classList.add("hidden");
+  }
 
   if (!phoneInput) return;
 
-  // 🔍 會員查詢
-async function lookup() {
-  const phone = phoneInput.value.trim();
-  if (!phone || phone.length < 8) return;
+  // 🔍 會員查詢核心函式
+  async function lookup() {
+    const phone = phoneInput.value.trim();
+    // 台灣手機號碼基本驗證 (09開頭, 10碼) 或市話
+    if (!phone || phone.length < 8) return;
 
-  phoneInput.disabled = true;
-  phoneInput.classList.add("loading");
+    // 避免重複查詢 (若值未變)
+    if (phoneInput.dataset.lastQuery === phone) return;
+    phoneInput.dataset.lastQuery = phone;
 
-  try {
-    const res = await api.memberSearch(phone);
-    const d = res?.data || {};
-    const stores = Array.isArray(d.recentStores) ? d.recentStores : [];
-    const addresses = Array.isArray(d.recentAddresses) ? d.recentAddresses : [];
+    phoneInput.disabled = true;
+    phoneInput.classList.add("loading"); // CSS 需配合顯示轉圈圈或變色
 
-    if (res?.ok && d) {
-      if (nameInput) nameInput.value = d.name || "";
-      if (addressInput) addressInput.value = d.address || "";
-      if (storeNameInput) storeNameInput.value = d.storeName || "";
+    try {
+      const res = await api.memberSearch(phone);
+      const d = res?.data || {};
+      const stores = Array.isArray(d.recentStores) ? d.recentStores : [];
+      const addresses = Array.isArray(d.recentAddresses) ? d.recentAddresses : [];
 
-      // ✅ 超商下拉自動設定
-      if (carrierSelect && d.storeName) {
-        const n = d.storeName.toLowerCase();
-        if (n.includes("7")) carrierSelect.value = "7-11";
-        else if (n.includes("family")) carrierSelect.value = "familymart";
-        else if (n.includes("hi")) carrierSelect.value = "hilife";
-      }
+      if (res?.ok && d && (d.name || d.address || stores.length || addresses.length)) {
+        if (nameInput && d.name) nameInput.value = d.name;
+        if (addressInput && d.address) addressInput.value = d.address;
+        if (storeNameInput && d.storeName) storeNameInput.value = d.storeName;
 
-      // ✅ 有資料才渲染
-      if (stores.length > 0 || addresses.length > 0) {
-        renderRecents(stores, addresses);
-        toast(`📦 已載入會員資料：${d.name || ""}`);
+        // ✅ 超商下拉自動設定 (更嚴謹的判斷)
+        if (carrierSelect && d.storeName) {
+          const n = String(d.storeName).toLowerCase();
+          if (n.includes("7") || n.includes("seven")) carrierSelect.value = "7-11";
+          else if (n.includes("family") || n.includes("全家")) carrierSelect.value = "familymart";
+          else if (n.includes("hi") || n.includes("萊爾富")) carrierSelect.value = "hilife";
+        }
+
+        // ✅ 有資料才渲染
+        if (stores.length > 0 || addresses.length > 0) {
+          renderRecents(stores, addresses);
+          toast(`📦 歡迎回來，${d.name || "老朋友"}！`);
+          
+          // ✨ UX 優化：自動滾動到常用地址區塊，讓使用者看到
+          setTimeout(() => {
+            recentBox?.scrollIntoView({ behavior: "smooth", block: "center" });
+          }, 500);
+
+        } else {
+          recentBox?.classList.add("hidden");
+          // 如果有名字但沒地址，也提示一下
+          if (d.name) toast(`👋 嗨 ${d.name}，這是您的第一次線上訂購嗎？`);
+        }
       } else {
+        // 查無資料 (可能是新客)
+        // toast("ℹ️ 這是新電話號碼，將為您建立新會員"); // Optional: 不一定要跳提示，以免干擾
         recentBox?.classList.add("hidden");
-        toast(`📞 ${d.name || "會員"} 無常用地址`);
       }
-    } else {
-      toast("⚠️ 查無此電話會員");
+    } catch (err) {
+      console.error("查詢會員資料失敗:", err);
+      // toast("⚠️ 網路不穩，無法自動帶入資料"); // Optional
       recentBox?.classList.add("hidden");
+    } finally {
+      phoneInput.disabled = false;
+      phoneInput.classList.remove("loading");
+      // 查詢後讓焦點回到姓名欄位 (方便繼續填寫)
+      if (!nameInput.value) nameInput.focus();
     }
-  } catch (err) {
-    console.error("查詢會員資料失敗:", err);
-    toast("⚠️ 查詢失敗");
-    recentBox?.classList.add("hidden");
   }
 
-  phoneInput.disabled = false;
-  phoneInput.classList.remove("loading");
-}
+  // 📦 渲染常用地區（依最近使用時間排序）
+  // 📦 渲染常用地區（初始化）
+  function renderRecents(stores = [], addresses = []) {
+    if (!recentBox || !recentList) return;
 
-// 📦 渲染常用地區（依最近使用時間排序）
-function renderRecents(stores = [], addresses = []) {
-  if (!recentBox || !recentList) return;
+    // 資料處理... (維持原樣)
+    stores = Array.isArray(stores) ? stores : [];
+    addresses = Array.isArray(addresses) ? addresses : [];
+    
+    const sortByRecent = (arr) =>
+      [...arr].sort((a, b) => new Date(b.updatedAt || b.time || 0) - new Date(a.updatedAt || a.time || 0));
+    stores = sortByRecent(stores);
+    addresses = sortByRecent(addresses);
 
-  // ✅ 安全轉陣列
-  stores = Array.isArray(stores) ? stores : [];
-  addresses = Array.isArray(addresses) ? addresses : [];
-
-  // ✅ 按時間排序（新的在前）
-  const sortByRecent = (arr) =>
-    [...arr].sort((a, b) => new Date(b.updatedAt || b.time || 0) - new Date(a.updatedAt || a.time || 0));
-
-  stores = sortByRecent(stores);
-  addresses = sortByRecent(addresses);
-
-  // ✅ 無資料則隱藏
-  if (stores.length === 0 && addresses.length === 0) {
-    recentBox.classList.add("hidden");
-    return;
-  }
-
-  // ✅ 平滑顯示區塊
-  recentBox.classList.remove("hidden");
-  recentList.innerHTML = "";
-
-  // 預設顯示「超商」
-  let currentType = "store";
-  renderList(currentType);
-
-  const tabBtns = recentBox.querySelectorAll(".recent-tab");
-  tabBtns.forEach((btn) => {
-    btn.onclick = () => {
-      tabBtns.forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-      currentType = btn.dataset.type;
-      renderList(currentType);
-    };
-  });
-
-  function renderList(type) {
-    recentList.innerHTML = "";
-    const list = type === "store" ? stores : addresses;
-
-    if (list.length === 0) {
-      recentList.innerHTML = `<div class="empty-tip">尚無常用${type === "store" ? "門市" : "地址"} ☕</div>`;
+    if (stores.length === 0 && addresses.length === 0) {
+      recentBox.classList.add("hidden");
       return;
     }
 
-    list.forEach((r) => renderRecentItem(r, type));
-  }
-}
+    // ✅ 顯示區塊
+    recentBox.classList.remove("hidden");
+    
+    // 🔥 新增：初始化標題的「選中提示」元素 (如果還沒有的話)
+    let hintSpan = recentBox.querySelector(".selected-hint");
+    if (!hintSpan) {
+      const title = recentBox.querySelector(".recent-title");
+      hintSpan = document.createElement("span");
+      hintSpan.className = "selected-hint";
+      title.appendChild(hintSpan);
+      
+      // 🔥 綁定標題點擊事件：切換收合/展開
+      title.onclick = () => {
+        recentBox.classList.toggle("collapsed");
+      };
+    }
+    // 重置提示文字
+    hintSpan.textContent = ""; 
+    recentBox.classList.remove("collapsed"); // 剛載入時預設展開
 
-// 🏪 單筆項目渲染（新增時間標籤）
-function renderRecentItem(r, type) {
-  const div = document.createElement("div");
-  div.className = "recent-item";
+    recentList.innerHTML = "";
 
-  // 🕓 時間格式化
-  const lastUsed = r.updatedAt || r.time;
-  const timeLabel = lastUsed
-    ? new Date(lastUsed).toLocaleString("zh-TW", {
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : "";
+    // 預設 Tab 邏輯 (維持原樣)
+    let currentType = stores.length > 0 ? "store" : "address";
+    
+    const tabBtns = recentBox.querySelectorAll(".recent-tab");
+    tabBtns.forEach(b => {
+        if(b.dataset.type === currentType) b.classList.add("active");
+        else b.classList.remove("active");
+    });
 
-  div.innerHTML = `
-    <span class="icon">${type === "store" ? "🏪" : "📦"}</span>
-    <span class="text">${
-      type === "store"
-        ? `${r.carrier?.toUpperCase() || ""} ${r.name || ""}`
-        : r.address || ""
-    }</span>
-    ${timeLabel ? `<span class="time-tag">${timeLabel}</span>` : ""}
-  `;
+    renderList(currentType);
 
-  // ✅ 點擊行為
-  div.onclick = () => {
-    if (type === "store") {
-      if (carrierSelect) carrierSelect.value = r.carrier.toLowerCase();
-      if (storeNameInput) storeNameInput.value = r.name;
+    // Tab 切換事件
+    tabBtns.forEach((btn) => {
+      btn.onclick = (e) => {
+        e.preventDefault();
+        tabBtns.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentType = btn.dataset.type;
+        renderList(currentType);
+      };
+    });
 
-      const shipRadio = document.querySelector("input[value='store']");
-      if (shipRadio) {
-        shipRadio.checked = true;
-        shipRadio.dispatchEvent(new Event("change"));
+    function renderList(type) {
+      recentList.innerHTML = "";
+      const list = type === "store" ? stores : addresses;
+      if (list.length === 0) {
+        recentList.innerHTML = `<div class="empty-tip">尚無常用${type === "store" ? "門市" : "地址"} ☕</div>`;
+        return;
       }
+      list.forEach((r) => renderRecentItem(r, type));
+    }
+  }
 
-      toast(`🏪 已套用門市：${r.carrier} ${r.name}`);
-    } else {
-      if (addressInput) addressInput.value = r.address;
+  // 🏪 單筆項目渲染
+  // 🏪 單筆項目渲染
+  function renderRecentItem(r, type) {
+    const div = document.createElement("div");
+    div.className = "recent-item";
 
-      // 縣市／行政區自動帶入（保留原邏輯）
-      if (citySelect && districtSelect && r.address) {
-        const match = r.address.match(/^(.{2,3}(市|縣))(.{1,4}(區|鄉|鎮))/);
-        if (match) {
-          const cityFull = match[1];
-          const districtFull = match[3];
-          const cityShort = cityFull.replace(/市|縣/g, "");
-          const districtShort = districtFull.replace(/區|鄉|鎮/g, "");
-          const normalize = (s) => s.replace("臺", "台").replace(/\s/g, "");
+    const lastUsed = r.updatedAt || r.time;
+    const timeLabel = lastUsed
+      ? new Date(lastUsed).toLocaleDateString("zh-TW", { month: "numeric", day: "numeric" })
+      : "";
 
-          let cityRetry = 0;
-          const trySelectCity = setInterval(() => {
-            const cityOpts = Array.from(citySelect.options);
-            if (cityOpts.length > 1) {
-              const cityOption = cityOpts.find((opt) => {
+    const icon = type === "store" ? "🏪" : "📦";
+    // 為了顯示方便，這裡存一個簡短名稱
+    const shortName = type === "store" ? r.name : r.address.substring(0, 6) + "..."; 
+    const content = type === "store" 
+        ? `<span style="font-weight:700; margin-right:4px;">${(r.carrier || "").toUpperCase()}</span> ${r.name || ""}`
+        : r.address || "";
+
+    div.innerHTML = `
+      <span class="icon">${icon}</span>
+      <span class="text">${content}</span>
+      ${timeLabel ? `<span style="font-size:12px; color:#999; margin-left:auto;">${timeLabel}</span>` : ""}
+    `;
+
+    // ✅ 點擊行為
+    div.onclick = () => {
+      if (type === "store") {
+        if (carrierSelect) carrierSelect.value = (r.carrier || "").toLowerCase();
+        if (storeNameInput) storeNameInput.value = r.name || "";
+        const shipRadio = document.querySelector("input[value='store']");
+        if (shipRadio) { shipRadio.checked = true; shipRadio.dispatchEvent(new Event("change")); }
+        toast(`🏪 已套用門市：${r.name}`);
+      } else {
+        if (addressInput) addressInput.value = r.address;
+        autoSelectAddress(r.address);
+        const shipRadio = document.querySelector("input[value='cod']");
+        if (shipRadio) { shipRadio.checked = true; shipRadio.dispatchEvent(new Event("change")); }
+        toast(`📦 已套用地址`);
+      }
+      
+      // 高亮動畫
+      div.classList.add("highlight");
+      setTimeout(() => div.classList.remove("highlight"), 600);
+
+      // 🔥 關鍵修改：不隱藏 (hidden)，改為收合 (collapsed)
+      // 並更新標題文字，讓使用者知道現在選了什麼
+      setTimeout(() => {
+        recentBox.classList.add("collapsed");
+        const hint = recentBox.querySelector(".selected-hint");
+        if (hint) hint.textContent = `(已選：${shortName})`;
+      }, 400);
+    };
+
+    recentList.appendChild(div);
+  }
+
+  // 🛠️ 地址自動選取邏輯 (獨立函式，保持乾淨)
+  function autoSelectAddress(fullAddress) {
+    if (!citySelect || !districtSelect || !fullAddress) return;
+
+    const match = fullAddress.match(/^(.{2,3}(市|縣))(.{1,4}(區|鄉|鎮))/);
+    if (!match) return;
+
+    const cityFull = match[1];
+    const districtFull = match[3];
+    const cityShort = cityFull.replace(/市|縣/g, "");
+    const districtShort = districtFull.replace(/區|鄉|鎮/g, "");
+    
+    // 正規化：台/臺、去空白
+    const normalize = (s) => s.replace(/臺/g, "台").replace(/\s/g, "").trim();
+
+    // 1. 選縣市
+    const trySelectCity = setInterval(() => {
+      const cityOpts = Array.from(citySelect.options);
+      if (cityOpts.length <= 1) return; // 選單還沒載入
+
+      const cityOption = cityOpts.find((opt) => {
+        const val = normalize(opt.value);
+        const text = normalize(opt.text);
+        const target = normalize(cityFull);
+        const targetShort = normalize(cityShort);
+        return val === target || text === target || val === targetShort || text === targetShort;
+      });
+
+      if (cityOption) {
+        citySelect.value = cityOption.value;
+        citySelect.dispatchEvent(new Event("change")); // 觸發載入行政區
+        clearInterval(trySelectCity);
+
+        // 2. 選行政區 (巢狀等待)
+        let districtRetry = 0;
+        const trySelectDistrict = setInterval(() => {
+          const districtOpts = Array.from(districtSelect.options);
+          // 確保行政區選單已更新 (不僅僅是預設選項)
+          if (districtOpts.length > 1 && districtOpts[1].value) {
+             const districtOption = districtOpts.find((opt) => {
                 const val = normalize(opt.value);
                 const text = normalize(opt.text);
-                return (
-                  val === normalize(cityFull) ||
-                  text === normalize(cityFull) ||
-                  val === normalize(cityShort) ||
-                  text === normalize(cityShort)
-                );
-              });
-              if (cityOption) {
-                citySelect.value = cityOption.value;
-                citySelect.dispatchEvent(new Event("change"));
-                clearInterval(trySelectCity);
+                const target = normalize(districtFull);
+                const targetShort = normalize(districtShort);
+                return val === target || text === target || val === targetShort || text === targetShort;
+             });
 
-                let districtRetry = 0;
-                const trySelectDistrict = setInterval(() => {
-                  const districtOpts = Array.from(districtSelect.options);
-                  if (districtOpts.length > 1) {
-                    const districtOption = districtOpts.find((opt) => {
-                      const val = normalize(opt.value);
-                      const text = normalize(opt.text);
-                      return (
-                        val === normalize(districtFull) ||
-                        text === normalize(districtFull) ||
-                        val === normalize(districtShort) ||
-                        text === normalize(districtShort)
-                      );
-                    });
-                    if (districtOption) {
-                      districtSelect.value = districtOption.value;
-                      districtSelect.dispatchEvent(new Event("change"));
-                      clearInterval(trySelectDistrict);
-                    }
-                  }
-                  if (++districtRetry > 20) clearInterval(trySelectDistrict);
-                }, 100);
-              }
-            }
-            if (++cityRetry > 20) clearInterval(trySelectCity);
-          }, 100);
-        }
-        const trimmed = r.address.replace(/^.{2,3}(市|縣).{1,4}(區|鄉|鎮)/, "");
-        addressInput.value = trimmed.trim();
+             if (districtOption) {
+               districtSelect.value = districtOption.value;
+               districtSelect.dispatchEvent(new Event("change"));
+               clearInterval(trySelectDistrict);
+             }
+          }
+          if (++districtRetry > 20) clearInterval(trySelectDistrict); // 2秒超時
+        }, 100);
       }
+    }, 100);
 
-      const shipRadio = document.querySelector("input[value='cod']");
-      if (shipRadio) {
-        shipRadio.checked = true;
-        shipRadio.dispatchEvent(new Event("change"));
-      }
-
-      toast(`📦 已套用地址：${r.address}`);
-      addressInput.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-     // 🌟 點擊後短暫高亮
-    div.classList.add("highlight");
-    setTimeout(() => div.classList.remove("highlight"), 1000);
-
-    // ✅ 點擊後自動收起常用清單
-    setTimeout(() => recentBox.classList.add("hidden"), 300);
-  };
-
-  recentList.appendChild(div);
-}
+    // 自動填入除去縣市行政區後的詳細地址
+    const trimmed = fullAddress.replace(/^.{2,3}(市|縣).{1,4}(區|鄉|鎮)/, "");
+    if(addressInput) addressInput.value = trimmed.trim();
+  }
 
   // ✅ 綁定事件
   phoneInput.addEventListener("blur", lookup);
@@ -251,5 +284,13 @@ function renderRecentItem(r, type) {
       e.preventDefault();
       lookup();
     }
+  });
+  
+  // 🔥 新增：輸入滿 10 碼自動查詢 (提升體驗)
+  phoneInput.addEventListener("input", (e) => {
+      const val = e.target.value.trim();
+      if (val.length === 10 && val.startsWith("09")) {
+          lookup();
+      }
   });
 }
