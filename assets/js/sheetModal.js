@@ -45,10 +45,22 @@ export async function showCartSheet() {
   const items = buildOrderItems();
 
   // 空車處理
-  if (!items.length) {
-    list.innerHTML = `<div class="muted" style="padding:12px; text-align:center;">尚未選購商品</div>`;
+  if (!items || items.length === 0) {
+    // 1. 顯示空車提示
+    list.innerHTML = `<div class="muted" style="padding:30px; text-align:center; color:#888;">
+      🛒 購物車是空的，快去逛逛吧！
+    </div>`;
+    
+    // 2. 強制歸零所有金額 (避免殘留舊數字或預設運費)
     if($("cartSub")) $("cartSub").textContent = "NT$ 0";
+    if($("cartDiscRow")) $("cartDiscRow").style.display = "none";
+    if($("cartShip")) $("cartShip").textContent = "NT$ 0"; // 強制歸零
     if($("cartTotal")) $("cartTotal").textContent = "NT$ 0";
+    
+    // 3. 清空提示
+    if($("promoMsg")) $("promoMsg").textContent = "";
+
+    // 4. ⛔ 重要：直接 return，不准往下執行 API 呼叫
     return; 
   }
 
