@@ -159,7 +159,6 @@ export function initMemberLookup() {
   }
 
   // 🏪 單筆項目渲染
-  // 🏪 單筆項目渲染
   function renderRecentItem(r, type) {
     const div = document.createElement("div");
     div.className = "recent-item";
@@ -202,14 +201,23 @@ export function initMemberLookup() {
       div.classList.add("highlight");
       setTimeout(() => div.classList.remove("highlight"), 600);
 
-      // 🔥 關鍵修改：不隱藏 (hidden)，改為收合 (collapsed)
-      // 並更新標題文字，讓使用者知道現在選了什麼
-      setTimeout(() => {
-        recentBox.classList.add("collapsed");
-        const hint = recentBox.querySelector(".selected-hint");
-        if (hint) hint.textContent = `(已選：${shortName})`;
-      }, 400);
-    };
+      // ✅ 1. 收起選單 (變成 Accordion 標題)
+    setTimeout(() => {
+      recentBox.classList.add("collapsed");
+      const hint = recentBox.querySelector(".selected-hint");
+      // 更新標題旁邊的提示文字
+      const shortName = type === "store" ? r.name : r.address.substring(0, 6) + "..."; 
+      if (hint) hint.textContent = `(已選：${shortName})`;
+    }, 300);
+
+    // ✅ 2.【關鍵新增】自動滑動到付款區塊 (Payment Card)
+    setTimeout(() => {
+      const paymentCard = document.getElementById("paymentCard");
+      if (paymentCard) {
+        paymentCard.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, 500); // 設定 500ms 延遲，讓使用者先看到「選取高亮」和「收合動畫」，再滑下去，體驗最順
+  };
 
     recentList.appendChild(div);
   }

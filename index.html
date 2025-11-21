@@ -363,31 +363,43 @@
     
   </div>
 </div>
-<!-- ✅ 成功提示模組 -->
-<div id="successBackdrop" class="success-backdrop hidden">
+<div id="successBackdrop" class="success-backdrop hidden" aria-hidden="true">
   <div class="success-card glass-success">
 
-    <!-- 🎉 勾勾動畫 -->
-    <svg class="success-check" viewBox="0 0 100 100">
-      <circle class="check-circle" cx="50" cy="50" r="40" fill="none"/>
-      <path class="check-mark" fill="none" d="M30 52 L45 67 L70 40"/>
-    </svg>
-
-    <div class="success-title">訂單成功</div>
-    <div class="success-sub">感謝您的支持，茶香即將為您送上 🍃</div>
-
-    <div class="success-info">
-      <div><strong>訂單編號</strong><span id="successOrderId">—</span></div>
-      <div><strong>訂單金額</strong><span id="successTotal">—</span></div>
+    <div class="success-header stagger-1">
+      <div class="check-glow"></div> <svg class="success-check" viewBox="0 0 100 100">
+        <circle class="check-circle" cx="50" cy="50" r="40" fill="none"/>
+        <path class="check-mark" fill="none" d="M30 52 L45 67 L70 35"/>
+      </svg>
     </div>
 
-    <!-- LINE 綁定 -->
-    <div id="lineBindBox">
-      <a id="successLine" class="line-bind-btn">加入 LINE 接收出貨通知</a>
+    <div class="text-group stagger-2">
+      <div class="success-title">訂購成功</div>
+      <div class="success-sub">茶香已備，即將為您配送 🍃</div>
     </div>
 
-    <!-- 返回按鈕 -->
-    <button id="successClose" class="success-close">返回訂購頁</button>
+    <div class="success-receipt stagger-3">
+      <div class="receipt-row">
+        <span class="label">訂單編號</span>
+        <span class="value font-mono" id="successOrderId">—</span>
+      </div>
+      <div class="receipt-divider"></div>
+      <div class="receipt-row">
+        <span class="label">訂單金額</span>
+        <span class="value price" id="successTotal">—</span>
+      </div>
+    </div>
+
+    <div id="lineBindBox" class="stagger-4">
+      <a id="successLine" class="line-bind-btn" href="https://line.me/R/ti/p/@agw3661i" target="_blank">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 10.5c0-4.7-4.4-8.5-9.8-8.5s-9.8 3.8-9.8 8.5c0 4.2 3.4 7.7 8.1 8.3.3 0 .7.1.8.3l.2 1.1s.1.7-.2.9c0 0-.2.2 0 .3.2.1 1.1-.8 4.3-3.6 3.7-1.8 6.4-4.6 6.4-7.3z"/></svg>
+        <span>加入 LINE 接收出貨通知</span>
+      </a>
+      <div class="line-hint">綁定後可隨時查詢訂單狀態</div>
+    </div>
+
+    <button id="successClose" class="success-close stagger-5">返回首頁</button>
+
   </div>
 </div>
 
