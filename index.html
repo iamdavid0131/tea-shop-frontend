@@ -296,30 +296,35 @@
 
  
 
-  <!-- ✅ 固定結帳工具列 -->
-<div class="stickybar glassy" id="StickyBar">
-  <div class="sticky-inner">
-    <div class="stack amounts">
-      <div class="grand">
-        應付總額：<b id="total_s">NT$ 0</b>
+ <div class="stickybar glassy" id="StickyBar">
+  
+  <div id="freeProgress" class="progress-bar-wrap hidden">
+    <div id="freeProgressBar"></div>
+  </div>
+  <div class="free-hint" id="freeHint">🌿 已達免運門檻！再添一壺茶更香氣滿溢～</div>
+  <span id="free_tip_s" class="muted" style="display:none"></span> <div class="sticky-inner">
+    
+    <div class="amount-box">
+      <div class="grand-total">
+        <span class="label">總計</span>
+        <b id="total_s" class="money-pop">NT$ 0</b>
       </div>
-
-      <div id="stickySubDetail" class="">
-        <div class="subline">
-          小計 <span id="sub_s">—</span>
-          <span id="disc_wrap"> ・ 折扣 <span id="disc_s">—</span></span>
-          ・ 運費 <span id="ship_s">—</span>
-        </div>
-         <div class="free-hint" id="freeHint">🌿 已達免運門檻！再添一壺茶更香氣滿溢～</div>
-
-        <div id="freeProgress" class="progress-bar-wrap hidden">
-          <div id="freeProgressBar"></div>
-        </div>
-        <span id="free_tip_s" class="muted"></span>
+      <div class="sub-detail">
+        <span id="sub_s">小計 —</span>
+        <span id="ship_s" class="ship-tag">運費 —</span>
       </div>
     </div>
 
-    <button id="viewCartBtn" class="btn btn-outline" type="button">查看明細 ▾</button>
+    <div class="action-box">
+      <button id="viewCartBtn" class="icon-btn" type="button" aria-label="查看明細">
+        <span class="arrow-icon">▲</span>
+      </button>
+      
+      <button id="submitBtnSticky" class="submit-btn-sticky" type="button" onclick="document.getElementById('submit-area').scrollIntoView({behavior: 'smooth'})">
+        去買單
+      </button>
+    </div>
+
   </div>
 </div>
 

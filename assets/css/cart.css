@@ -2,67 +2,195 @@
    🛒 購物車、結帳、成功畫面樣式 (Cart & Success)
    ============================================================ */
 
-/* === 1. StickyBar (底部固定列) === */
+/* ============================================================
+   1. StickyBar (底部懸浮島嶼 - 旗艦版)
+   ============================================================ */
+
 .stickybar {
-  position: fixed; bottom: 0; left: 0; right: 0; z-index: 999;
-  padding: 10px 14px 12px;
+  position: fixed; 
+  bottom: 20px; /* 懸浮距離 */
+  left: 16px; 
+  right: 16px; 
+  z-index: 999;
+  
+  padding: 16px 20px;
+  border-radius: 24px; /* 大圓角 */
+  
+  /* 高級玻璃質感 */
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.1),
+    0 4px 8px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    
   transition: all 0.45s cubic-bezier(0.25, 1, 0.5, 1);
-  transform-origin: bottom;
+  transform-origin: bottom center;
+  
+  /* 確保寬度不會爆版 */
+  max-width: 600px;
+  margin: 0 auto;
 }
-/* 玻璃質感 */
-.stickybar.glassy {
-  background: linear-gradient(180deg, rgba(255,255,255,0.82), rgba(245,248,245,0.9));
-  backdrop-filter: blur(18px) saturate(1.5);
-  -webkit-backdrop-filter: blur(18px) saturate(1.5);
-  border-top: 1px solid rgba(170, 190, 180, 0.25);
-  box-shadow: 0 -4px 16px rgba(90, 123, 104, 0.08), 0 -1px 3px rgba(90, 123, 104, 0.05);
+
+.stickybar.hide { transform: translateY(150%) scale(0.9); opacity: 0; }
+.stickybar.show { transform: translateY(0) scale(1); opacity: 1; }
+
+/* === 內部排版 === */
+.sticky-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  position: relative;
+  z-index: 2;
 }
-.stickybar.hide { transform: translateY(120%); opacity: 0; }
-.stickybar.show { transform: translateY(0); opacity: 1; }
 
-.sticky-inner { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.amounts { flex: 1; min-width: 120px; font-weight: 700; color: #2f4b3c; font-size: 16px; }
-
-/* 金額彈跳動畫 */
-@keyframes moneyPop { 0% { transform: scale(1); } 50% { transform: scale(1.18); color: #305c46; } 100% { transform: scale(1); color: #2f4b3c; } }
-.money-pop { animation: moneyPop 0.45s cubic-bezier(.25,.8,.25,1); }
-
-/* 按鈕組 */
-.sticky-inner button { flex: 1; font-size: 16px; border-radius: 12px; padding: 12px 0; font-weight: 600; transition: all 0.3s ease; }
-#viewCartBtn {
-  border: 2px solid rgba(90, 123, 104, 0.85); color: #305c46; background: rgba(255,255,255,0.95);
-  box-shadow: 0 2px 4px rgba(90,123,104,0.08);
+/* === 左側：金額 === */
+.amount-box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
-#viewCartBtn:hover { background: linear-gradient(180deg, rgba(240,247,242,0.9), rgba(255,255,255,1)); transform: translateY(-1px); }
 
-.submit-btn {
-  color: #fff; border: none; background: linear-gradient(135deg, #5a7b68, #7fa38a);
-  box-shadow: 0 5px 14px rgba(90,123,104,0.3); position: relative; overflow: hidden;
+.grand-total {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
 }
-.submit-btn:hover { background: linear-gradient(135deg, #6d8f79, #93b29b); transform: translateY(-2px); }
-/* 按鈕流光 */
-.submit-btn:not(:disabled)::after {
-  content: ""; position: absolute; top: 0; left: -75%; width: 50%; height: 100%;
-  background: linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.45) 50%, rgba(255,255,255,0) 100%);
-  transform: skewX(-25deg); opacity: 0;
+
+.grand-total .label {
+  font-size: 13px;
+  color: #7a8c82;
+  font-weight: 500;
 }
-.submit-btn:hover::after { animation: teaShine 2.8s ease-in-out 1; opacity: 1; }
 
-/* 免運進度條 */
-.progress-bar-wrap { width: 100%; height: 6px; background: rgba(180, 200, 190, 0.25); border-radius: 999px; margin-top: 6px; overflow: hidden; }
-#freeProgressBar { height: 100%; width: 0%; background: linear-gradient(90deg, #8fb79c, #4f7b61); border-radius: 999px; transition: width 0.6s; }
-.flash-free { animation: flashFree 1s infinite alternate; }
-@keyframes flashFree { 0% { background: linear-gradient(90deg, #b4e3c0, #7dcba3); } 100% { background: linear-gradient(90deg, #b4e3c0, #7dcba3); } }
+.grand-total b {
+  font-size: 22px;
+  font-weight: 800;
+  color: #2f4b3c;
+  letter-spacing: 0.5px;
+  font-family: "Noto Serif TC", serif; /* 數字用宋體更有質感 */
+}
 
-/* 免運提示文字 */
+.sub-detail {
+  font-size: 12px;
+  color: #889990;
+  display: flex;
+  gap: 8px;
+}
+
+/* 運費小標籤 */
+.ship-tag {
+  background: rgba(90, 123, 104, 0.1);
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: #5a7b68;
+  font-weight: 600;
+}
+
+/* === 右側：操作區 === */
+.action-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 查看明細 (圓形按鈕) */
+.icon-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(180, 200, 190, 0.5);
+  background: rgba(255, 255, 255, 0.6);
+  color: #5a7b68;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 12px;
+}
+.icon-btn:hover {
+  background: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(90, 123, 104, 0.15);
+}
+
+/* 去買單按鈕 (Sticky 專用) */
+.submit-btn-sticky {
+  padding: 10px 24px;
+  height: 42px;
+  border-radius: 21px; /* 膠囊狀 */
+  background: linear-gradient(135deg, #2f4b3c, #4a6b58);
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+  border: none;
+  box-shadow: 0 4px 14px rgba(47, 75, 60, 0.3);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.submit-btn-sticky:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(47, 75, 60, 0.4);
+  background: linear-gradient(135deg, #3a5c4a, #5a7b68);
+}
+
+/* === 免運進度條 (整合在頂部) === */
+.progress-bar-wrap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px; /* 極細 */
+  background: transparent;
+  border-radius: 24px 24px 0 0; /* 跟隨卡片圓角 */
+  overflow: hidden;
+}
+
+#freeProgressBar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #8fb79c, #c8dfce);
+  transition: width 0.5s ease;
+  box-shadow: 0 0 8px rgba(143, 183, 156, 0.6);
+}
+
+/* 免運提示 (浮在上方) */
 .free-hint {
-  font-size: 14.5px; color: #3f6b53; font-weight: 600; text-align: left; margin-top: 4px;
-  opacity: 0; transform: translateY(4px); transition: all 0.5s;
-  background: linear-gradient(90deg, #bcd7c6, #e4f3e9); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  position: absolute;
+  top: -32px; /* 浮在卡片上方 */
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: rgba(47, 75, 60, 0.85);
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
-.free-hint.show { opacity: 1; transform: translateY(0); }
 
+.free-hint.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
 
+/* 手機版適配 */
+@media (max-width: 400px) {
+  .stickybar { bottom: 16px; left: 12px; right: 12px; padding: 14px; }
+  .grand-total b { font-size: 20px; }
+  .submit-btn-sticky { padding: 8px 18px; font-size: 14px; }
+}
 /* === 2. Shopping Sheet (購物明細 Modal) === */
 .sheet-backdrop {
   position: fixed; inset: 0; display: none; align-items: flex-end; justify-content: center;
