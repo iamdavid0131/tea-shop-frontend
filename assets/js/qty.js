@@ -47,15 +47,32 @@ function handlePackBtn(btn) {
   const dir = btn.dataset.dir;
 
   const qtyEl = getQtyEl(id);
-  const qty = parseInt(qtyEl.value || 0);
+  let qty = parseInt(qtyEl.value || 0); // 用 let，因為我們可能會修改它
 
   const packInput = $(`packQty-${id}`);
-  let v = parseInt(packInput.value || 1);
+  let packVal = parseInt(packInput.value || 1);
 
-  if (dir === "plus") v++;
-  if (dir === "minus" && v > 1) v--;
+  if (dir === "plus") {
+    packVal++;
+    
+    // 🔥 核心修改：如果「裝罐數」超過「總數量」，總數量也要跟著加
+    if (packVal > qty) {
+      qty = packVal;     // 同步變數
+      qtyEl.value = qty; // 同步 UI
+      
+      // (選用) 可以在這裡也跳一個氣泡提示總數增加了，看你需求
+      // spawnQtyBubble(btn, "同步+1"); 
+    }
+  }
 
-  packInput.value = Math.min(qty, v);
+  if (dir === "minus" && packVal > 1) {
+    packVal--;
+  }
+
+  // 雙重防呆：裝罐數永遠不能大於總數量 (雖然上面 logic 已經處理了，但多一層保障)
+  if (packVal > qty) packVal = qty;
+
+  packInput.value = packVal;
 
   const pack = $(`pack-${id}`)?.checked || false;
   const packQty = Number(packInput.value || 0);
