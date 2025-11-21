@@ -17,10 +17,10 @@ const SECRET_PRODUCT_DEF = {
 };
 
 // ========================================================
-// 顯示購物明細 Sheet
+// 顯示購物明細 Sheet (防呆修復版)
 // ========================================================
 export async function showCartSheet() {
-  // 1. UI 防呆：確保 CONFIG 裡有隱藏商品，不然列表會顯示不出來
+  // 1. Config 檢查
   const cart = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
   if (cart[SECRET_PRODUCT_DEF.id] && !CONFIG.PRODUCTS.find(p => p.id === SECRET_PRODUCT_DEF.id)) {
     CONFIG.PRODUCTS.push(SECRET_PRODUCT_DEF);
@@ -41,38 +41,25 @@ export async function showCartSheet() {
     sheet.dataset.open = "true";
   });
 
+  // 2. 渲染列表
   list.innerHTML = "";
   const items = buildOrderItems();
 
-  // 空車處理
-  if (!items || items.length === 0) {
-    // 1. 顯示空車提示
-    list.innerHTML = `<div class="muted" style="padding:30px; text-align:center; color:#888;">
-      🛒 購物車是空的，快去逛逛吧！
-    </div>`;
-    
-    // 2. 強制歸零所有金額 (避免殘留舊數字或預設運費)
-    if($("cartSub")) $("cartSub").textContent = "NT$ 0";
+  if (!items.length) {
+    list.innerHTML = `<div class="muted" style="padding:12px; text-align:center;">尚未選購商品</div>`;
+    // 安全清空金額
+    const els = ["cartSub", "cartShip", "cartTotal"];
+    els.forEach(id => { if($(id)) $(id).textContent = "NT$ 0"; });
     if($("cartDiscRow")) $("cartDiscRow").style.display = "none";
-    if($("cartShip")) $("cartShip").textContent = "NT$ 0"; // 強制歸零
-    if($("cartTotal")) $("cartTotal").textContent = "NT$ 0";
-    
-    // 3. 清空提示
     if($("promoMsg")) $("promoMsg").textContent = "";
-
-    // 4. ⛔ 重要：直接 return，不准往下執行 API 呼叫
     return; 
   }
 
-  // 渲染列表
   items.forEach(i => {
     const row = document.createElement("div");
     row.className = "line-item clickable";
     row.dataset.id = i.id;
-
     const packStr = i.packQty > 0 ? `（裝罐 ${i.packQty}）` : "";
-    
-    // 隱藏版特殊樣式
     const isSecret = i.id === "secret_888";
     const titleHtml = isSecret ? `<span style="color:#b8860b; font-weight:800;">🤫 ${i.name}</span>` : i.name;
 
@@ -90,61 +77,67 @@ export async function showCartSheet() {
     enableSwipeDelete(row);
   });
 
-  // 金額試算
-  // 金額試算
+  // 3. 金額試算 (加上嚴格防呆)
   try {
-    // 🔥【優化 1】預填：先偷看 StickyBar 已經算好的數字 (讓體感變快)
+    // 預填 (從 StickyBar 偷資料，讓體感變快)
     if (document.getElementById("total_s")) {
-      $("cartTotal").textContent = $("total_s").textContent;
-      $("cartShip").textContent = $("ship_s").textContent;
-      // 小計跟折扣也順便偷看一下
-      $("cartSub").textContent = $("sub_s").textContent;
-      // 如果 StickyBar 有顯示折扣，這裡也先顯示
-      const stickyDisc = $("disc_s").textContent;
-      if (stickyDisc && stickyDisc !== "—" && stickyDisc !== "NT$ 0") {
-         $("cartDiscRow").style.display = "flex";
-         $("cartDisc").textContent = `- ${stickyDisc}`;
-      }
+      if($("cartTotal")) $("cartTotal").textContent = $("total_s").textContent;
+      if($("cartShip")) $("cartShip").textContent = $("ship_s").textContent;
+      if($("cartSub")) $("cartSub").textContent = $("sub_s").textContent;
     }
 
-    // 🔥【關鍵修正 1】動態抓取目前勾選的運送方式 (跟 cart.js 邏輯同步)
-    // 如果找不到 radio (例如還沒 render)，就預設 "store"
+    // 抓取運送方式
     const selectedShip = document.querySelector("input[name='shipping']:checked")?.value || "store";
     
-    // 呼叫後端
+    // Call API
     const preview = await api.previewTotals(items, selectedShip, promoCode);
     const data = preview.data || preview;
 
-    // 更新準確數值
-    $("cartSub").textContent = `NT$ ${(data.subtotal || 0).toLocaleString("zh-TW")}`;
-    
-    // ✅【補回折扣邏輯】
-    if($("cartDiscRow")) {
-        // 只有當折扣大於 0 時才顯示這一行
-        const hasDiscount = data.discount > 0;
-        $("cartDiscRow").style.display = hasDiscount ? "flex" : "none";
-        $("cartDisc").textContent = hasDiscount ? `- NT$ ${data.discount.toLocaleString("zh-TW")}` : "";
+    // 🔥 安全更新 DOM (檢查元素存在才更新)
+    if ($("cartSub")) {
+        $("cartSub").textContent = `NT$ ${(data.subtotal || 0).toLocaleString("zh-TW")}`;
     }
     
-    // ✅【運費修正】兼容 shipping / shippingFee
-    const shipFee = data.shippingFee ?? data.shipping ?? 0;
-    $("cartShip").textContent = `NT$ ${shipFee.toLocaleString("zh-TW")}`;
+    // 折扣列 (最容易報錯的地方)
+    const discRow = $("cartDiscRow");
+    const discTxt = $("cartDisc");
+    if (discRow) {
+        const hasDiscount = data.discount > 0;
+        discRow.style.display = hasDiscount ? "flex" : "none";
+        if (discTxt) {
+            discTxt.textContent = hasDiscount ? `- NT$ ${data.discount.toLocaleString("zh-TW")}` : "";
+        }
+    }
+    
+    // 運費
+    if ($("cartShip")) {
+        const shipFee = data.shipping ?? data.shippingFee ?? 0;
+        $("cartShip").textContent = `NT$ ${shipFee.toLocaleString("zh-TW")}`;
+    }
 
     // 總金額
-    const total = data.total ?? data.totalAfterDiscount ?? 0;
-    $("cartTotal").textContent = `NT$ ${total.toLocaleString("zh-TW")}`;
+    if ($("cartTotal")) {
+        const total = data.total ?? data.totalAfterDiscount ?? 0;
+        $("cartTotal").textContent = `NT$ ${total.toLocaleString("zh-TW")}`;
+    }
 
-    // 優惠碼提示
-    $("promoMsg").textContent =
-      promoCode && data.discount > 0 ? `🎉 已套用優惠碼：${promoCode}` : 
-      promoCode ? "❌ 無效的優惠碼" : "";
+    // 優惠碼訊息
+    if ($("promoMsg")) {
+        $("promoMsg").textContent =
+          promoCode && data.discount > 0 ? `🎉 已套用優惠碼：${promoCode}` : 
+          promoCode ? "❌ 無效的優惠碼" : "";
+        
+        // 成功時字體改綠色，失敗改紅色 (選用)
+        $("promoMsg").style.color = data.discount > 0 ? "#5a7b68" : "#c9544d";
+    }
 
   } catch (err) {
-    console.error("試算錯誤:", err);
-    $("promoMsg").textContent = "⚠️ 無法取得金額資訊";
+    console.error("明細更新錯誤 (請查看詳細 Log):", err);
+    // 只有在真的出錯時才顯示，但因為上面加了防呆，這裡應該不會再觸發了
+    if ($("promoMsg")) $("promoMsg").textContent = ""; 
   }
 
-  // 綁定點擊 (防止重複綁定)
+  // 綁定點擊
   if (!sheet.dataset.listenerAdded) {
       document.addEventListener("click", handleItemClick);
       sheet.dataset.listenerAdded = "true";

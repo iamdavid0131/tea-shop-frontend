@@ -328,19 +328,39 @@
   </div>
 </div>
 
-
-<!-- ✅ 購物明細 Bottom Sheet -->
 <div id="cartSheetBackdrop" class="sheet-backdrop" aria-hidden="true">
   <div id="cartSheet" class="sheet" data-open="false">
+    
     <div class="sheet-handle"></div>
+    
     <h3>購物明細</h3>
+    
     <div id="cartItems"></div>
-    <div class="line"><span>小計</span><b id="cartSub">—</b></div>
-    <div class="line" id="cartDiscRow"><span>折扣</span><b id="cartDisc">—</b></div>
-    <div class="line"><span>運費</span><b id="cartShip">—</b></div>
-    <div class="line total"><span>應付總額</span><b id="cartTotal">—</b></div>
-    <div id="promoMsg" class="muted" style="margin-top:8px;"></div>
-    <button id="closeCartModal" class="btn btn-outline">關閉</button>
+    
+    <div class="line">
+      <span>小計</span>
+      <b id="cartSub">NT$ 0</b>
+    </div>
+    
+    <div class="line" id="cartDiscRow" style="display: none;">
+      <span>折扣</span>
+      <b id="cartDisc" style="color: #e74c3c;"></b>
+    </div>
+    
+    <div class="line">
+      <span>運費</span>
+      <b id="cartShip">NT$ 0</b>
+    </div>
+    
+    <div class="line total">
+      <span>應付總額</span>
+      <b id="cartTotal">NT$ 0</b>
+    </div>
+    
+    <div id="promoMsg" class="muted" style="margin-top:12px; text-align:center; min-height:20px;"></div>
+    
+    <button id="closeCartModal" type="button">關閉</button>
+    
   </div>
 </div>
 <!-- ✅ 成功提示模組 -->
