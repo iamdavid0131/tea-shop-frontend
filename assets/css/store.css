@@ -564,3 +564,152 @@ textarea.sp-input {
 .recent-box.collapsed .selected-hint {
   opacity: 1; /* 收合時才顯示提示 */
 }
+
+/* ============================================================
+   4. Payment Options (付款方式 - 旗艦視覺版)
+   ============================================================ */
+
+/* 容器：改用 Grid 佈局，讓選項並排更有氣勢 */
+.pay-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); /* 自動適應寬度 */
+  gap: 16px;
+  margin-top: 8px;
+}
+
+/* 按鈕本體 (卡片化) */
+.pay-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column; /* 垂直排列內容 */
+  align-items: center;    /* 置中 */
+  justify-content: center;
+  text-align: center;
+  
+  padding: 24px 16px;
+  height: auto;           /* 自適應高度 */
+  min-height: 110px;
+  
+  background: rgba(255, 255, 255, 0.5);
+  border: 1.5px solid rgba(180, 190, 185, 0.4);
+  border-radius: 20px;
+  
+  color: #66776e;
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+  
+  /* 玻璃質感 */
+  backdrop-filter: blur(4px);
+  overflow: hidden; /* 為了流光動畫 */
+}
+
+/* Hover 效果：上浮 + 變亮 */
+.pay-btn:hover {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: #a8c2b3;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(90, 123, 104, 0.1);
+}
+
+/* === Active (選中狀態) - 重點設計 === */
+.pay-btn.active {
+  background: linear-gradient(145deg, #f3fcf6 0%, #ffffff 100%);
+  border-color: #5a7b68; /* 品牌主色 */
+  color: #2f4b3c;
+  
+  /* 雙層陰影：內發光 + 外投影 */
+  box-shadow: 
+    0 10px 24px rgba(90, 123, 104, 0.15),
+    inset 0 0 0 1.5px #5a7b68; /* 模擬加粗邊框，不影響排版 */
+    
+  transform: translateY(-2px);
+}
+
+/* === 圖示 (使用 CSS 注入 SVG，不需改 HTML) === */
+.pay-btn::before {
+  content: "";
+  display: block;
+  width: 32px;
+  height: 32px;
+  margin-bottom: 12px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.6; /* 未選中時淡一點 */
+  transition: all 0.3s;
+}
+
+/* 貨到付款圖示 (包裹/貨車) */
+.pay-btn[data-method="cod"]::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%235a7b68' stroke-width='1.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M20 8h-9.586a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 5H4a1 1 0 00-1 1v12a1 1 0 001 1h16a1 1 0 001-1V9a1 1 0 00-1-1z'/%3E%3C/svg%3E");
+}
+
+/* 線上支付圖示 (信用卡) */
+.pay-btn[data-method="online"]::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%235a7b68' stroke-width='1.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z'/%3E%3C/svg%3E");
+}
+
+/* 選中時圖示變大、變清楚 */
+.pay-btn.active::before {
+  opacity: 1;
+  transform: scale(1.1);
+  filter: drop-shadow(0 4px 6px rgba(90, 123, 104, 0.2));
+}
+
+/* === 文字排版 === */
+.pay-title {
+  font-size: 17px;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+
+.pay-sub {
+  font-size: 13px;
+  opacity: 0.8;
+  font-weight: 400;
+  display: block;
+}
+
+/* === 選中時的「打勾」標記 (右上角) === */
+.pay-btn.active::after {
+  content: "✓";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #5a7b68;
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* 進場動畫 */
+  animation: checkPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  box-shadow: 0 2px 6px rgba(90, 123, 104, 0.3);
+}
+
+@keyframes checkPop {
+  0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+/* === 流光背景動畫 (茶湯流動感) === */
+.pay-btn.active .pay-title {
+  background: linear-gradient(90deg, #2f4b3c, #4a7c5f);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* 手機版微調：如果螢幕太小，還是維持直排比較安全，或者縮小字體 */
+@media (max-width: 360px) {
+  .pay-options { grid-template-columns: 1fr; }
+  .pay-btn { flex-direction: row; text-align: left; justify-content: flex-start; min-height: auto; padding: 16px; }
+  .pay-btn::before { margin-bottom: 0; margin-right: 12px; }
+  .pay-info { display: flex; flex-direction: column; } /* 如果你有包一層的話，但目前 HTML 沒有，所以這行備用 */
+}
