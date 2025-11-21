@@ -498,9 +498,9 @@ export function openSecretModal(product) {
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <span>數量</span>
           <div style="display:flex; align-items:center; gap:10px;">
-            <button class="qty-btn" onclick="adjustSecretQty(-1)">-</button>
+            <button class="secret-qty-btn" onclick="adjustSecretQty(-1)">-</button>
             <span id="secretQty" style="font-weight:bold; width:30px; text-align:center;">1</span>
-            <button class="qty-btn" onclick="adjustSecretQty(1)">+</button>
+            <button class="secret-qty-btn" onclick="adjustSecretQty(1)">+</button>
           </div>
         </div>
       </div>

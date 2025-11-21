@@ -92,8 +92,11 @@ export function restoreCart() {
 // ============================================================
 // 💰 金額試算 + Sticky Bar 更新
 // ============================================================
+// ============================================================
+// 💰 金額試算 + Sticky Bar 更新 (完整修正版)
+// ============================================================
 export async function updateTotals() {
-  // 🔥 步驟 1：先修復商品列表，不然 buildOrderItems 會漏掉隱藏商品
+  // 1. 確保隱藏商品在列
   ensureSecretProduct();
   
   const items = buildOrderItems();
@@ -101,39 +104,64 @@ export async function updateTotals() {
   
   if (!stickyBar) return;
 
-  // 🪫 購物車為空
+  // 2. 🪫 空車狀態處理
   if (items.length === 0) {
     $("total_s").textContent = "NT$ 0";
     if($("sub_s")) $("sub_s").textContent = "—";
     if($("disc_s")) $("disc_s").textContent = "—";
     if($("ship_s")) $("ship_s").textContent = "—";
     
-    $("freeProgress").classList.add("hidden");
-    $("freeHint").classList.remove("show");
+    // 隱藏進度條與提示
+    const progressWrap = $("freeProgress");
+    if(progressWrap) progressWrap.classList.add("hidden");
+    
+    const freeHint = $("freeHint");
+    if(freeHint) freeHint.classList.remove("show");
 
     stickyBar.classList.add("hide");
     stickyBar.classList.remove("show");
+    
     window.dispatchEvent(new Event("cart:update"));
     return;
   }
 
+  // 3. 顯示 Sticky Bar
   stickyBar.classList.add("show");
   stickyBar.classList.remove("hide");
 
   try {
+    // 4. 呼叫後端試算
+    // 這裡 shippingMethod 傳空字串或預設值，讓後端回傳預設運費
     const preview = await api.previewTotals(items, "store", "");
     const data = preview?.data ?? preview ?? {};
 
-    // 顯示金額
     const fmt = n => `NT$ ${Number(n || 0).toLocaleString("zh-TW")}`;
-    if($("sub_s")) $("sub_s").textContent = fmt(data.subtotal);
-    if($("disc_s")) $("disc_s").textContent = fmt(data.discount);
-    if($("ship_s")) $("ship_s").textContent = fmt(data.shippingFee);
-    if($("total_s")) $("total_s").textContent = fmt(data.total);
     
+    // --- 🔥 修正點開始：兼容各種變數名稱 ---
+    
+    // 小計
+    if($("sub_s")) $("sub_s").textContent = fmt(data.subtotal);
+    
+    // 折扣
+    if($("disc_s")) $("disc_s").textContent = fmt(data.discount);
+    
+    // 運費 (同時檢查 shipping 和 shippingFee)
+    const shipVal = data.shipping ?? data.shippingFee ?? 0;
+    if($("ship_s")) $("ship_s").textContent = fmt(shipVal);
+    
+    // 總金額 (同時檢查 total 和 totalAfterDiscount)
+    const totalVal = data.total ?? data.totalAfterDiscount ?? 0;
+    if($("total_s")) $("total_s").textContent = fmt(totalVal);
+    
+    // --- 🔥 修正點結束 ---
+
     animateMoney();
 
-    // 免運進度條與提示
+    // 5. 控制折扣標籤顯示
+    const discWrap = $("disc_wrap");
+    if (discWrap) discWrap.style.display = data.discount > 0 ? "inline" : "none";
+
+    // 6. 免運進度條邏輯 (保留你原本的完整寫法)
     const sub = data.subtotal || 0;
     const freeThreshold = CONFIG.FREE_SHIPPING_THRESHOLD || 1000;
     const isFree = sub >= freeThreshold;
@@ -153,9 +181,11 @@ export async function updateTotals() {
       progressBar.classList.toggle("flash-free", isFree);
     }
 
+    // 7. 免運提示氣泡
     if (freeHint) {
       if (isFree) {
-        if (!freeHint.textContent || freeHint.classList.contains("hide")) {
+        // 防止文字一直跳動，只有剛顯示或文字為空時才隨機
+        if (!freeHint.textContent || !freeHint.classList.contains("show")) {
              freeHint.textContent = randomTeaQuote();
         }
         freeHint.classList.add("show");

@@ -166,11 +166,24 @@
 .person-summary { font-size: 15px; color: #355c45; opacity: .92; line-height: 1.7; margin-bottom: 12px; }
 
 /* 🔥【補全】隱藏版 Modal 專用按鈕 (Gold Theme) */
-.qty-btn {
-  width: 30px; height: 30px; border: 1px solid #ddd; background: #fff; border-radius: 50%;
-  cursor: pointer; font-size: 1.2rem; line-height: 1; display: flex; align-items: center; justify-content: center; color: #b8860b;
+.secret-qty-btn {
+  width: 30px; 
+  height: 30px; 
+  border: 1px solid #ddd; 
+  background: #fff; 
+  border-radius: 50%;
+  cursor: pointer; 
+  font-size: 1.2rem; 
+  line-height: 1; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  color: #b8860b;
 }
-.qty-btn:hover { background: #fffbf0; border-color: #b8860b; }
+.secret-qty-btn:hover { 
+  background: #fffbf0; 
+  border-color: #b8860b; 
+}
 
 /* 💌 茶籤按鈕 */
 .ai-card-btn {

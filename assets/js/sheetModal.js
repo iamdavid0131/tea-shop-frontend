@@ -83,7 +83,6 @@ export async function showCartSheet() {
     const preview = await api.previewTotals(items, "store", promoCode);
     const data = preview.data || preview;
 
-    // ✅ 直接使用後端回傳的正確金額 (假設後端已修復)
     $("cartSub").textContent = `NT$ ${(data.subtotal || 0).toLocaleString("zh-TW")}`;
     
     if($("cartDiscRow")) {
@@ -91,7 +90,11 @@ export async function showCartSheet() {
         $("cartDisc").textContent = data.discount > 0 ? `- NT$ ${data.discount.toLocaleString("zh-TW")}` : "";
     }
     
-    $("cartShip").textContent = `NT$ ${(data.shippingFee || 0).toLocaleString("zh-TW")}`;
+    // 🔥【關鍵修正】這裡要同時檢查 shippingFee 和 shipping
+    // 後端回傳的 data 物件裡，欄位名稱是 "shipping"
+    const shipFee = data.shippingFee ?? data.shipping ?? 0;
+    $("cartShip").textContent = `NT$ ${shipFee.toLocaleString("zh-TW")}`;
+
     $("cartTotal").textContent = `NT$ ${(data.total || 0).toLocaleString("zh-TW")}`;
 
     $("promoMsg").textContent =
