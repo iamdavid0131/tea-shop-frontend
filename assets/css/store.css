@@ -93,7 +93,48 @@
 }
 .sp-results::-webkit-scrollbar { width: 4px; }
 .sp-results::-webkit-scrollbar-thumb { background: #d0dcd5; border-radius: 4px; }
+/* 1. 強制地圖高度 & 禁止縮小 */
+#sp-map {
+  display: block !important;
+  width: 100%;
+  
+  /* 🔥 關鍵：強制給定高度，且加上 !important 防止被覆蓋 */
+  height: 260px !important; 
+  min-height: 260px !important;
+  
+  /* 🔥 關鍵：禁止 Flexbox 把它擠扁 */
+  flex-shrink: 0 !important; 
+  
+  border-radius: 16px;
+  background: #eef2f0; /* 載入前的底色 */
+  margin: 12px 0;
+  position: relative;
+  z-index: 1;
+}
 
+/* 2. 搜尋結果容器 (填滿剩餘空間) */
+.sp-scroll {
+  /* 讓它吃掉地圖以外的所有空間 */
+  flex: 1;
+  
+  /* 確保可以滾動 */
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  
+  /* 加上一點邊距 */
+  margin-top: 4px;
+  padding-bottom: 20px;
+  
+  /* Flexbox 防爆裂設定 */
+  min-height: 0; 
+}
+
+/* 3. 搜尋結果列表 */
+#sp-results {
+  display: flex;
+  flex-direction: column;
+}
 /* 單一門市項目 */
 .sp-item {
   padding: 16px 14px; margin-bottom: 8px;

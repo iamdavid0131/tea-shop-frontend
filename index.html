@@ -268,34 +268,31 @@
 
 
 
-  <!-- ✅ 同頁：超商門市選擇器 Bottom Sheet -->
-<div id="store-picker" aria-hidden="true">
-  <div class="sp-backdrop" data-sp-close></div>
-  <section class="sp-sheet" role="dialog" aria-modal="true">
+ <div id="store-picker" aria-hidden="true">
+  <div class="sp-backdrop"></div>
+  <div class="sp-sheet">
     <div class="sp-handle"></div>
-
-    <header class="sp-header">
-      <h3 id="sp-title">選擇取貨門市</h3>
-      <button class="sp-close" type="button" title="關閉" data-sp-close>✕</button>
-    </header>
-
-    <div class="sp-toolbar">
-      <select id="sp-brand" class="sp-select sp-brand">
-        <option value="all">全部品牌</option>
-        <option value="7-11">7-ELEVEN</option>
-        <option value="familymart">全家 FamilyMart</option>
-      </select>
-      <input id="sp-q" class="sp-input sp-query" type="search" placeholder="輸入地標或地址">
-      <button id="sp-search-btn" class="sp-search-title" type="button">搜尋</button>
+    
+    <div class="sp-header">
+      <h3>📍 選擇取貨門市</h3>
+      <button class="sp-close" data-sp-close>×</button>
     </div>
 
-    <div id="sp-map" class="sp-map" aria-label="地圖"></div>
-    <div class="sp-scroll">
-      <div id="sp-results" class="sp-results"></div>
-    </div>
-  </section>
+    <select id="sp-brand" class="sp-select" style="margin-bottom:10px;">
+      <option value="all">全部品牌</option>
+      <option value="7-11">7-ELEVEN</option>
+      <option value="familymart">全家</option>
+    </select>
+    
+    <input id="sp-q" type="text" class="sp-input" placeholder="輸入地標或地址" style="margin-bottom:10px;">
+    
+    <button id="sp-search-btn" class="sp-search-title" style="width:100px;">搜尋</button>
+
+    <div id="sp-map"></div> 
+
+    <div id="sp-results" class="sp-results"></div>
+  </div>
 </div>
-
 
  
 
