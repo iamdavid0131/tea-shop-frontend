@@ -30,54 +30,234 @@
 
 
 /* === 2. Form Styles (表單樣式 - 強制美化) === */
+/* ============================================================
+   2. Form Styles (收件資料表單 - 旗艦極致版)
+   ============================================================ */
 
-/* 區塊容器 */
+/* === 區塊容器 (懸浮玻璃卡片) === */
 .section {
-  box-sizing: border-box; padding: 24px 20px 28px; margin: 20px 0; border-radius: 20px;
-  background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 4px 14px rgba(90, 123, 104, 0.06); backdrop-filter: blur(12px);
-  animation: sectionFade 0.6s forwards;
+  position: relative;
+  box-sizing: border-box;
+  padding: 32px 28px 40px; /* 加大留白，營造高級感 */
+  margin: 24px 0;
+  border-radius: 28px; /* 更大的圓角 */
+  
+  /* 頂級玻璃質感：多層陰影 + 混合模式 */
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(245, 250, 248, 0.85));
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 
+    0 12px 40px rgba(90, 123, 104, 0.08), /* 深處的陰影 */
+    0 4px 12px rgba(90, 123, 104, 0.04),  /* 淺處的陰影 */
+    inset 0 1px 0 rgba(255, 255, 255, 0.6); /* 頂部反光 */
+    
+  backdrop-filter: blur(20px) saturate(120%);
+  -webkit-backdrop-filter: blur(20px) saturate(120%);
+  
+  opacity: 0; 
+  animation: sectionFade 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
-@keyframes sectionFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes sectionFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-/* 標題 */
-.section-title { font-size: 21px; font-weight: 800; color: #2a3a32; margin: 0 0 20px; position: relative; }
-.section-title::after { content: ""; display: block; width: 48px; height: 3px; background: linear-gradient(90deg, #a8b78f 0%, #c7d6b3 100%); border-radius: 999px; margin-top: 6px; opacity: 0.9; transition: width 0.3s; }
-.section:hover .section-title::after { width: 68px; }
-
-/* 表單標籤 */
-.sp-label, .form-group label {
-  font-size: 16px; font-weight: 700; color: #305c46; display: block; margin-bottom: 8px; letter-spacing: 0.5px;
+/* === 標題 (書法感) === */
+.section-title {
+  font-size: 24px; /* 更大 */
+  font-weight: 800;
+  color: #2a3a32;
+  margin: 0 0 32px;
+  position: relative;
+  letter-spacing: 1.5px;
+  display: inline-block;
 }
 
-/* 🔥 輸入框與選單 (強制統一風格) */
-.section input:not([type="radio"]):not([type="checkbox"]),
+/* 標題下方的「茶韻流光」 */
+.section-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -10px;
+  width: 40px;
+  height: 4px;
+  background: linear-gradient(90deg, #8fb79c, #c8dfce);
+  border-radius: 4px;
+  transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.section:hover .section-title::after { width: 100%; } /* Hover 時延伸 */
+
+/* === 表單群組 === */
+.form-group {
+  margin-bottom: 28px; /* 增加間距 */
+  position: relative;
+}
+
+/* Label 優化 */
+.form-group label, .sp-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: #4a6b58; /* 較柔和的茶綠色 */
+  display: block;
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+  padding-left: 4px; /* 微對齊 */
+}
+
+/* 輔助文字 */
+.form-group .muted {
+  font-size: 13px;
+  color: #8fa396;
+  margin-top: 8px;
+  display: block;
+  font-weight: 400;
+  padding-left: 4px;
+  transition: color 0.3s;
+}
+.form-group:focus-within .muted { color: #5a7b68; } /* 聚焦時變深 */
+
+/* === 🔥 輸入框核心樣式 (Input) === */
+.section input[type="text"],
+.section input[type="tel"],
+.section input[type="number"],
 .section select,
 .section textarea,
 .sp-input, .sp-select {
-  width: 100%; height: 48px; /* 統一高度 */
-  font-size: 16px; padding: 0 16px; border-radius: 12px;
-  border: 1.5px solid rgba(170, 190, 180, 0.55); background: rgba(255, 255, 255, 0.7);
-  color: #2b2b2b; transition: all 0.3s ease; box-sizing: border-box;
+  width: 100%;
+  height: 56px; /* 增高，更大氣 */
+  font-size: 17px; /* 字體加大 */
+  padding: 0 20px;
+  border-radius: 16px;
+  
+  /* 極簡風格：平時只有極淡的背景 */
+  border: 1.5px solid rgba(180, 200, 190, 0.2); 
+  background: #f7fcf9; /* 極淡的薄荷白 */
+  color: #2b3b33;
+  
+  box-sizing: border-box;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.01); /* 極微內陰影 */
+  
   appearance: none; -webkit-appearance: none;
-  display: block; /* 確保佔滿 */
 }
 
-/* 輸入框聚焦 */
-.section input:focus, .section select:focus, .section textarea:focus {
-  border-color: #5a7b68; background: #fff;
-  box-shadow: 0 0 0 4px rgba(90, 123, 104, 0.12); outline: none;
+/* === ✨ 聚焦特效 (Focus) === */
+.section input:focus, 
+.section select:focus, 
+.section textarea:focus,
+.sp-input:focus, .sp-select:focus {
+  border-color: #8fb79c; /* 亮綠色邊框 */
+  background: #ffffff;
+  outline: none;
+  
+  /* 擴散光暈 */
+  box-shadow: 
+    0 0 0 4px rgba(143, 183, 156, 0.15),
+    0 4px 12px rgba(90, 123, 104, 0.08);
+    
+  transform: translateY(-1px); /* 微微浮起 */
 }
 
-/* Textarea */
-.section textarea { height: auto; min-height: 100px; padding: 12px 16px; line-height: 1.6; }
-
-/* 下拉箭頭 */
-.section select, .sp-select {
-  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%235a7b68' stroke-width='1' d='M1 2l5 5 5-5'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 16px center; padding-right: 36px;
+/* === 🚫 強制覆蓋 Chrome 自動填入的黃色背景 === */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  /* 使用 box-shadow 內陰影把黃色蓋掉，改成我們想要的淡綠色 */
+  -webkit-box-shadow: 0 0 0 1000px #f7fcf9 inset !important;
+  /* 強制文字顏色 */
+  -webkit-text-fill-color: #2b3b33 !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+/* 聚焦時的自動填入背景 */
+input:focus:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset, 0 0 0 4px rgba(143, 183, 156, 0.15) !important;
 }
 
+/* === Textarea === */
+textarea.sp-input {
+  min-height: 120px;
+  padding: 16px 20px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+/* === 優惠碼區塊 (Input + Button) === */
+.promo-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  position: relative;
+}
+
+/* 優惠碼輸入框 */
+.promo-row input {
+  flex: 1;
+  border-radius: 16px;
+}
+
+/* 套用按鈕 */
+.promo-row button {
+  flex-shrink: 0;
+  height: 56px; /* 跟 input 一樣高 */
+  padding: 0 24px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 1px;
+  
+  border: none;
+  border-radius: 16px;
+  
+  /* 漸層綠 */
+  background: linear-gradient(135deg, #7fa38a, #9bbba6);
+  box-shadow: 0 4px 12px rgba(90, 123, 104, 0.15);
+  
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.promo-row button:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #6d8f79, #8db09a);
+  box-shadow: 0 6px 16px rgba(90, 123, 104, 0.25);
+}
+
+.promo-row button:active {
+  transform: scale(0.96);
+}
+
+/* === 錯誤訊息 (抖動提示) === */
+.error-msg {
+  color: #d9534f;
+  font-size: 13.5px;
+  margin-top: 6px;
+  display: none;
+  font-weight: 500;
+  padding-left: 6px;
+  
+  /* 讓錯誤訊息帶有圖示感 */
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.error-msg::before {
+  content: "!";
+  display: inline-flex;
+  width: 16px; height: 16px;
+  background: #d9534f; color: #fff;
+  border-radius: 50%;
+  font-size: 11px;
+  justify-content: center; align-items: center;
+  font-weight: bold;
+}
+
+.error-msg.show {
+  display: flex; /* 覆蓋上面的 none */
+  animation: shake 0.4s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
 
 /* === 3. 運送方式 & 超商欄位 (Layout Fix) === */
 
@@ -132,17 +312,6 @@
 .delivery-col select:focus { box-shadow: none; background: transparent; }
 .delivery-col label { font-size: 13px; margin-bottom: 2px; color: #6b7d6f; }
 
-
-/* === 5. 優惠碼 & 其他 === */
-.promo-row { display: flex; gap: 8px; align-items: center; }
-.promo-row button {
-  flex-shrink: 0; height: 48px; padding: 0 18px; font-weight: 600; color: #fff;
-  background: linear-gradient(135deg, #7fa38a, #a4c3ae); border: none; border-radius: 12px; cursor: pointer;
-}
-
-.error-msg { color: #c9544d; font-size: 13px; margin-top: 4px; display: none; padding-left: 4px; }
-.error-msg.show { display: block; animation: fadeIn 0.3s; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(-2px); } to { opacity: 1; transform: translateY(0); } }
 
 /* ============================================================
    ⚡ 常用收件地址 (Smart Recent Address - Flagship)
