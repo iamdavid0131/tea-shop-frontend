@@ -111,30 +111,6 @@ export async function showCartSheet() {
 }
 
 // 處理列表點擊
-// ================================
-// sheetModal.js (修正點擊跳轉版)
-// ================================
-import { $, toast } from "./dom.js";
-import { CONFIG } from "./config.js";
-import { api } from "./app.api.js";
-import { buildOrderItems, updateTotals, refreshSheetTotals } from "./cart.js";
-
-// 🔥 新增這一行 Import
-import { openSecretModal } from "./ai-shop.js"; 
-
-// 🤫 定義隱藏商品備份
-const SECRET_PRODUCT_DEF = {
-  id: "secret_888",
-  title: "👑 傳奇・80年代老凍頂",
-  price: 8800,
-  tags: "老饕限定",
-  desc: "阿興師爺爺留下來的壓箱寶。"
-};
-
-// ... (中間 showCartSheet 等函式維持原樣，不用動) ...
-
-
-// 🛠️ 修改這個函式：處理列表點擊
 function handleItemClick(e) {
   const row = e.target.closest(".line-item.clickable");
   // 如果點到刪除按鈕，不觸發
@@ -163,8 +139,6 @@ function handleItemClick(e) {
       setTimeout(() => productCard.click(), 150);
   }
 }
-
-
 
 export function hideCartSheet() {
   const backdrop = $("cartSheetBackdrop");
