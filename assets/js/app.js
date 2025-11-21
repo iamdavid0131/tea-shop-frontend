@@ -152,8 +152,8 @@ if (stickyBtn) {
       
       // 3. (選用) 讓姓名欄位聚焦，引導輸入
       setTimeout(() => {
-        const nameInput = document.getElementById("name") || document.getElementById("phone");
-        if (nameInput) nameInput.focus();
+        const phoneInput = document.getElementById("phone");
+        if (phoneInput) phoneInput.focus();
       }, 800); // 等滾動完再聚焦
     }
   });
