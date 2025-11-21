@@ -137,4 +137,26 @@ document.addEventListener("DOMContentLoaded", async () => {
         setTimeout(() => loadingEl.style.display = 'none', 500);
     }
   }
+
+  // ✅ 綁定 StickyBar 的「去買單」按鈕
+const stickyBtn = document.getElementById("submitBtnSticky");
+if (stickyBtn) {
+  stickyBtn.addEventListener("click", () => {
+    // 1. 找到收件資料區塊 (我們之前修復的 .section)
+    // 通常第一個輸入框是電話或姓名
+    const target = document.querySelector(".section"); 
+    
+    if (target) {
+      // 2. 平滑滾動
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      
+      // 3. (選用) 讓姓名欄位聚焦，引導輸入
+      setTimeout(() => {
+        const nameInput = document.getElementById("name") || document.getElementById("phone");
+        if (nameInput) nameInput.focus();
+      }, 800); // 等滾動完再聚焦
+    }
+  });
+}
 });
+

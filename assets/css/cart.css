@@ -7,7 +7,7 @@
    ============================================================ */
 
 .stickybar {
-  overflow: visible !important;
+  overflow: hidden !important;
   position: fixed; 
   bottom: 20px; /* 懸浮距離 */
   left: 16px; 

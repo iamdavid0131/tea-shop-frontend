@@ -13,13 +13,13 @@ const SECRET_PRODUCT_DEF = {
   desc: "阿興師爺爺留下來的壓箱寶。"
 };
 
-// 🛠️ 自動修復 CONFIG：確保隱藏商品不會因重整而消失
+// 🛠️ 自動修復 CONFIG：確保隱藏商品在計算金額時存在
 function ensureSecretProduct() {
   const cart = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
-  // 如果購物車有隱藏商品，但 CONFIG 裡沒有
+  // 只要購物車裡有這個 ID，但 CONFIG 裡沒有，就補進去
   if (cart[SECRET_PRODUCT_DEF.id] && !CONFIG.PRODUCTS.find(p => p.id === SECRET_PRODUCT_DEF.id)) {
     CONFIG.PRODUCTS.push(SECRET_PRODUCT_DEF);
-    // console.log("♻️ cart.js: 已自動補回隱藏商品定義");
+    // console.log("♻️ cart.js: 已自動補回隱藏商品，確保金額正確");
   }
 }
 
@@ -89,12 +89,11 @@ export function restoreCart() {
   }
 }
 
-
 // ============================================================
 // 💰 金額試算 + Sticky Bar 更新
 // ============================================================
 export async function updateTotals() {
-  // 🔥 關鍵：確保試算時包含隱藏商品
+  // 🔥 步驟 1：先修復商品列表，不然 buildOrderItems 會漏掉隱藏商品
   ensureSecretProduct();
   
   const items = buildOrderItems();
@@ -105,25 +104,19 @@ export async function updateTotals() {
   // 🪫 購物車為空
   if (items.length === 0) {
     $("total_s").textContent = "NT$ 0";
-    $("sub_s").textContent = "—";
-    $("disc_s").textContent = "—";
-    $("ship_s").textContent = "—";
+    if($("sub_s")) $("sub_s").textContent = "—";
+    if($("disc_s")) $("disc_s").textContent = "—";
+    if($("ship_s")) $("ship_s").textContent = "—";
     
-    // 隱藏進度條與提示
-    const progressWrap = $("freeProgress");
-    if(progressWrap) progressWrap.classList.add("hidden");
-    
-    const freeHint = $("freeHint");
-    if(freeHint) freeHint.classList.remove("show");
+    $("freeProgress").classList.add("hidden");
+    $("freeHint").classList.remove("show");
 
     stickyBar.classList.add("hide");
     stickyBar.classList.remove("show");
-    
     window.dispatchEvent(new Event("cart:update"));
     return;
   }
 
-  // 顯示 Sticky Bar
   stickyBar.classList.add("show");
   stickyBar.classList.remove("hide");
 
@@ -131,24 +124,17 @@ export async function updateTotals() {
     const preview = await api.previewTotals(items, "store", "");
     const data = preview?.data ?? preview ?? {};
 
-    const sub = data.subtotal || 0;
-    const disc = data.discount || 0;
-    const ship = data.shipping ?? data.shippingFee ?? 0;
-    const total = sub - disc + ship;
-
+    // 顯示金額
     const fmt = n => `NT$ ${Number(n || 0).toLocaleString("zh-TW")}`;
-    
-    if($("sub_s")) $("sub_s").textContent = fmt(sub);
-    if($("disc_s")) $("disc_s").textContent = fmt(disc);
-    if($("ship_s")) $("ship_s").textContent = fmt(ship);
-    if($("total_s")) $("total_s").textContent = fmt(total);
+    if($("sub_s")) $("sub_s").textContent = fmt(data.subtotal);
+    if($("disc_s")) $("disc_s").textContent = fmt(data.discount);
+    if($("ship_s")) $("ship_s").textContent = fmt(data.shippingFee);
+    if($("total_s")) $("total_s").textContent = fmt(data.total);
     
     animateMoney();
 
-    const discWrap = $("disc_wrap");
-    if (discWrap) discWrap.style.display = disc > 0 ? "inline" : "none";
-
-    // ✅ 免運提示強化區塊
+    // 免運進度條與提示
+    const sub = data.subtotal || 0;
     const freeThreshold = CONFIG.FREE_SHIPPING_THRESHOLD || 1000;
     const isFree = sub >= freeThreshold;
 
@@ -167,18 +153,14 @@ export async function updateTotals() {
       progressBar.classList.toggle("flash-free", isFree);
     }
 
-    // 🌿 高質感免運浮出提示
     if (freeHint) {
       if (isFree) {
-        // 只有當還沒有內容時才隨機，避免每次數字跳動文案一直換
         if (!freeHint.textContent || freeHint.classList.contains("hide")) {
              freeHint.textContent = randomTeaQuote();
         }
         freeHint.classList.add("show");
-        freeHint.classList.remove("hide");
       } else {
         freeHint.classList.remove("show");
-        freeHint.classList.add("hide");
       }
     }
 
@@ -188,7 +170,6 @@ export async function updateTotals() {
 
   window.dispatchEvent(new Event("cart:update"));
 }
-
 // ============================================================
 // ✨ 金額動畫
 // ============================================================
