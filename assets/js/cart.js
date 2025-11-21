@@ -138,6 +138,9 @@ export async function updateTotals() {
     // 🔥【關鍵修正 2】呼叫後端時傳入正確參數
     const preview = await api.previewTotals(items, selectedShip, promoCode);
     const data = preview?.data ?? preview ?? {};
+    console.log("🔍 後端回傳的完整資料:", data);
+
+    
 
     // Debug: 看看後端回傳了什麼
     // console.log("💰 試算結果:", data);
