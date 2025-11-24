@@ -68,12 +68,15 @@ body {
 }
 
 .brand-icon {
-  /* 移除原本的 font-size, margin 等針對文字的設定 */
-  margin-bottom: 0px; 
-  
-  /* 移除 CSS 動畫，交給 Lottie 自己動 */
+/* 移除所有舊的動畫與濾鏡，交給 Lordicon 處理 */
   animation: none !important;
   filter: none !important;
+  
+  /* 確保置中 */
+  margin: 0 auto 4px auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 
