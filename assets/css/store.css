@@ -2,232 +2,159 @@
    🏪 門市選擇、地圖、表單輸入樣式 (Store & Form - 終極修復版)
    ============================================================ */
 /* ============================================================
-   1. Store Picker (地圖選擇器 - 旗艦美化版)
-   ============================================================ */
-/* ============================================================
-   1. Store Picker (地圖選擇器 - 最終完美版)
+   1. Store Picker (地圖選擇器 - 樣式強制修復版)
    ============================================================ */
 
 /* === 容器與遮罩 === */
 #store-picker { position: fixed; inset: 0; z-index: 9999; display: none; }
 #store-picker[aria-hidden="false"] { display: block; }
 
-/* 背景霧化 */
 .sp-backdrop {
   position: absolute; inset: 0;
-  background: rgba(20, 30, 25, 0.45); /* 深墨綠遮罩 */
+  background: rgba(20, 30, 25, 0.45);
   backdrop-filter: blur(8px) saturate(120%);
   transition: opacity 0.4s ease;
 }
 
-/* === 主面板 (Glass Sheet) === */
+/* === 主面板 === */
 .sp-sheet {
   position: absolute; bottom: 0; left: 0; right: 0;
-  
-  /* 頂級玻璃質感 */
   background: rgba(255, 255, 255, 0.94);
   border-radius: 28px 28px 0 0;
   border-top: 1px solid rgba(255, 255, 255, 0.8);
   box-shadow: 0 -10px 40px rgba(90, 123, 104, 0.2);
-  
   backdrop-filter: blur(20px);
   padding: 12px 20px 32px;
-  
-  /* 高度控制：最大 90vh，但需透過 Flexbox 撐開 */
-  max-height: 90vh; 
-  height: 90vh; /* 建議：直接設高一點，體驗較好 */
-  
+  max-height: 90vh; height: 90vh; /* 固定高度體驗較好 */
   transform: translateY(110%);
   transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-  
   display: flex; flex-direction: column; gap: 12px;
-  touch-action: none; /* 交給 JS 處理拖曳 */
+  touch-action: none;
 }
 .sp-sheet.sp-open { transform: translateY(0); }
 
-/* === 頂部拉桿 (Pill Handle) === */
+/* === 拉桿 === */
 .sp-handle {
-  width: 48px; height: 5px;
-  background: #dbebe2; /* 淺茶綠 */
+  width: 48px; height: 5px; background: #dbebe2;
   border-radius: 10px; margin: 6px auto 4px; flex-shrink: 0;
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); opacity: 1; cursor: grab;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); cursor: grab;
 }
 
 /* === 標題列 === */
-/* === Header 修復：移除多餘圖釘 === */
-/* 標題列文字設定 */
-.sp-header h3 {
-  font-size: 18px; 
-  font-weight: 700; 
-  color: #2f4b3c; /* 深茶綠文字 */
-  letter-spacing: 0.5px;
-  display: flex; 
-  align-items: center; 
-  margin: 0;
+.sp-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0 4px 8px; flex-shrink: 0;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  margin-bottom: 8px;
 }
 
-/* 🔥 精美 SVG 圖釘 (經典款) */
+.sp-header h3 {
+  font-size: 18px; font-weight: 700; color: #2f4b3c; letter-spacing: 0.5px;
+  display: flex; align-items: center; margin: 0;
+}
+
+/* SVG 圖釘 (修正顯示問題) */
 .sp-header h3::before {
-  content: "";
-  display: inline-block;
-  width: 24px; 
-  height: 24px;
-  margin-right: 6px;
-  
-  /* 設定圖示顏色：這裡用品牌金色 */
-  background-color: #b8860b; 
-  
-  /* 透過 Mask 載入 SVG 形狀 */
+  content: ""; display: inline-block; width: 24px; height: 24px; margin-right: 6px;
+  background-color: #b8860b; /* 金色 */
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z' clip-rule='evenodd' /%3E%3C/svg%3E") no-repeat center;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z' clip-rule='evenodd' /%3E%3C/svg%3E") no-repeat center;
-  
-  -webkit-mask-size: contain;
-  mask-size: contain;
+  -webkit-mask-size: contain; mask-size: contain;
 }
 
-/* === 工具列佈局 (由橫排改直排，增加間距) === */
+.sp-close {
+  font-size: 24px; width: 36px; height: 36px; background: rgba(0,0,0,0.04);
+  border-radius: 50%; border: none; color: #5a7b68; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+
+/* === 🔥 工具列修正 (強制樣式) === */
 .sp-toolbar {
   display: flex;
-  flex-direction: column; /* 改為垂直排列 */
-  gap: 12px; /* 增加間距，不擠在一起 */
-  margin-bottom: 16px;
-  flex-shrink: 0; /* 防止被壓縮 */
+  flex-direction: column; /* 直排 */
+  gap: 12px; /* 間距 */
+  flex-shrink: 0;
 }
 
-/* === 輸入框與選單美化 (強制長高) === */
+/* 強制指定工具列內的輸入框樣式 */
 .sp-toolbar .sp-input,
 .sp-toolbar .sp-select {
   width: 100%;
-  height: 48px !important; /* 強制高度 48px */
+  height: 48px !important; /* 🔥 強制高度 */
   padding: 0 16px;
-  
   font-size: 16px;
-  color: #2b2b2b;
-  
   border-radius: 12px;
-  border: 1.5px solid rgba(170, 190, 180, 0.5); /* 茶綠色細框 */
-  background: #fcfdfd; /* 極淡白 */
-  
+  border: 1.5px solid rgba(170, 190, 180, 0.5);
+  background: #fcfdfd;
+  color: #2b2b2b;
   box-sizing: border-box;
   appearance: none; -webkit-appearance: none;
-  transition: all 0.3s ease;
 }
 
-/* 聚焦特效 */
-.sp-toolbar .sp-input:focus,
-.sp-toolbar .sp-select:focus {
-  border-color: #5a7b68;
-  background: #fff;
-  box-shadow: 0 0 0 4px rgba(90, 123, 104, 0.15);
-  outline: none;
-}
-
-/* 下拉選單箭頭 */
+/* 下拉箭頭 */
 .sp-toolbar .sp-select {
   background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%235a7b68' stroke-width='1' d='M1 2l5 5 5-5'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 16px center;
-  padding-right: 36px;
 }
 
-/* === 搜尋按鈕 (寬度拉滿) === */
+/* 聚焦效果 */
+.sp-toolbar .sp-input:focus,
+.sp-toolbar .sp-select:focus {
+  border-color: #5a7b68; background: #fff;
+  box-shadow: 0 0 0 4px rgba(90, 123, 104, 0.15); outline: none;
+}
+
+/* 搜尋按鈕 */
 .sp-toolbar .sp-search-title {
-  width: 100% !important; /* 讓按鈕填滿寬度 */
-  height: 48px;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #fff;
-  
+  width: 100%; /* 填滿寬度 */
+  height: 48px !important; /* 強制高度 */
+  padding: 0;
+  font-size: 16px; font-weight: 600; color: #fff; letter-spacing: 1px;
   background: linear-gradient(135deg, #5a7b68, #7fa38a);
-  border: none;
-  box-shadow: 0 4px 10px rgba(90, 123, 104, 0.2);
-  
-  cursor: pointer;
-  transition: all 0.2s;
-  
-  /* 讓按鈕跟上面的輸入框有點距離 */
-  margin-top: 4px; 
+  border: none; border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(90, 123, 104, 0.2);
+  cursor: pointer; transition: all 0.2s;
 }
+.sp-toolbar .sp-search-title:hover { transform: translateY(-1px); background: linear-gradient(135deg, #4e6b58, #6d8f79); }
 
-.sp-toolbar .sp-search-title:hover {
-  background: linear-gradient(135deg, #4e6b58, #6d8f79);
-  transform: translateY(-1px);
-}
 
-.sp-toolbar .sp-search-title:active {
-  transform: scale(0.98);
-}
-
-/* === 地圖容器 (強制顯影 + 美化) === */
+/* === 地圖容器 === */
 #sp-map {
-  display: block !important;
-  width: 100%;
-  
-  /* 🔥 強制高度：確保 Leaflet 有空間渲染 */
-  height: 280px !important; 
-  min-height: 280px !important;
-  flex-shrink: 0 !important; /* 禁止被 Flexbox 壓扁 */
-  
-  border-radius: 20px;
-  background: #eef2f0; /* 載入前底色 */
+  display: block !important; width: 100%; 
+  height: 280px !important; min-height: 280px !important; /* 強制高度 */
+  flex-shrink: 0 !important;
+  border-radius: 20px; background: #eef2f0;
   overflow: hidden; position: relative; margin: 4px 0;
-  
-  /* 內陰影質感 */
   box-shadow: inset 0 2px 6px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03);
   z-index: 1;
 }
 
-/* === 搜尋結果容器 (填滿剩餘空間) === */
+/* === 搜尋結果 === */
 .sp-scroll {
-  flex: 1; /* 吃掉剩餘空間 */
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
-  
-  margin-top: 8px; padding-right: 4px;
-  min-height: 0; /* Flexbox 溢出防護 */
+  flex: 1; overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch; touch-action: pan-y;
+  margin-top: 8px; padding-right: 4px; min-height: 0;
 }
-.sp-scroll::-webkit-scrollbar { width: 4px; }
-.sp-scroll::-webkit-scrollbar-thumb { background: #d0dcd5; border-radius: 4px; }
-
-/* === 搜尋結果列表 === */
 #sp-results { display: flex; flex-direction: column; }
 
 .sp-item {
-  padding: 16px 14px; margin-bottom: 8px;
-  border-radius: 14px;
+  padding: 16px 14px; margin-bottom: 8px; border-radius: 14px;
   background: #fff; border: 1px solid rgba(0,0,0,0.04);
   cursor: pointer; transition: all 0.2s ease;
   display: flex; justify-content: space-between; align-items: center;
 }
-.sp-item:hover {
-  background: linear-gradient(135deg, #f5f9f7, #fff);
-  border-color: #8fb79c; box-shadow: 0 4px 12px rgba(90, 123, 104, 0.08); transform: translateY(-1px);
-}
-.sp-item:active { transform: scale(0.98); }
-
+.sp-item:hover { background: linear-gradient(135deg, #f5f9f7, #fff); border-color: #8fb79c; box-shadow: 0 4px 12px rgba(90, 123, 104, 0.08); transform: translateY(-1px); }
 .sp-item b { color: #2f4b3c; font-size: 15.5px; }
 .sp-item .muted { color: #7a8c82; font-size: 13px; margin-top: 4px; display: block; }
-.sp-item .distance { 
-  font-size: 13px; font-weight: 600; color: #5a7b68; 
-  background: #e8f3ed; padding: 4px 8px; border-radius: 8px; 
-}
+.sp-item .distance { font-size: 13px; font-weight: 600; color: #5a7b68; background: #e8f3ed; padding: 4px 8px; border-radius: 8px; }
 
-/* === Leaflet Map 美化 === */
+/* === Leaflet === */
 .leaflet-container { z-index: 1 !important; font-family: inherit; }
 .leaflet-control-zoom { border: none !important; box-shadow: none !important; margin-top: 12px !important; margin-right: 12px !important; }
-.leaflet-control-zoom a {
-  width: 40px !important; height: 40px !important; line-height: 40px !important;
-  border-radius: 50% !important; background: rgba(255, 255, 255, 0.95) !important;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.15) !important; color: #2f4b3c !important;
-  font-size: 18px !important; margin-bottom: 10px !important; backdrop-filter: blur(4px);
-}
-.leaflet-popup-content-wrapper {
-  border-radius: 12px !important; padding: 8px !important;
-  box-shadow: 0 6px 18px rgba(90, 123, 104, 0.25) !important;
-}
-.leaflet-popup-tip { box-shadow: none !important; }
+.leaflet-control-zoom a { width: 40px !important; height: 40px !important; line-height: 40px !important; border-radius: 50% !important; background: rgba(255, 255, 255, 0.95) !important; box-shadow: 0 4px 14px rgba(0,0,0,0.15) !important; color: #2f4b3c !important; font-size: 18px !important; margin-bottom: 10px !important; backdrop-filter: blur(4px); }
+.leaflet-popup-content-wrapper { border-radius: 12px !important; padding: 8px !important; box-shadow: 0 6px 18px rgba(90, 123, 104, 0.25) !important; }
 
 /* 底部安全距離 */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
