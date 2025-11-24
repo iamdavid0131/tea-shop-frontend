@@ -68,16 +68,14 @@ body {
 }
 
 .brand-icon {
-  font-size: 42px;
-  margin-bottom: 8px;
-  filter: drop-shadow(0 4px 8px rgba(90,123,104,0.2));
-  animation: floatTea 3s ease-in-out infinite;
+  /* 移除原本的 font-size, margin 等針對文字的設定 */
+  margin-bottom: 0px; 
+  
+  /* 移除 CSS 動畫，交給 Lottie 自己動 */
+  animation: none !important;
+  filter: none !important;
 }
-/* 漂浮動畫 */
-@keyframes floatTea {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
+
 
 /* === 標題文字 === */
 .ios-title-lg {
