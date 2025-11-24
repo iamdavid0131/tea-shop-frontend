@@ -209,7 +209,7 @@ export function initTeaModal() {
     renderSingleProduct(product, container, catInfo);
 
     // 鎖定背景捲動
-    if (window.bodyScrollLock) window.bodyScrollLock.disableBodyScroll(container);
+    document.body.style.overflow = "hidden";
 
     setTimeout(() => initQtyControls(), 50);
     
@@ -227,7 +227,7 @@ export function initTeaModal() {
     sheet.style.transition = "transform 0.3s ease";
     sheet.style.transform = "";
     
-    if (window.bodyScrollLock) window.bodyScrollLock.enableBodyScroll(container);
+    document.body.style.overflow = "";
 
     setTimeout(() => {
       container.innerHTML = "";
