@@ -86,28 +86,108 @@
 
 /* === Input Area === */
 .ai-input-row {
-  display: flex; align-items: center; gap: 5px; margin-top: 12px; padding: 10px 14px;
-  background: #fff; border: 1px solid rgba(180, 200, 185, 0.35); border-radius: 16px; backdrop-filter: blur(14px); flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px; /* 拉開間距 */
+  margin-top: 16px;
+  padding: 12px 16px;
+  
+  background: #ffffff;
+  border: 1px solid rgba(180, 200, 185, 0.3);
+  border-radius: 24px; /* 更大的圓角 */
+  
+  /* 懸浮陰影 */
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+  backdrop-filter: blur(14px);
+  
+  /* 固定在底部時的優化 */
+  flex-shrink: 0;
 }
 .ai-text-input {
-  flex: 1; height: 36px; padding: 10px 16px; font-size: 16px;
-  border-radius: 12px; border: 1px solid rgba(160, 180, 170, 0.45);
-  background: rgba(255, 255, 255, 0.55); transition: all .28s ease;
+  flex: 1;
+  height: 44px; /* 加高 */
+  padding: 0 12px;
+  font-size: 16px;
+  
+  border: none; /* 移除邊框，因為外層已經有框了 */
+  background: transparent;
+  color: #2f4b3c;
+  font-weight: 500;
+  
+  transition: all .28s ease;
 }
-.ai-text-input:focus { border: 1px solid rgba(120, 160, 145, 0.85); outline: none; }
+.ai-text-input:focus {
+  outline: none;
+}
+.ai-text-input::placeholder {
+  color: #aabcb2;
+  font-weight: 400;
+}
 
 /* === Camera & Send Buttons === */
-.ai-icon-btn { background: transparent; border: none; color: #888; font-size: 1.4rem; cursor: pointer; padding: 0 10px; display: flex; align-items: center; justify-content: center; transition: color 0.3s ease; }
-.ai-icon-btn:hover { color: #4CAF50; transform: scale(1.1); }
-.ai-bubble-img { max-width: 100%; width: 200px; border-radius: 12px; display: block; margin: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.ai-icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f0f5f3; /* 淡綠底 */
+  color: #5a7b68;
+  font-size: 20px;
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  transition: all 0.2s;
+  padding: 0; /* 重置 */
+}
+
+.ai-icon-btn:hover {
+  background: #e0ebe6;
+  color: #2f4b3c;
+  transform: scale(1.1);
+}
 
 .ai-send-btn {
-  height: 36px; padding: 0 22px; font-size: 16px; font-weight: 700; color: white;
-  border: none; border-radius: 12px;
-  background: linear-gradient(135deg, rgba(122, 150, 110, 0.95), rgba(162, 190, 150, 0.98));
-  box-shadow: 0 6px 14px rgba(60, 90, 70, 0.18); cursor: pointer; transition: all .22s ease;
+ /* 1. 形狀設定：正圓形 */
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  
+  /* 2. 排版：絕對置中 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;           /* 移除內距 */
+  padding-left: 4px;    /* 微調：紙飛機視覺重心偏左，所以補一點左邊距讓它看起來置中 */
+  
+  /* 3. 顏色與質感 */
+  background: linear-gradient(135deg, #5a7b68, #7fa38a);
+  border: none;
+  box-shadow: 
+    0 4px 10px rgba(90, 123, 104, 0.3),
+    inset 0 1px 0 rgba(255,255,255,0.3);
+    
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  flex-shrink: 0; /* 防止被擠扁 */  
 }
-.ai-send-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 18px rgba(60, 90, 70, 0.25); }
+/* Hover 懸浮效果 */
+.ai-send-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  background: linear-gradient(135deg, #668a75, #8fb79c);
+  box-shadow: 0 6px 16px rgba(90, 123, 104, 0.4);
+}
+
+/* Active 點擊效果 */
+.ai-send-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 6px rgba(90, 123, 104, 0.2);
+}
+
+/* 圖示微調 */
+.ai-send-btn svg {
+  width: 20px;
+  height: 20px;
+  pointer-events: none; /* 點擊穿透 */
+}
 
 /* === Loading Animation === */
 .dot-flashing { position: relative; width: 8px; height: 8px; border-radius: 5px; background-color: #999; color: #999; animation: dot-flashing 1s infinite linear alternate; animation-delay: 0.5s; margin: 0 12px; }
