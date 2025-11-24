@@ -407,19 +407,44 @@ padding: 20px 24px 16px;
   background: linear-gradient(180deg, rgba(240, 250, 245, 0.6) 0%, rgba(255, 255, 255, 0) 100%);
   border-bottom: 1px solid rgba(0, 0, 0, 0.03);
 }
-#modalTitle { font-size: 16px;
-  font-weight: 600;
-  color: #5a7b68; /* 茶綠色 */
-  letter-spacing: 1px;
+#modalTitle { 
+  /* 1. 字體加大，提升份量感 */
+  font-size: 22px !important; 
+  font-weight: 800;
+  
+  /* 2. 顏色設定 (這裡會被 JS 的 style.color 覆蓋，但設個預設值比較保險) */
+  color: #5a7b68; 
+  
+  letter-spacing: 1.5px; /* 增加字距，更有質感 */
   text-transform: uppercase;
+  
   display: flex;
   align-items: center;
-  gap: 6px;}
+  justify-content: center; /* 如果你想要置中 */
+  gap: 8px;
+}
   /* 分類前的小圖示 (用 CSS 畫葉子) */
 #modalTitle::before {
-  content: "🌿"; /* 或者換成 SVG */
-  font-size: 14px;
-  opacity: 0.8;
+  content: "" !important;      /* 必須有內容才能顯示 */
+  display: inline-block !important;
+  
+  width: 24px;  /* 圖示大小 */
+  height: 24px;
+  margin-right: 6px;
+  margin-bottom: 2px; /* 微調垂直對齊 */
+
+  /* 🔥 關鍵：使用 currentColor 讓圖示顏色自動跟隨文字顏色 */
+  background-color: currentColor; 
+  
+  /* 使用 SVG Mask 載入精美的茶葉圖示 */
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M16.5 3C19.58 3 22 5.42 22 8.5C22 11.13 19.2 14.28 16.97 16.26C15.83 17.25 14.38 17.9 12.85 17.9C11.69 17.9 10.57 17.52 9.63 16.81C6.48 14.43 2.32 11.35 2.32 7.57C2.32 4.49 4.74 2.07 7.82 2.07C9.56 2.07 11.23 2.88 12.32 4.16C13.41 2.88 15.08 3 16.5 3Z' style='fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round'/%3E%3Cpath d='M12 18V22' style='stroke:currentColor;stroke-width:2;stroke-linecap:round'/%3E%3C/svg%3E") no-repeat center;
+  
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 22l10-10'/%3E%3Cpath d='M12 12c.5-3 2.5-5 5-5 3 0 5 2 5 5 0 5-4.5 9.5-10 10'/%3E%3Cpath d='M12 12c-.5-3-2.5-5-5-5-3 0-5 2-5 5 0 5 4.5 9.5 10 10'/%3E%3C/svg%3E") no-repeat center;
+
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  
+  opacity: 0.9; /* 微微透明增加質感 */
 }
 .close-btn {
   width: 32px; height: 32px;

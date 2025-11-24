@@ -198,7 +198,7 @@ export function initTeaModal() {
     // 🔥【關鍵修正】標題改成「分類名稱」，並加上分類的主題色
     if (catInfo) {
         // 加上一個小葉子圖示 🌿 + 分類中文名
-        modalTitle.innerHTML = `🌿 ${catInfo.title_zh}`; 
+        modalTitle.textContent = catInfo.title_zh; 
         modalTitle.style.color = catInfo.profileColor; // 讓標題顏色跟著分類變
     } else {
         modalTitle.textContent = "精選茗茶";
