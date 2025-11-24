@@ -230,13 +230,23 @@
 
 /* === 標題 (書法感) === */
 .section-title {
-  font-size: 24px; /* 更大 */
+  font-size: 22px;
   font-weight: 800;
   color: #2a3a32;
-  margin: 0 0 32px;
+  margin: 0 0 24px;
   position: relative;
-  letter-spacing: 1.5px;
-  display: inline-block;
+  letter-spacing: 1px;
+  
+  /* 🔥 新增：Flex 排版，讓 Icon 與文字垂直置中 */
+  display: flex;
+  align-items: center;
+  gap: 10px; /* 圖示與文字的間距 */
+}
+
+/* 調整 Icon 的位置，稍微修正視覺重心 */
+.section-title lord-icon {
+  transform: translateY(-2px); /* 微調向上，對齊中文字 */
+  filter: drop-shadow(0 2px 4px rgba(184, 134, 11, 0.2)); /* 給金色圖示一點光暈 */
 }
 
 /* 標題下方的「茶韻流光」 */
