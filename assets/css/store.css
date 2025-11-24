@@ -261,7 +261,7 @@
   border-radius: 4px;
   transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
-.section:hover .section-title::after { width: 100%; } /* Hover 時延伸 */
+.section:hover .section-title::after { width: 120px; } /* Hover 時延伸 */
 
 /* === 表單群組 === */
 /* 表單群組 */
