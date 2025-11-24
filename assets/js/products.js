@@ -188,13 +188,24 @@ export function initTeaModal() {
     const product = CONFIG.PRODUCTS.find((p) => p.id == id);
     if (!product) return;
 
-    const catInfo = CATEGORY_MAP.find((c) => c.key === card.dataset.cat);
+    // 🔍 查找分類資訊
+    const catInfo = CATEGORY_MAP.find((c) => c.key === product.category);
 
-    // 顯示
+    // 顯示 Modal
     modal.classList.add("show");
     modal.setAttribute("aria-hidden", "false");
-    modalTitle.textContent = `${product.title}`;
     
+    // 🔥【關鍵修正】標題改成「分類名稱」，並加上分類的主題色
+    if (catInfo) {
+        // 加上一個小葉子圖示 🌿 + 分類中文名
+        modalTitle.innerHTML = `🌿 ${catInfo.title_zh}`; 
+        modalTitle.style.color = catInfo.profileColor; // 讓標題顏色跟著分類變
+    } else {
+        modalTitle.textContent = "精選茗茶";
+        modalTitle.style.color = "#5a7b68";
+    }
+    
+    // 渲染內容
     renderSingleProduct(product, container, catInfo);
 
     // 鎖定背景捲動
@@ -202,9 +213,9 @@ export function initTeaModal() {
 
     setTimeout(() => initQtyControls(), 50);
     
-    // 同步顏色
-    if (typeof AURORA !== 'undefined') {
-        AURORA.setColor(catInfo?.colorA, catInfo?.colorB);
+    // 同步極光背景顏色
+    if (typeof AURORA !== 'undefined' && catInfo) {
+        AURORA.setColor(catInfo.colorA, catInfo.colorB);
     }
   });
 
