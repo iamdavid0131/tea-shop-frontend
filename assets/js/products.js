@@ -279,6 +279,12 @@ export function initTeaModal() {
 // ============================================================
 function renderSingleProduct(p, container, catInfo) {
   container.innerHTML = "";
+  
+  // 1. 設定主題色
+  const themeColor = catInfo?.profileColor || "#5a7b68";
+  container.style.setProperty('--pcolor', themeColor);
+  
+  // 2. 主卡片 (Hero Card)
   const item = document.createElement("article");
   item.className = "itemcard";
 
@@ -289,16 +295,17 @@ function renderSingleProduct(p, container, catInfo) {
   const stock = Number(p.stock || 0);
 
   function renderStockTag(stock) {
-    if (stock === 0) return `<div class="stock-tag soldout">缺貨中</div>`;
-    if (stock <= 5) return `<div class="stock-tag low">剩 ${stock} 件</div>`;
-    return `<div class="stock-tag ok">庫存 ${stock} 件</div>`;
+    if (stock === 0) return `<div class="stock-tag soldout">🚫 缺貨中</div>`;
+    if (stock <= 5) return `<div class="stock-tag low">⚡ 僅剩 ${stock} 件</div>`;
+    return `<div class="stock-tag ok">🟢 庫存充足</div>`;
   }
 
+  // 裝罐選項
   const packHtml = p.packable ? `
-      <div class="pack-row">
+      <div class="pack-row ${savedPack ? 'active' : ''}">
         <label class="pack-toggle">
           <input type="checkbox" id="pack-${p.id}" ${savedPack ? "checked" : ""}>
-          裝罐
+          ✨ 加購精緻茶罐裝
         </label>
         <div class="pack-qty ${savedPack ? "" : "hidden"}" id="packQtyWrap-${p.id}">
           <button class="step" data-dir="minus" data-pack="${p.id}">−</button>
@@ -307,46 +314,72 @@ function renderSingleProduct(p, container, catInfo) {
         </div>
       </div>` : "";
 
-  const profileColor = catInfo?.profileColor || "#78cfa8";
-
+  // 主卡片 HTML
   item.innerHTML = `
     <div class="title">${p.title}</div>
     <div class="meta">${p.tagline || ""}</div>
-    <div class="meta price-line">NT$ ${p.price} / ${p.unit}</div>
-     ${renderStockTag(stock)}
-    <div class="qty-row">
-      <button class="qty-btn" data-id="${p.id}" data-dir="minus">−</button>
-      <input class="qty-input" id="qty-${p.id}" type="number" value="${savedQty}" min="0">
-      <button class="qty-btn" data-id="${p.id}" data-dir="plus">＋</button>
+    <div class="meta price-line" style="font-family:'Noto Serif TC', serif; font-weight:700; font-size:18px; color:#b8860b;">
+       NT$ ${Number(p.price).toLocaleString()} <span style="font-size:13px; color:#888; font-weight:400;">/ ${p.unit}</span>
     </div>
-    ${packHtml}
-    <div class="detailblock open" id="detail-${p.id}">
-      ${p.story ? `<p>${p.story}</p>` : ""}
-      ${renderProfileGroup(p, profileColor)}
-      ${renderBrewGuide(p)}
+    ${renderStockTag(stock)}
+    
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-top:12px;">
+        <span style="font-size:15px; font-weight:700; color:#2f4b3c;">購買數量</span>
+        <div class="qty-row">
+          <button class="qty-btn" data-id="${p.id}" data-dir="minus">−</button>
+          <input class="qty-input" id="qty-${p.id}" type="number" value="${savedQty}" min="0">
+          <button class="qty-btn" data-id="${p.id}" data-dir="plus">＋</button>
+        </div>
     </div>
   `;
-
   container.appendChild(item);
+  
+  // 插入裝罐選項 (在主卡片後)
+  if (packHtml) {
+      const packContainer = document.createElement("div");
+      packContainer.innerHTML = packHtml;
+      container.appendChild(packContainer.firstElementChild);
+  }
 
-  // 庫存輸入限制
+  // 3. 描述區塊
+  if (p.story) {
+    const detail = document.createElement("div");
+    detail.className = "detailblock open"; // 預設展開
+    detail.innerHTML = `<p>${p.story}</p>`;
+    container.appendChild(detail);
+  }
+
+  // 4. 性格分析
+  const profileHtml = renderProfileGroup(p);
+  if (profileHtml) {
+      container.insertAdjacentHTML('beforeend', profileHtml);
+  }
+
+  // 5. 泡法指南
+  const brewHtml = renderBrewGuide(p);
+  if (brewHtml) {
+      container.insertAdjacentHTML('beforeend', brewHtml);
+  }
+
+  // 庫存控制邏輯 (維持原樣)
   const qtyInput = container.querySelector(`#qty-${p.id}`);
   const plusBtn = container.querySelector(`.qty-btn[data-dir="plus"]`);
   const minusBtn = container.querySelector(`.qty-btn[data-dir="minus"]`);
 
   if (stock === 0) {
-    qtyInput.value = 0;
-    qtyInput.disabled = true;
-    if (plusBtn) plusBtn.disabled = true;
-    if (minusBtn) minusBtn.disabled = true;
+    if(qtyInput) { qtyInput.value = 0; qtyInput.disabled = true; }
+    if(plusBtn) plusBtn.disabled = true;
+    if(minusBtn) minusBtn.disabled = true;
   } else {
-    qtyInput.addEventListener("input", () => {
-      let v = parseInt(qtyInput.value, 10);
-      if (isNaN(v)) v = 0;
-      if (v > stock) v = stock;
-      if (v < 0) v = 0;
-      qtyInput.value = v;
-    });
+    if(qtyInput) {
+        qtyInput.addEventListener("input", () => {
+          let v = parseInt(qtyInput.value, 10);
+          if (isNaN(v)) v = 0;
+          if (v > stock) v = stock;
+          if (v < 0) v = 0;
+          qtyInput.value = v;
+        });
+    }
     if (plusBtn) {
       plusBtn.addEventListener("click", (e) => {
         let v = parseInt(qtyInput.value, 10) || 0;
@@ -354,40 +387,70 @@ function renderSingleProduct(p, container, catInfo) {
           e.stopImmediatePropagation();
           e.preventDefault();
           qtyInput.value = stock;
+          // 可以加個 toast 提示庫存不足
         }
       });
     }
   }
 
   setTimeout(() => updatePackUI(p.id), 10);
-
-  requestAnimationFrame(() => {
-    const animateEls = container.querySelectorAll(`#detail-${p.id} .profile-bar .blk.on, #detail-${p.id} .brew-row`);
-    animateEls.forEach((el, i) => {
-      el.style.opacity = 0;
-      el.style.transform = "translateY(8px)";
-      setTimeout(() => {
-        el.style.transition = "opacity .35s var(--ease-soft), transform .35s var(--ease-soft)";
-        el.style.opacity = 1;
-        el.style.transform = "translateY(0)";
-      }, 50 + i * 40);
-    });
-  });
 }
-
-function renderProfileGroup(p, color) {
+// 🌈 茶性格渲染 (旗艦儀表板結構)
+function renderProfileGroup(p) {
   const labels = ["甜度", "香氣", "焙火", "厚度", "餘韻"];
   const values = [p.profile_sweetness, p.profile_aroma, p.profile_roast, p.profile_body, p.profile_finish];
-  if (!values.some((v) => v)) return "";
-  return `<div class="profile-blocks" data-color="${color}">
-      ${labels.map((label, i) => `<div class="bar"><b>${label}</b><div class="profile-bar">${Array.from({ length: 5 }).map((_, j) => `<div class="blk ${j < (values[i] || 0) ? "on" : ""}" style="--pcolor:${color};"></div>`).join("")}</div></div>`).join("")}</div>`;
-}
+  
+  if (!values.some((v) => v)) return ""; // 如果沒資料就不顯示
 
+  let barsHtml = "";
+  labels.forEach((label, i) => {
+      const val = values[i] || 0;
+      let blocks = "";
+      for(let k=1; k<=5; k++) {
+          blocks += `<div class="blk ${k <= val ? 'on' : ''}"></div>`;
+      }
+      barsHtml += `
+        <div class="profile-row">
+            <span class="profile-label">${label}</span>
+            <div class="profile-bar">${blocks}</div>
+        </div>
+      `;
+  });
+
+  return `
+    <div class="profile-section">
+        <div class="profile-title">風味分析 PROFILE</div>
+        <div class="profile-blocks">
+            ${barsHtml}
+        </div>
+    </div>
+  `;
+}
+// ♨️ 泡法指南渲染 (卡片化結構)
 function renderBrewGuide(p) {
-    const hot = [["茶葉量", p.brew_hot_grams], ["熱水量", p.brew_hot_water_ml], ["水溫", p.brew_hot_temp_c], ["浸泡時間", p.brew_hot_time_s], ["可回沖", p.brew_hot_infusions]].filter(x => x[1] !== "" && x[1] != null);
-    const cold = [["茶葉量", p.brew_cold_grams], ["冷水量", p.brew_cold_water_ml], ["冷泡時間", p.brew_cold_hours]].filter(x => x[1] !== "" && x[1] != null);
-  if (hot.length === 0 && cold.length === 0) return "";
-  return `<div class="brew-section open" id="brew-${p.id}"><div class="brew-title">♨️ 熱泡 Hot Brew</div>${hot.map(h => `<div class="brew-row"><span>${h[0]}</span><span>${h[1]}</span></div>`).join("")}${cold.length ? `<div class="brew-title" style="margin-top:12px;">🧊 冷泡 Cold Brew</div>${cold.map(c => `<div class="brew-row"><span>${c[0]}</span><span>${c[1]}</span></div>`).join("")}` : ""}</div>`;
+    const hot = [["茶葉量", p.brew_hot_grams], ["熱水量", p.brew_hot_water_ml], ["水溫", p.brew_hot_temp_c], ["浸泡時間", p.brew_hot_time_s], ["可回沖", p.brew_hot_infusions]].filter(x => x[1] && x[1] !== "");
+    const cold = [["茶葉量", p.brew_cold_grams], ["冷水量", p.brew_cold_water_ml], ["冷泡時間", p.brew_cold_hours]].filter(x => x[1] && x[1] !== "");
+
+    if (hot.length === 0 && cold.length === 0) return "";
+
+    let html = `<div class="brew-section open">`;
+    
+    if (hot.length) {
+        html += `<div class="brew-title">♨️ 熱泡 Hot Brew</div>`;
+        hot.forEach(h => {
+            html += `<div class="brew-row"><span>${h[0]}</span><span>${h[1]}</span></div>`;
+        });
+    }
+
+    if (cold.length) {
+        html += `<div class="brew-title" style="margin-top:24px;">🧊 冷泡 Cold Brew</div>`;
+        cold.forEach(c => {
+            html += `<div class="brew-row"><span>${c[0]}</span><span>${c[1]}</span></div>`;
+        });
+    }
+
+    html += `</div>`;
+    return html;
 }
 
 function darkenRGBA(rgba, factor = 0.35) {

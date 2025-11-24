@@ -153,32 +153,114 @@ body {
    🍵 商品卡片 (Tea Card)
    ============================================================ */
 .tea-card {
-  width: 180px; flex: 0 0 auto; padding: 18px 16px; border-radius: var(--radius-md);
-  background: rgba(255,255,255,0.85); border: 1px solid rgba(170,190,180,0.28);
-  box-shadow: 0 6px 16px rgba(90,123,104,0.06); backdrop-filter: blur(14px);
-  display: flex; flex-direction: column; gap: 6px; cursor: pointer;
-  transition: all .35s var(--ease-soft); animation: cardFadeUp .6s var(--ease-soft) both;
+  /* 基礎佈局 */
+  width: 180px;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* 讓內容撐開 */
+  
+  /* 尺寸與圓角 */
+  padding: 20px 18px;
+  border-radius: 24px; /* 更大的圓角，更現代 */
+  
+  /* 💎 旗艦玻璃質感 */
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(240, 248, 245, 0.85));
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  
+  /* 高級陰影 (多層次) */
+  box-shadow: 
+    0 10px 30px rgba(90, 123, 104, 0.08), /* 遠處柔光 */
+    0 4px 8px rgba(90, 123, 104, 0.04),  /* 近處細節 */
+    inset 0 0 0 1px rgba(255, 255, 255, 0.5); /* 內發光邊框 */
+    
+  backdrop-filter: blur(20px);
+  
+  /* 動畫 */
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden; /* 為了流光特效 */
 }
-.tea-card:active { transform: scale(0.97); }
+
+/* Hover 懸浮效果 */
 .tea-card:hover {
-  transform: translateY(-4px); background: rgba(255,255,255,0.92);
-  box-shadow: 0 10px 24px rgba(90,123,104,0.10);
+  transform: translateY(-6px) scale(1.02);
+  background: linear-gradient(145deg, #ffffff, #f0f7f3);
+  box-shadow: 
+    0 16px 40px rgba(90, 123, 104, 0.15),
+    0 6px 12px rgba(90, 123, 104, 0.08);
+  border-color: #cde0d6;
 }
 
-.tea-card .title { font-size: 17px; font-weight: 700; line-height: 1.35; color: #2f4b3c; }
-.tea-card .meta { font-size: 13px; opacity: 0.65; }
+/* 點擊回饋 */
+.tea-card:active {
+  transform: scale(0.96);
+  box-shadow: 0 4px 12px rgba(90, 123, 104, 0.1);
+}
 
-/* Hover 亮光 */
+/* 標題文字 */
+.tea-card .title {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.4;
+  color: #2a3a32;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  
+  /* 讓過長的標題自動省略 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 副標題 (價格或描述) */
+.tea-card .meta {
+  font-size: 14px;
+  color: #6b8c7a;
+  font-weight: 500;
+  margin-top: auto; /* 推到底部 */
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 裝飾小圖示 (可選) */
+.tea-card .meta::before {
+  content: "🍃";
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* ✨ 流光掃過特效 (Shimmer) */
 .tea-card::after {
-  content: ""; position: absolute; inset: 0;
-  background: linear-gradient(115deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 60%);
-  opacity: 0; transition: all .4s var(--ease-soft); transform: translateX(-20%); pointer-events: none;
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
 }
-.tea-card:hover::after { opacity: 1; transform: translateX(40%); }
 
-@keyframes cardFadeUp {
-  from { opacity: 0; transform: translateY(14px) scale(.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+.tea-card:hover::after {
+  opacity: 1;
+  animation: cardShine 0.8s ease-in-out forwards;
+}
+
+@keyframes cardShine {
+  0% { left: -100%; }
+  100% { left: 200%; }
 }
 
 
@@ -198,6 +280,19 @@ body {
 .tea-modal.show .tea-modal-bg { opacity: 1; pointer-events: auto!important; }
 
 .tea-modal-content {
+  /* 頂部加大圓角 */
+  border-radius: 32px 32px 0 0; 
+  /* 極致玻璃質感背景 */
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  
+  /* 加上頂部光澤 */
+  box-shadow: 
+    0 -10px 40px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    
+  padding-bottom: calc(40px + env(safe-area-inset-bottom));
   width: 100%; max-height: 88%; background: rgba(255,255,255,0.88);
   border-radius: 24px 24px 0 0; padding-bottom: calc(32px + env(safe-area-inset-bottom));
   backdrop-filter: blur(18px) saturate(140%); box-shadow: 0 -6px 24px rgba(0,0,0,0.12);
@@ -207,23 +302,73 @@ body {
 .tea-modal.show .tea-modal-content { transform: translateY(0)!important; }
 
 .tea-modal-header {
-  padding: 18px 22px 12px; display: flex; justify-content: space-between; align-items: center;
-  touch-action: none; cursor: grab; border-bottom: 1px solid rgba(0,0,0,0.08);
+padding: 20px 24px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  /* 茶韻漸層背景 */
+  background: linear-gradient(180deg, rgba(240, 250, 245, 0.6) 0%, rgba(255, 255, 255, 0) 100%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
 }
-#modalTitle { font-size: 20px; font-weight: 700; color: #2f4b3c; }
-.close-btn { font-size: 24px; opacity: 0.6; background: none; border: none; cursor: pointer; }
+#modalTitle { font-size: 16px;
+  font-weight: 600;
+  color: #5a7b68; /* 茶綠色 */
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 6px;}
+  /* 分類前的小圖示 (用 CSS 畫葉子) */
+#modalTitle::before {
+  content: "🌿"; /* 或者換成 SVG */
+  font-size: 14px;
+  opacity: 0.8;
+}
+.close-btn {
+  width: 32px; height: 32px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: #555;
+  transition: all 0.2s;
+}
+.close-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+  transform: rotate(90deg);
+}
 
 .tea-collection { padding: 18px 16px 40px; display: flex; flex-direction: column; gap: 22px; }
 
 /* Item Card inside Modal */
 .itemcard {
-  background: rgba(255,255,255,0.82); border: 1px solid rgba(160,180,165,0.25);
-  border-radius: 18px; padding: 18px 20px; box-shadow: 0 6px 16px rgba(80,110,90,0.06);
-  backdrop-filter: blur(10px); display: flex; flex-direction: column; gap: 10px;
-  position: relative; animation: fadeSlideIn .45s var(--ease-soft);
+  margin-top: 10px;
+  padding: 24px 20px;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 4px 20px rgba(90, 123, 104, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.02);
+  position: relative;
+  overflow: hidden;
 }
-.itemcard .title { font-size: 20px; font-weight: 700; color: #2f4b3c; }
-.itemcard .meta { font-size: 14px; opacity: 0.75; }
+/* 背景裝飾紋理 */
+.itemcard::before {
+  content: "";
+  position: absolute; top: -20px; right: -20px;
+  width: 100px; height: 100px;
+  background: radial-gradient(circle, #e8f3ed 0%, transparent 70%);
+  opacity: 0.6; pointer-events: none;
+}
+.itemcard .title {font-size: 24px;
+  font-weight: 800;
+  color: #2f4b3c;
+  margin-bottom: 8px;
+  line-height: 1.3;
+  font-family: "Noto Serif TC", serif; /* 宋體更有茶味 */}
+.itemcard .meta { font-size: 15px;
+  color: #6b8c7a;
+  margin-bottom: 16px;
+  font-weight: 500;}
 
 /* 數量控制 */
 .qty-row { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
@@ -239,17 +384,27 @@ body {
 }
 
 /* 庫存標籤 */
-.stock-tag { margin: 8px 0 4px; font-size: 14px; font-weight: 500; color: #365c4b; }
-.stock-tag.ok { color: #4a6b58; }
-.stock-tag.low { color: #c46a4a; font-weight: 600; }
-.stock-tag.soldout { color: #b03535; font-weight: 650; }
+.stock-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #f0f5f3;
+  color: #4a6b58;
+  margin-bottom: 16px;
+}
+.stock-tag.low { background: #fff4e6; color: #c46a4a; }
+.stock-tag.soldout { background: #ffe6e6; color: #b03535; }
 
 /* Pack Row (裝罐) */
 .pack-row {
-  margin-top: 8px; padding: 12px 14px; border-radius: 14px;
-  background: rgba(255, 255, 255, 0.75); border: 1px solid rgba(170, 190, 180, 0.28);
-  box-shadow: 0 3px 10px rgba(80, 110, 90, 0.05);
-  display: flex; align-items: center; justify-content: space-between; gap: 10px; transition: all 0.3s ease;
+  background: #f8faf9;
+  padding: 8px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
 }
 .pack-row.active { background: rgba(255, 255, 255, 0.95); border-color: #8fb79c; }
 .pack-toggle { font-weight: 700; color: #305c46; font-size: 15px; display: flex; align-items: center; gap: 8px; cursor: pointer; }
@@ -279,40 +434,193 @@ body {
 
 
 /* ============================================================
-   📘 詳細說明與功能 (Details & Profile)
+   📘 詳細說明與功能 (Details & Profile - No Toggle Version)
    ============================================================ */
+
+/* 通用進場動畫：往上浮現 */
+@keyframes cardSlideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === 1. 詳細說明區塊 (預設展開) === */
 .detailblock {
-  overflow: hidden; max-height: 0; opacity: 0; background: #fafafa;
-  border-radius: 12px; padding: 0 14px; border: 1px dashed rgba(0,0,0,0.08);
-  transform: translateY(6px); transition: all .35s var(--ease-soft);
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 24px; /* 增加內距 */
+  margin-bottom: 16px;
+  
+  /* 懸浮質感 */
+  box-shadow: 0 4px 20px rgba(90, 123, 104, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.02);
+
+  /* 動畫設定 */
+  opacity: 0; /* 初始隱藏，等動畫 */
+  animation: cardSlideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  animation-delay: 0.1s; /* 第 1 個出現 */
 }
-.detailblock.open { padding: 14px; opacity: 1; max-height: 700px; transform: translateY(0); }
-.detailblock p { font-size: 14px; line-height: 1.6; color: #333; }
 
-/* 茶性格條 */
-.profile-blocks { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
-.profile-bar { display: flex; gap: 6px; }
-.profile-bar .blk { width: 14px; height: 18px; border-radius: 5px; background: #e5e5e5; opacity: 0.5; transition: opacity .25s; }
-.profile-bar .blk.on { animation: profileBlink .4s ease-out forwards; background: var(--pcolor); filter: brightness(1.15); opacity: 1; }
-@keyframes profileBlink { 0% { opacity: 0.2; transform: translateY(4px); } 100% { opacity: 1; } }
-
-.more-btn {
-  margin-top: 10px; padding: 10px 14px; width: 100%; border-radius: 8px;
-  background: #fff; border: 1px solid #ddd; font-size: 15px; font-weight: 600;
-  display: flex; justify-content: center; align-items: center; gap: 6px; transition: all .25s ease;
+/* 內文排版優化 */
+.detailblock p {
+  font-size: 15.5px;
+  line-height: 1.85; /* 更寬鬆的行距，閱讀更舒適 */
+  color: #4a4a4a;
+  text-align: justify;
+  letter-spacing: 0.03em;
+  margin: 0;
 }
-.more-btn.active { background: #e9f7ef; border-color: #bce4c8; color: #0a7a45; }
 
-/* 泡法資訊 */
+
+/* === 2. 茶性格儀表板 (Profile Section) === */
+.profile-section {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 24px;
+  margin-top: 0; /* 緊接在說明下方 */
+  margin-bottom: 16px;
+  
+  box-shadow: 0 4px 20px rgba(90, 123, 104, 0.05);
+  border: 1px solid rgba(0,0,0,0.02);
+  
+  /* 動畫設定 */
+  opacity: 0;
+  animation: cardSlideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  animation-delay: 0.2s; /* 第 2 個出現 */
+}
+
+/* 標題 */
+.profile-title {
+  font-size: 13px;
+  color: #8fa396;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  display: flex; align-items: center; gap: 8px;
+}
+/* 裝飾條 */
+.profile-title::before {
+  content: ""; display: block; width: 4px; height: 14px;
+  background: var(--pcolor, #5a7b68);
+  border-radius: 2px;
+}
+
+/* 內容容器 */
+.profile-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 單行 (標籤 + 燈條) */
+.profile-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.profile-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2f4b3c;
+  width: 55px;
+}
+
+/* 燈條容器 */
+.profile-bar {
+  flex: 1;
+  display: flex;
+  gap: 6px;
+  padding-left: 12px;
+}
+
+/* 燈號 (光膠囊) */
+.profile-bar .blk {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: #f0f2f1;
+  transition: all 0.3s ease;
+}
+
+/* 亮起狀態 */
+.profile-bar .blk.on {
+  background: var(--pcolor, #5a7b68);
+  box-shadow: 0 0 10px var(--pcolor, rgba(90, 123, 104, 0.4));
+  opacity: 0;
+  /* 燈條內部的依序亮起 */
+  animation: barPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* 燈條延遲 (加上原本卡片的延遲 0.2s) */
+.profile-bar .blk:nth-child(1) { animation-delay: 0.3s; }
+.profile-bar .blk:nth-child(2) { animation-delay: 0.35s; }
+.profile-bar .blk:nth-child(3) { animation-delay: 0.4s; }
+.profile-bar .blk:nth-child(4) { animation-delay: 0.45s; }
+.profile-bar .blk:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes barPop {
+  0% { transform: scaleX(0); opacity: 0; }
+  100% { transform: scaleX(1); opacity: 1; }
+}
+
+
+/* === 3. 泡法資訊 (Brew Section) === */
 .brew-section {
-  background: #fafafa; border-radius: 14px; padding: 0 14px; margin-top: 10px;
-  border: 1px dashed rgba(0,0,0,0.08); overflow: hidden; max-height: 0; opacity: 0; transition: all .35s;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 24px;
+  margin-top: 0;
+  
+  border: 1px solid rgba(0,0,0,0.02);
+  box-shadow: 0 4px 20px rgba(90, 123, 104, 0.05);
+  
+  /* 動畫設定 */
+  opacity: 0;
+  animation: cardSlideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  animation-delay: 0.3s; /* 第 3 個出現 */
 }
-.brew-section.open { padding: 14px; max-height: 600px; opacity: 1; }
-.brew-title { font-size: 15px; font-weight: 700; color: #226850; display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
-.brew-row { font-size: 14px; padding: 6px 0; display: flex; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.06); }
-.ice-icon { font-size: 15px; margin-left: 4px; opacity: 0.8; }
 
+.brew-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #2f4b3c;
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f5f3; /* 極細分隔線 */
+}
+
+.brew-row {
+  font-size: 15px;
+  color: #555;
+  padding: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s;
+}
+
+/* 分隔線只在項目之間顯示，最後一項不要 */
+.brew-row:not(:last-child) {
+  border-bottom: 1px dashed #f0f0f0;
+}
+
+.brew-row:hover {
+  background: #fafcfb;
+  padding-left: 10px; padding-right: 10px;
+  margin: 0 -10px; /* 負邊距讓背景填滿 */
+  border-radius: 12px;
+}
+
+.brew-row span:last-child {
+  font-weight: 600;
+  color: #2f4b3c;
+  font-family: "Noto Serif TC", serif;
+  letter-spacing: 0.5px;
+}
+
+.ice-icon { font-size: 16px; margin-left: 4px; }
 
 /* ============================================================
    🌀 Embla Carousel 核心樣式
@@ -544,25 +852,34 @@ body {
 }
 
 /* 2. 解鎖垂直滑動 (針對 Modal 內容) */
-.tea-modal-content, 
-.ai-box, 
-.sp-sheet,
-.sheet, 
-.ai-chat-area {
+/* 1. Modal 內容容器：允許垂直捲動，禁止水平溢出 */
+.tea-modal-content {
   overflow-y: auto !important;
   overflow-x: hidden !important;
+  
   /* iOS 慣性滑動必備 */
   -webkit-overflow-scrolling: touch !important;
-  /* 告訴瀏覽器：這裡允許垂直操作 */
+  
+  /* 告訴瀏覽器：這裡允許垂直操作，不要攔截 */
   touch-action: pan-y !important;
+  
   /* 防止滑到底部時，連帶捲動到後面的 body */
-  overscroll-behavior: contain !important; 
+  overscroll-behavior: contain !important;
+  
+  /* 確保高度被限制，不然無法捲動 */
+  max-height: 85vh !important;
+  height: auto !important;
 }
 
-/* 3. 確保 Modal 內部內容有高度限制，否則無法捲動 */
-.tea-modal.show .tea-modal-content {
-  max-height: 85vh !important; /* 限制高度 */
-  height: auto !important;
+/* 2. 確保 Modal 本身不會擋住捲動 */
+.tea-modal {
+  /* 讓點擊穿透到 content，但不要擋住 scroll */
+  touch-action: none; 
+}
+
+/* 3. 如果有用了 Hammer.js，這行能救命 */
+.tea-modal-content * {
+  touch-action: pan-y !important; /* 強制子元素也允許捲動 */
 }
 
 /* 4. 確保 AI 視窗內容可以滑 */
