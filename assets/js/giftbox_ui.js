@@ -153,32 +153,31 @@ function validateGiftbox() {
   }
 
   container.classList.add('gold-flow-active');
+  // 🔥 這裡很重要：如果是編輯模式，文字要顯示「確認修改」
   status.innerText = editingId ? "✔ 準備完成，請確認修改" : "✔ 完美組合！";
   status.style.color = "#2f4b3c";
+  
+  submit.innerText = editingId ? "確認修改" : "加入購物車";
   submit.disabled = false;
   submit.classList.add("enabled");
 }
 
 export function loadGiftBoxForEdit(data) {
+  // 1. 載入資料
   selectedItems[1] = data.slot1;
   selectedItems[2] = data.slot2;
-  editingId = data.id;
+  editingId = data.id; // 記錄我們正在編輯哪個 ID
 
+  // 2. 更新 UI
   updateMetalSlot(1, selectedItems[1]);
   updateMetalSlot(2, selectedItems[2]);
   updateGiftboxProgress();
+  
+  // 3. 觸發驗證 (這會更新按鈕文字為 "確認修改")
   validateGiftbox();
 
-  const status = document.getElementById("giftbox-status");
-  const submit = document.getElementById("giftbox-submit");
+  // 4. 滾動到禮盒區塊
   const section = document.getElementById("giftboxCard");
-
-  if(status && submit) {
-      status.innerText = "📝 編輯模式";
-      status.style.color = "#b8860b";
-      submit.innerText = "確認修改";
-  }
-
   if (section) {
       setTimeout(() => {
         section.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -230,7 +229,7 @@ export function initGiftBox() {
         submitBtn.addEventListener("click", () => {
           if (submitBtn.disabled) return;
 
-          // 計算總價：(單價 * 數量) + (單價 * 數量)
+          // 計算總價
           const p1 = selectedItems[1];
           const p2 = selectedItems[2];
           const price1 = p1.price * (p1.qty || 1);
@@ -244,6 +243,7 @@ export function initGiftBox() {
 
           flyToCart();
 
+          // 🔥 區分：是「更新舊禮盒」還是「新增禮盒」
           if (editingId) {
             const ok = updateGiftBoxInCart(editingId, finalGiftbox);
             if(ok) alert("禮盒內容已更新！");
