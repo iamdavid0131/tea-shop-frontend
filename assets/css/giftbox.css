@@ -228,3 +228,131 @@
 .selector-item:last-child {
   border-bottom: none;
 }
+
+/* =========================================
+   6. 補齊：選擇茶品彈窗 (Selector Modal)
+   ========================================= */
+
+/* 遮罩層 */
+.selector-modal {
+  position: fixed;
+  inset: 0; /* 佔滿全螢幕 */
+  z-index: 10000;
+  background: rgba(40, 50, 45, 0.4); /* 深綠半透明遮罩 */
+  backdrop-filter: blur(6px);
+  display: none; /* JS 控制開關 */
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* 當 JS 設定 display:flex 後，加上這個 class 來做淡入 */
+.selector-modal.show {
+  opacity: 1;
+}
+
+/* 彈窗本體 */
+.selector-panel {
+  width: 90%;
+  max-width: 380px;
+  max-height: 80vh;
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: scale(0.95);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.selector-modal.show .selector-panel {
+  transform: scale(1);
+}
+
+/* 標題列 */
+.selector-header {
+  padding: 16px 20px;
+  background: linear-gradient(to right, #f7faf8, #ffffff);
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.selector-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #2f4b3c; /* 深綠文字 */
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 關閉按鈕 */
+.selector-header .close-btn {
+  background: #f0f2f1;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  color: #666;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.selector-header .close-btn:hover {
+  background: #e0e6e3;
+  color: #2f4b3c;
+}
+
+/* 列表區域 */
+.selector-list-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+  background: #fcfdfd;
+}
+
+/* 單個選項 */
+.selector-item {
+  padding: 16px 24px;
+  border-bottom: 1px solid #f0f5f3;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.selector-item:last-child {
+  border-bottom: none;
+}
+
+.selector-item:hover {
+  background: #f0f7f4; /* 淡綠 hover */
+}
+
+/* 選項文字 */
+.sel-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2f4b3c; /* 確保是深色，不要是白色 */
+}
+.sel-meta {
+  font-size: 13px;
+  color: #889990;
+  margin-top: 4px;
+}
+.sel-price {
+  font-weight: 700;
+  color: #b8860b; /* 金色價格 */
+  font-family: "Noto Serif TC", serif;
+}

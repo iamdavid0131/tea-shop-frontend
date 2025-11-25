@@ -36,34 +36,59 @@ function openProductSelector(slot) {
   const modal = document.getElementById("selector-modal");
   const list = document.getElementById("selector-list");
   
-  if(modal) modal.style.display = "flex";
+  if(modal) {
+      modal.style.display = "flex";
+      // 延遲加入 show class 以觸發 CSS 淡入動畫
+      setTimeout(() => modal.classList.add("show"), 10);
+  }
+  
   if(list) list.innerHTML = "";
 
-  // 篩選：只顯示 75g 或 150g 的商品 (符合禮盒規格)
-  const valid = CONFIG.PRODUCTS.filter(p => p.unit && /^(75g|150g)$/.test(p.unit));
+  // 🔥 修改：放寬篩選條件 (不分大小寫，只要包含 75 或 150 即可)
+  const valid = CONFIG.PRODUCTS.filter(p => {
+      if (!p.unit) return false;
+      const u = p.unit.toLowerCase(); // 轉小寫比對
+      // 只要單位裡有 "75" 或 "150" 就視為合格 (例如 "75g", "75克", "150G" 都通)
+      return u.includes("75") || u.includes("150");
+  });
 
+  // 如果真的沒資料，顯示提示
   if(valid.length === 0) {
-      if(list) list.innerHTML = '<div style="padding:20px; text-align:center; color:#666;">暫無符合禮盒規格的茶品</div>';
+      if(list) list.innerHTML = `
+        <div style="padding:40px 20px; text-align:center; color:#889990;">
+           <div style="font-size:40px; margin-bottom:10px;">🍃</div>
+           <div>暫無符合禮盒規格 (75g/150g) 的茶品</div>
+        </div>`;
       return;
   }
 
   valid.forEach(p => {
     const div = document.createElement("div");
     div.className = "selector-item";
-    // 優化選單樣式
+    
+    // 使用新的 CSS class 結構
     div.innerHTML = `
-      <div style="font-weight:bold; color:#2f4b3c; font-size:15px;">${p.title}</div>
-      <div style="font-size:13px; color:#888;">${p.unit}｜NT$ ${p.price}</div>
+      <div>
+        <div class="sel-name">${p.title}</div>
+        <div class="sel-meta">${p.unit}</div>
+      </div>
+      <div class="sel-price">NT$ ${p.price}</div>
     `;
     div.onclick = () => selectProduct(p);
     list.appendChild(div);
   });
 }
 
-// 讓關閉按鈕也能運作
+// 讓關閉按鈕也能運作 (包含移除動畫 class)
 window.closeSelector = () => {
     const modal = document.getElementById("selector-modal");
-    if(modal) modal.style.display = "none";
+    if(modal) {
+        modal.classList.remove("show");
+        // 等動畫跑完再隱藏
+        setTimeout(() => {
+            modal.style.display = "none";
+        }, 300);
+    }
 };
 
 // ====== 選中商品 ======
