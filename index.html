@@ -46,6 +46,8 @@
 
   <link rel="stylesheet" href="/assets/css/ai-chat.css">
 
+  <link rel="stylesheet" href="/assets/css/giftbox.css">
+
   <!-- 純靜態版本：讀取 URL promo 並廣播事件 -->
   <script>
   document.addEventListener('DOMContentLoaded', () => {
@@ -132,8 +134,57 @@
 </div>
 
 
+<div class="selector-modal" id="selector-modal" style="display:none;">
+<div class="selector-panel">
+<div class="selector-header">
+<h3>選擇禮盒茶款</h3>
+<button class="close-btn" onclick="closeSelector()">✕</button>
+</div>
+<div id="selector-list" class="selector-list-content"></div>
+</div>
+</div>
 
 
+<div class="section" id="giftboxCard">
+<h2 class="section-title">
+<lord-icon src="https://cdn.lordicon.com/lupuorrc.json" trigger="loop-on-hover" colors="primary:#2f4b3c,secondary:#b8860b" style="width:32px;height:32px"></lord-icon>
+客製化雙罐禮盒
+</h2>
+
+
+<div class="giftbox-container metal-ui" id="giftbox-container">
+<div class="giftbox-slots metal-slots">
+<!-- 罐 1 -->
+<div class="metal-slot" id="slot1" onclick="openProductSelector(1)">
+<div class="metal-cap"></div>
+<div class="metal-body">
+<div class="metal-text">第一罐<br><span class="metal-sub">選擇茶款</span></div>
+</div>
+</div>
+
+
+<!-- 罐 2 -->
+<div class="metal-slot" id="slot2" onclick="openProductSelector(2)">
+<div class="metal-cap"></div>
+<div class="metal-body">
+<div class="metal-text">第二罐<br><span class="metal-sub">選擇茶款</span></div>
+</div>
+</div>
+</div>
+
+
+<!-- 重量進度條 -->
+<div class="giftbox-progress">
+<div class="progress-bar-bg"><div class="progress-bar-fill" id="giftbox-progress-fill"></div></div>
+<div class="progress-text" id="giftbox-progress-text">0 / 300 g</div>
+</div>
+
+
+<div class="giftbox-status" id="giftbox-status">尚未滿足兩罐組合</div>
+<input type="hidden" id="giftbox-data-input" name="giftboxData" />
+<button class="giftbox-submit" id="giftbox-submit" disabled>加入購物車</button>
+</div>
+</div>
 
 <!-- ✅ Step 2: 收件資料 -->
 <div class="section">

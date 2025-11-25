@@ -7,6 +7,9 @@ import { CONFIG } from "./config.js";
 import { api } from "./app.api.js";
 import { buildOrderItems, updateTotals } from "./cart.js";
 import { openSecretModal } from "./ai-shop.js";
+import { removeGiftBox } from "./cart.js";
+import { getGiftBox } from "./cart.js";
+import { loadGiftBoxForEdit } from "./giftbox_ui.js";
 // 🤫 隱藏商品備份 (UI 顯示用)
 const SECRET_PRODUCT_DEF = {
   id: "secret_888",
@@ -59,27 +62,51 @@ export async function showCartSheet() {
     const row = document.createElement("div");
     row.className = "line-item clickable";
     row.dataset.id = i.id;
-    const packStr = i.packQty > 0 ? `（裝罐 ${i.packQty}）` : "";
-    const isSecret = i.id === "secret_888";
-    const titleHtml = isSecret ? `<span style="color:#b8860b; font-weight:800;">🤫 ${i.name}</span>` : i.name;
+    // 區分是一般商品還是禮盒
+    row.dataset.type = i.type || 'regular'; 
+
+    let titleHtml = i.name;
+    let qtyStr = `× ${i.qty}`;
+    
+    // 針對禮盒顯示內容物詳情
+    if (i.type === 'giftbox') {
+        const d = i.details;
+        // 顯示：第一罐 + 第二罐
+        const detailText = `<span class="muted" style="font-size:12px; display:block; margin-top:2px;">
+            1. ${d.slot1.title}<br>2. ${d.slot2.title}
+        </span>`;
+        titleHtml += detailText;
+    } else {
+        // 一般商品邏輯
+        const packStr = i.packQty > 0 ? `（裝罐 ${i.packQty}）` : "";
+        const isSecret = i.id === "secret_888";
+        titleHtml = isSecret ? `<span style="color:#b8860b; font-weight:800;">🤫 ${i.name}</span>` : i.name;
+        qtyStr += ` ${packStr}`;
+    }
 
     row.innerHTML = `
         <div class="swipe-content">
           <div class="swipe-info">
               <div class="li-title">${titleHtml}</div>
-              <div class="li-qty">× ${i.qty} ${packStr}</div>
+              <div class="li-qty">${qtyStr}</div>
           </div>
           <div class="li-sub">NT$ ${(i.price * i.qty).toLocaleString("zh-TW")}</div>
         </div>
-        <button class="swipe-delete" data-id="${i.id}">刪除</button>
+        <button class="swipe-delete" data-id="${i.id}" data-type="${i.type || 'regular'}">刪除</button>
     `;
     list.appendChild(row);
+    
+    // 只有一般商品能點進去修改，禮盒點了沒反應（或者你可以做成點了跳回去禮盒選單）
+    if (i.type !== 'giftbox') {
+        // row.addEventListener... (原本的綁定是綁在整個 sheet 上的 handleItemClick)
+    }
+    
     enableSwipeDelete(row);
   });
 
   // 3. 金額試算 (加上嚴格防呆)
   try {
-    // 預填 (從 StickyBar 偷資料，讓體感變快)
+    // 預填
     if (document.getElementById("total_s")) {
       if($("cartTotal")) $("cartTotal").textContent = $("total_s").textContent;
       if($("cartShip")) $("cartShip").textContent = $("ship_s").textContent;
@@ -157,6 +184,17 @@ function handleItemClick(e) {
 
   // 🚪 先關閉購物明細 (讓畫面乾淨)
   hideCartSheet();
+
+  // 🟢 處理禮盒點擊
+  if (type === 'giftbox') {
+      const boxData = getGiftBox(id); // 從 cart.js 拿資料
+      if (boxData) {
+          loadGiftBoxForEdit(boxData); // 呼叫 giftbox_ui.js 的編輯功能
+      } else {
+          toast("讀取禮盒資料失敗");
+      }
+      return;
+  }
 
   // 🕵️ 針對隱藏商品的特殊處理
   if (id === "secret_888") {
@@ -273,11 +311,10 @@ function enableSwipeDelete(row) {
   let startX = 0;
 
   const hammer = new Hammer(row);
-  // 🔥 關鍵：允許垂直滾動，只攔截水平
   hammer.get("pan").set({ direction: Hammer.DIRECTION_HORIZONTAL, touchAction: 'pan-y' });
 
+  // ... (panstart, panmove, panend 的邏輯完全不用改，保留原樣) ...
   hammer.on("panstart", () => {
-    // 如果已經打開，起點是 -90
     const currentTransform = content.style.transform;
     const isOpen = currentTransform.includes("-90px");
     startX = isOpen ? -90 : 0;
@@ -285,25 +322,42 @@ function enableSwipeDelete(row) {
 
   hammer.on("panmove", (e) => {
     let x = startX + e.deltaX;
-    if (x < -90) x = -90; // 最多拉到 -90
-    if (x > 0) x = 0;     // 不能往右拉
+    if (x < -90) x = -90; 
+    if (x > 0) x = 0;     
     content.style.transform = `translateX(${x}px)`;
     deleteBtn.style.transform = `translateX(${x + 90}px)`;
   });
 
   hammer.on("panend", (e) => {
-    const shouldOpen = e.deltaX < -40; // 拉超過 40px 就定住
+    const shouldOpen = e.deltaX < -40;
     const x = shouldOpen ? -90 : 0;
     content.style.transform = `translateX(${x}px)`;
     deleteBtn.style.transform = `translateX(${x + 90}px)`;
   });
 
+  // 🗑️ 點擊刪除按鈕
   deleteBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     const id = deleteBtn.dataset.id;
-    const cart = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
-    delete cart[id];
-    localStorage.setItem("teaOrderCart", JSON.stringify(cart));
+    const type = deleteBtn.dataset.type; // 抓我們剛剛加的 data-type
+
+    // 🟢 分流處理刪除
+    if (type === 'giftbox') {
+        // 刪除禮盒
+        removeGiftBox(id); // 呼叫 cart.js 的函式
+    } else {
+        // 刪除一般商品 (原本的邏輯)
+        const cart = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
+        delete cart[id];
+        localStorage.setItem("teaOrderCart", JSON.stringify(cart));
+        
+        // 也要記得把首頁 UI 的數字歸零
+        const qtyEl = document.getElementById(`qty-${id}`);
+        if(qtyEl) {
+             if ("value" in qtyEl) qtyEl.value = 0;
+             else qtyEl.textContent = 0;
+        }
+    }
 
     // 刪除動畫
     row.style.transition = "height .25s ease, opacity .25s ease";
@@ -313,13 +367,33 @@ function enableSwipeDelete(row) {
         row.style.height = "0px";
     });
 
-    setTimeout(() => {
+    setTimeout(async () => { // 這裡加 async
         row.remove();
-        updateTotals(); // 更新底部金額
-        // 重新渲染列表 (為了處理空車狀態)
-        if (document.querySelectorAll(".line-item").length === 0) {
-            showCartSheet();
+        
+        // 🔥 關鍵修正：確保金額即時更新
+        // 因為 removeGiftBox 裡面已經呼叫 updateTotals() 了，
+        // 但我們這裡為了保險起見（並且為了更新 Sheet 上面的數字），我們手動再呼叫一次 API
+        await updateTotals(); // 更新底部 Sticky Bar
+        
+        // 重新渲染 Sheet 上面的金額 (因為 updateTotals 只更新 StickyBar)
+        // 這裡我們偷懶一點，直接用我們剛剛寫好的邏輯再算一次
+        const items = buildOrderItems();
+        if (items.length === 0) {
+            showCartSheet(); // 顯示「尚未選購」
+        } else {
+             // 這裡如果不重新呼叫 API，Sheet 上的金額不會變
+             // 所以簡單的方法是：重新呼叫一次 showCartSheet()，或者把 updateTotals 的結果拿來用
+             // 為了效能，我們這裡手動觸發一下重新渲染
+             const promoCode = ($("promoCode")?.value || "").trim();
+             const selectedShip = document.querySelector("input[name='shipping']:checked")?.value || "store";
+             const preview = await api.previewTotals(items, selectedShip, promoCode);
+             const data = preview.data || preview;
+             
+             if($("cartTotal")) $("cartTotal").textContent = `NT$ ${(data.total || 0).toLocaleString("zh-TW")}`;
+             if($("cartSub")) $("cartSub").textContent = `NT$ ${(data.subtotal || 0).toLocaleString("zh-TW")}`;
+             // ... 其他金額更新 ...
         }
+        
     }, 250);
   });
 }

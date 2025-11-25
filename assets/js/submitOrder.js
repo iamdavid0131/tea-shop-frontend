@@ -1,13 +1,13 @@
 // ===============================
-// ☕ submitOrder.js（旗艦優化版）
+// ☕ submitOrder.js（旗艦優化版 - 支援禮盒）
 // ===============================
 
 import { api } from "./app.api.js";
 import { $, toast } from "./dom.js";
-import { getCartItems, clearCart } from "./cart.js";
+import { getCartItems, clearCart } from "./cart.js"; // 記得確認 getCartItems 已經支援禮盒了
 import { CONFIG } from "./config.js";
 
-// 🤫 隱藏版商品備份 (F5 防呆)
+// 🤫 隱藏版商品備份
 const SECRET_PRODUCT_DEF = {
   id: "secret_888",
   title: "👑 傳奇・80年代老凍頂",
@@ -16,30 +16,44 @@ const SECRET_PRODUCT_DEF = {
   desc: "阿興師爺爺留下來的壓箱寶。"
 };
 
-// 🛠️ 修復 CONFIG 的輔助函式
+// 🛠️ 修復 CONFIG
 function ensureSecretProductInConfig() {
   const cart = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
   if (cart[SECRET_PRODUCT_DEF.id] && !CONFIG.PRODUCTS.find(p => p.id === SECRET_PRODUCT_DEF.id)) {
     CONFIG.PRODUCTS.push(SECRET_PRODUCT_DEF);
-    // console.log("♻️ submitOrder: 已自動補回隱藏商品定義");
   }
 }
 
-// 🛠️ 格式化品項
+// 🛠️ 格式化品項 (🟢 核心修改：支援禮盒)
 function formatCartItems(rawItems) {
   return rawItems.map((i) => {
+    // 1. 如果是禮盒，直接回傳詳細結構，不需查 CONFIG
+    if (i.type === 'giftbox') {
+        return {
+            type: 'giftbox',
+            id: i.id, // 這是虛擬 ID (giftbox_...)
+            name: i.name || "客製雙罐禮盒",
+            qty: 1, // 禮盒本身是 1 組
+            price: i.price,
+            details: i.details // 🔥 把內容物 (slot1, slot2) 傳給後端
+        };
+    }
+
+    // 2. 一般商品邏輯 (需查 CONFIG 補齊資料)
     const product = CONFIG.PRODUCTS.find((p) => p.id === i.id);
     return {
+      type: 'regular',
       id: i.id,
       name: product?.name || product?.title || i.name || "",
       qty: Number(i.qty) || 0,
       pack: i.pack || false,
+      productId: i.id // 為了後端扣庫存方便，多傳一個 productId
     };
   });
 }
 
 // -------------------------------
-// 封裝 validate (只負責檢查狀態並切換按鈕)
+// 封裝 validate (維持原樣，但 getCartItems 必須已經包含禮盒)
 // -------------------------------
 export function validateSubmit() {
   ensureSecretProductInConfig();
@@ -53,18 +67,18 @@ export function validateSubmit() {
   const payRadios = document.querySelectorAll("input[name='payment']");
 
   // 檢查條件
-  const hasItem = (getCartItems()?.length || 0) > 0;
+  const cartItems = getCartItems();
+  const hasItem = (cartItems && cartItems.length > 0); // 只要有東西就好 (含禮盒)
+  
   const hasName = name?.value.trim().length > 0;
   const hasPhone = phone?.value.trim().length >= 8;
   const hasShip = [...shipRadios].some((r) => r.checked);
-  // 付款方式：檢查 radio 或 .pay-btn.active (相容兩種 UI)
   const hasPay = [...payRadios].some((r) => r.checked) || document.querySelector(".pay-btn.active") !== null;
   const agreed = consent?.checked;
 
   const isValid = hasItem && hasName && hasPhone && hasShip && hasPay && agreed;
 
   btn.disabled = !isValid;
-  
   return isValid;
 }
 
@@ -88,10 +102,11 @@ export async function submitOrder() {
 
     const shippingMethod = document.querySelector("input[name='shipping']:checked")?.value || "";
     
-    // 取得付款方式 (優先抓 active class，沒有再抓 radio)
+    // 取得付款方式
     const payBtn = document.querySelector(".pay-btn.active");
     const payMethod = payBtn ? payBtn.dataset.method : (document.querySelector("input[name='payment']:checked")?.value || "cod");
 
+    // 🟢 取得格式化後的商品資料 (含禮盒)
     const items = formatCartItems(getCartItems());
 
     const order = {
@@ -110,25 +125,31 @@ export async function submitOrder() {
       consent: $("consentAgree")?.checked ? "Y" : "N",
       paymentMethod: payMethod,
       paymentStatus: "pending",
-      items,
+      items, // 這裡會包含正確的禮盒結構
       subtotal: 0, 
       discount: 0, 
       shippingFee: 0,
+      // 這裡直接取 UI 上的金額，後端會再驗算一次 (preview.js 已經改好支援禮盒驗算了)
       total: Number($("total_s")?.textContent.replace(/[^\d]/g, "") || 0),
       status: "created",
     };
 
-    // 二次防呆檢查
+    // 二次防呆
     if (!order.buyerName || !order.buyerPhone) {
       toast("⚠️ 請完整填寫收件人資料");
+      loadingOverlay?.classList.remove("show"); // 記得要關掉 Loading
+      btn.disabled = false;
       return;
     }
     if (order.items.length === 0) {
       toast("🛒 您的購物車是空的");
+      loadingOverlay?.classList.remove("show");
+      btn.disabled = false;
       return;
     }
 
     // Form Post to Server
+    // 請確認這個網址是正確的 render 網址
     const form = document.createElement("form");
     form.method = "POST";
     form.action = "https://tea-order-server.onrender.com/api/order/submit"; 
@@ -141,7 +162,7 @@ export async function submitOrder() {
 
     form.appendChild(input);
     document.body.appendChild(form);
-    form.submit(); // 跳轉綠界或結果頁
+    form.submit(); 
 
   } catch (err) {
     console.error("❌ submitOrder error", err);

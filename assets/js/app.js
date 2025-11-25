@@ -16,7 +16,7 @@ import { initStorePicker } from "./storepicker.js";
 import { initZipAuto } from "./zipcode.js";
 import { initPaymentUI } from "./paymentUI.js";
 import { initSubmitOrder } from "./submitOrder.js";
-
+import { initGiftBox } from "./giftbox_ui.js";
 // window.api = api; // Debug 用，正式上線可移除
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -32,6 +32,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     CONFIG.PRODUCTS = (cfg.data || []).map(p => ({
       ...p,
       story: p.story || "",
+      unit: p.unit || "",
 
       // ------- PROFILE 五項 -------
       profile_sweetness: p.profile?.sweetness ?? p.profile_sweetness ?? 0,
@@ -82,6 +83,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     initStorePicker();         // 門市選擇器
     initZipAuto();             // 郵遞區號自動推斷
     initMemberLookup();        // 會員查詢
+    // 🟢 2. 初始化禮盒系統 (必須在 CONFIG 載入後)
+    initGiftBox();
 
     // ✅ 延遲更新 UI (確保 DOM 已完全繪製)
     requestAnimationFrame(() => {

@@ -1,0 +1,232 @@
+/* =========================================
+   1. 容器與基礎設定 (Glassmorphism)
+   ========================================= */
+.giftbox-container {
+  width: 100%;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.6); /* 稍微調淡，突顯黑金罐 */
+  border-radius: 24px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  position: relative; /* 為了金光動畫定位 */
+  transition: all 0.3s ease;
+}
+
+.giftbox-title {
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 24px;
+  color: #2f4b3c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* =========================================
+   2. 金屬罐樣式 (Metal Can UI) - 黑金版
+   ========================================= */
+.giftbox-slots {
+  display: flex;
+  justify-content: center;
+  gap: 20px; /* 調整間距適中 */
+  margin-bottom: 24px;
+}
+
+.metal-slot {
+  width: 120px;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); /* Q彈效果 */
+  position: relative;
+}
+
+.metal-slot:hover {
+  transform: translateY(-8px);
+}
+
+.metal-slot:active {
+  transform: scale(0.95);
+}
+
+/* 瓶蓋 (亮金漸層) */
+.metal-cap {
+  width: 80px;
+  height: 22px;
+  margin: 0 auto;
+  border-radius: 6px 6px 0 0;
+  background: linear-gradient(to right, #9c7c38, #fceabb, #9c7c38);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 2;
+}
+
+/* 瓶身 (霧面黑 + 金邊框) */
+.metal-body {
+  width: 100%;
+  height: 140px;
+  margin-top: -2px; /* 接合瓶蓋 */
+  border-radius: 12px;
+  background: linear-gradient(145deg, #333333, #1a1a1a);
+  border: 2px solid #b8860b; /* 金色邊框 */
+  box-shadow: 
+    inset 0 0 30px rgba(0,0,0,0.8), /* 內陰影增加立體感 */
+    0 10px 20px rgba(0,0,0,0.3);    /* 外陰影 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 瓶身反光感 (選用) */
+.metal-body::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(120deg, rgba(255,255,255,0) 30%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 70%);
+  pointer-events: none;
+}
+
+/* 文字樣式 */
+.metal-text {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: #f0f0f0; /* 亮白字體 */
+  line-height: 1.4;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.metal-sub {
+  display: block;
+  font-size: 11px;
+  color: #b8860b; /* 金色副標 */
+  margin-top: 4px;
+  font-weight: 400;
+}
+
+/* 選中狀態 (JS 控制 class="active") */
+.metal-slot.active .metal-body {
+  border-color: #ffd700;
+  background: linear-gradient(145deg, #444, #222);
+  box-shadow: 0 0 15px rgba(184, 134, 11, 0.4);
+}
+.metal-slot.active .metal-cap {
+  background: linear-gradient(to right, #b8860b, #ffd700, #b8860b);
+}
+
+/* =========================================
+   3. 進度條 (Progress Bar) - 改為金色
+   ========================================= */
+.giftbox-header {
+  margin-bottom: 20px;
+}
+
+.giftbox-progress-track {
+  width: 90%;
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0 auto 8px auto;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  /* 🟢 修改：改成金色漸層，匹配黑金罐 */
+  background: linear-gradient(90deg, #b8860b, #ffd700);
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 10px rgba(184, 134, 11, 0.4);
+}
+
+.progress-text {
+  text-align: center;
+  font-size: 12px;
+  color: #666;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* =========================================
+   4. 狀態與按鈕
+   ========================================= */
+.giftbox-status {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+  min-height: 24px;
+}
+
+.giftbox-submit {
+  width: 100%;
+  margin-top: 20px;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  background: #ccc;
+  color: white;
+  transition: all 0.3s ease;
+  cursor: not-allowed;
+}
+
+.giftbox-submit.enabled {
+  background: #2f4b3c; /* 保持品牌綠，或改成 #b8860b (金) */
+  box-shadow: 0 4px 15px rgba(47, 75, 60, 0.3);
+  cursor: pointer;
+}
+
+.giftbox-submit.enabled:hover {
+  transform: translateY(-2px);
+  background: #1e3328;
+}
+
+/* =========================================
+   5. 必備動畫 (JS 需要這些才能運作)
+   ========================================= */
+
+/* A. 容器金光流動 */
+.gold-flow-active {
+  animation: borderGlow 2s infinite;
+  border-color: #b8860b !important;
+}
+
+@keyframes borderGlow {
+  0% { box-shadow: 0 0 5px rgba(184, 134, 11, 0.2); }
+  50% { box-shadow: 0 0 25px rgba(184, 134, 11, 0.6); }
+  100% { box-shadow: 0 0 5px rgba(184, 134, 11, 0.2); }
+}
+
+/* B. 合罐閃爍 (Merge Flash) */
+.merge-flash .metal-body {
+  animation: flashBody 0.6s ease-out;
+}
+
+@keyframes flashBody {
+  0% { transform: scale(1); filter: brightness(1); }
+  30% { transform: scale(1.08); filter: brightness(1.5); border-color: #fff; }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+/* C. 飛入購物車小球 (Ghost) */
+.fly-item {
+  position: fixed; 
+  z-index: 9999;
+  width: 40px; 
+  height: 40px;
+  /* 金色光球 */
+  background: radial-gradient(circle, #ffd700, #b8860b);
+  border-radius: 50%;
+  pointer-events: none;
+  box-shadow: 0 0 15px rgba(184, 134, 11, 0.8);
+  transition: all 0.8s cubic-bezier(0.2, 1, 0.2, 1);
+}

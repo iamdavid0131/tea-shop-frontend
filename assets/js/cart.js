@@ -89,9 +89,7 @@ export function restoreCart() {
   }
 }
 
-// ============================================================
-// 💰 金額試算 + Sticky Bar 更新
-// ============================================================
+
 // ============================================================
 // 💰 金額試算 + Sticky Bar 更新 (完整修正版)
 // ============================================================
@@ -243,30 +241,31 @@ export function getCartItems() {
 
 
 // ============================================================
-// 🧹 清空購物車（送出訂單成功後）
+// 🧹 清空購物車
 // ============================================================
 export function clearCart() {
   try {
+    // 1. 清除單品茶
     localStorage.removeItem("teaOrderCart");
+    
+    // 2. [新增] 清除禮盒
+    localStorage.removeItem("teaGiftBoxCart");
 
+    // 3. 重置 UI 數字
     CONFIG.PRODUCTS.forEach(p => {
       const qtyEl = $(`qty-${p.id}`);
       if (!qtyEl) return;
-
-      if ("value" in qtyEl) {
-        qtyEl.value = "0";
-      } else {
-        qtyEl.textContent = "0";
-      }
+      if ("value" in qtyEl) qtyEl.value = "0";
+      else qtyEl.textContent = "0";
     });
 
+    // 4. 更新總計
     updateTotals();
-    console.log("🧹 購物車已清空");
+    console.log("🧹 購物車 (含禮盒) 已全部清空");
   } catch (err) {
     console.error("⚠️ clearCart 錯誤:", err);
   }
 }
-
 // 🌿 動態茶語隨機顯示（免運提示）
 function randomTeaQuote() {
   const quotes = [
@@ -291,27 +290,47 @@ export function getQty(id) {
 }
 
 // ============================================================
-// 📊 建立訂單物件列表（核心函式）
+// 📊 建立訂單物件列表（核心函式 - 已整合禮盒）
 // ============================================================
 export function buildOrderItems() {
-  ensureSecretProduct(); // 🔥 確保隱藏商品在 CONFIG 裡
+  ensureSecretProduct(); 
+  const items = [];
+
+  // --- 1. 處理一般單品茶 ---
   const cart = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
-
-  return Object.entries(cart).map(([id, data]) => {
+  Object.entries(cart).forEach(([id, data]) => {
     const p = CONFIG.PRODUCTS.find(x => x.id == id);
-    if (!p) return null;
+    if (p) {
+      items.push({
+        type: 'regular', // 標記為一般商品
+        id: p.id,
+        name: p.title || p.name || "",
+        price: p.price,
+        qty: data.qty,
+        pack: data.pack,
+        packQty: data.packQty
+      });
+    }
+  });
 
-    return {
-      id: p.id,
-      name: p.title || p.name || "",
-      price: p.price,
-      qty: data.qty,
-      pack: data.pack,
-      packQty: data.packQty
-    };
-  }).filter(Boolean);
+  // --- 2. 處理客製化禮盒 [新增這段] ---
+  const giftboxes = JSON.parse(localStorage.getItem("teaGiftBoxCart") || "[]");
+  giftboxes.forEach(box => {
+    items.push({
+      type: 'giftbox',      // 標記為禮盒
+      id: box.id,           // 例如 giftbox_1715000000
+      name: "客製雙罐禮盒",   // 顯示在購物明細的名稱
+      price: box.totalPrice,// 禮盒總價
+      qty: 1,               // 禮盒本身是 1 組
+      details: {            // 把內容物傳給後端備查
+        slot1: box.slot1,
+        slot2: box.slot2
+      }
+    });
+  });
+
+  return items;
 }
-
 // ============================================================
 // 📊 重新渲染購物明細（sheetModal 內容）
 // ============================================================
@@ -339,4 +358,61 @@ export function refreshSheetTotals() {
       if($("cartShip")) $("cartShip").textContent = `NT$ ${(data.shippingFee || 0).toLocaleString("zh-TW")}`;
       if($("cartTotal")) $("cartTotal").textContent = `NT$ ${(data.total || 0).toLocaleString("zh-TW")}`;
     });
+}
+
+// ============================================================
+// 🎁 [新增] 儲存禮盒進購物車 (存入 LocalStorage)
+// ============================================================
+export function addGiftBoxToCart(giftboxData) {
+  // 1. 讀取目前的禮盒清單
+  const boxes = JSON.parse(localStorage.getItem("teaGiftBoxCart") || "[]");
+  
+  // 2. 加入新禮盒
+  // giftboxData 結構預期: { slot1: {...}, slot2: {...}, totalPrice: 800 }
+  boxes.push({
+    ...giftboxData,
+    id: `giftbox_${Date.now()}`, // 給每個禮盒唯一的 ID，方便刪除
+    qty: 1
+  });
+
+  // 3. 存回 LocalStorage
+  localStorage.setItem("teaGiftBoxCart", JSON.stringify(boxes));
+
+  // 4. 立即更新金額與介面
+  updateTotals();
+  
+  console.log("🎁 禮盒已加入購物車:", boxes);
+}
+
+// 🗑️ [新增] 移除單個禮盒
+export function removeGiftBox(giftboxId) {
+  let boxes = JSON.parse(localStorage.getItem("teaGiftBoxCart") || "[]");
+  boxes = boxes.filter(b => b.id !== giftboxId);
+  localStorage.setItem("teaGiftBoxCart", JSON.stringify(boxes));
+  updateTotals();
+}
+
+// ============================================================
+// 🎁 [新增] 禮盒編輯功能支援
+// ============================================================
+
+// 取得單一禮盒資料 (供編輯用)
+export function getGiftBox(id) {
+  const boxes = JSON.parse(localStorage.getItem("teaGiftBoxCart") || "[]");
+  return boxes.find(b => b.id === id);
+}
+
+// 更新禮盒資料 (編輯完成後儲存)
+export function updateGiftBoxInCart(id, newData) {
+  const boxes = JSON.parse(localStorage.getItem("teaGiftBoxCart") || "[]");
+  const index = boxes.findIndex(b => b.id === id);
+  
+  if (index !== -1) {
+    // 保留原本的 id，更新內容
+    boxes[index] = { ...newData, id: id, qty: 1 };
+    localStorage.setItem("teaGiftBoxCart", JSON.stringify(boxes));
+    updateTotals(); // 重新算錢
+    return true;
+  }
+  return false;
 }
