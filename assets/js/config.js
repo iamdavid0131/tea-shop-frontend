@@ -5,6 +5,7 @@ export const CONFIG = {
   BASE_SHIPPING_FEE: 60,
   COD_SHIP_FEE: 100,
   COD_FREE_SHIPPING_THRESHOLD: 2000,
+  GIFT_BOX_PRICE: 200,
 };
 /* ============================================================
 🌸 CATEGORY_MAP — 祥興自然霧分類詩意命名對照表

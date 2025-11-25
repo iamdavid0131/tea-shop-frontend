@@ -14,7 +14,6 @@ function updateMetalSlot(slot, product) {
   if (!text) return;
 
   if (product) {
-    // 判斷是否為複數 (75g x2)
     const isMulti = product.qty && product.qty > 1;
     const qtyTag = isMulti ? `<span style="font-size:12px; color:#e67e22; margin-left:4px;">x${product.qty}</span>` : "";
     
@@ -29,7 +28,6 @@ function updateMetalSlot(slot, product) {
   }
 }
 
-// ====== 開啟選單 (核心修正處) ======
 window.openProductSelector = function (slot) {
   if (!CONFIG.PRODUCTS || CONFIG.PRODUCTS.length === 0) {
     alert("商品資料載入中，請稍候...");
@@ -47,7 +45,6 @@ window.openProductSelector = function (slot) {
   
   if(list) list.innerHTML = "";
 
-  // 寬鬆篩選：只要單位含 75 或 150
   const valid = CONFIG.PRODUCTS.filter(p => {
       if (!p.unit) return false;
       const u = p.unit.toLowerCase();
@@ -63,24 +60,16 @@ window.openProductSelector = function (slot) {
     const div = document.createElement("div");
     div.className = "selector-item";
     
-    // 🔥 判斷是否為 75g 小包裝
     const isSmall = p.unit.includes("75");
     const note = isSmall ? `<span style="color:#e67e22; font-size:12px;">(需2包)</span>` : "";
-    
-    // 🔥【關鍵修正】價格顯示邏輯：顯示「原價 x 2」
-    let priceHtml = "";
-    if (isSmall) {
-        priceHtml = `NT$ ${p.price} <span style="color:#e67e22; font-size:13px;">x 2</span>`;
-    } else {
-        priceHtml = `NT$ ${p.price}`;
-    }
+    const priceCalc = isSmall ? p.price * 2 : p.price;
 
     div.innerHTML = `
       <div>
         <div class="sel-name">${p.title} ${note}</div>
         <div class="sel-meta">${p.unit}</div>
       </div>
-      <div class="sel-price">${priceHtml}</div>
+      <div class="sel-price">NT$ ${priceCalc}</div>
     `;
     div.onclick = () => selectProduct(p);
     list.appendChild(div);
@@ -95,15 +84,12 @@ window.closeSelector = () => {
     }
 };
 
-// ====== 選中商品 (核心邏輯) ======
 function selectProduct(product) {
-  // 自動判斷：若是 75g，數量設為 2
   let qty = 1;
   if (product.unit && product.unit.includes("75")) {
       qty = 2;
   }
 
-  // 儲存時把 qty 寫進去
   selectedItems[currentSlot] = { ...product, qty: qty };
   
   updateMetalSlot(currentSlot, selectedItems[currentSlot]);
@@ -114,7 +100,6 @@ function selectProduct(product) {
 
 function getGiftBoxWeight() {
   let w = 0;
-  // 計算重量時需乘上數量
   if (selectedItems[1]) {
       const unitW = parseInt(selectedItems[1].unit) || 0;
       w += unitW * (selectedItems[1].qty || 1);
@@ -137,6 +122,7 @@ function updateGiftboxProgress() {
   }
 }
 
+// 🔥【核心修正】驗證禮盒時，顯示「含禮盒費」的公式
 function validateGiftbox() {
   const status = document.getElementById("giftbox-status");
   const submit = document.getElementById("giftbox-submit");
@@ -147,37 +133,54 @@ function validateGiftbox() {
   if (!selectedItems[1] || !selectedItems[2]) {
     status.innerText = "請選擇兩罐茶品";
     status.style.color = "#888";
+    submit.innerText = "加入購物車";
     submit.disabled = true;
     submit.classList.remove("enabled");
     return;
   }
 
   container.classList.add('gold-flow-active');
-  // 🔥 這裡很重要：如果是編輯模式，文字要顯示「確認修改」
-  status.innerText = editingId ? "✔ 準備完成，請確認修改" : "✔ 完美組合！";
-  status.style.color = "#2f4b3c";
   
+  // 1. 取得設定的禮盒費用 (預設 200)
+  const boxFee = CONFIG.GIFT_BOX_PRICE || 200;
+
+  // 2. 計算
+  const p1 = selectedItems[1];
+  const p2 = selectedItems[2];
+  const v1 = p1.price * (p1.qty || 1);
+  const v2 = p2.price * (p2.qty || 1);
+  const total = v1 + v2 + boxFee; // 🔥 加上禮盒費
+
+  // 3. 顯示公式： 茶1 + 茶2 + 禮盒費 = 總價
+  status.innerHTML = `
+    <span style="color:#666; font-size:13px;">
+      $${v1.toLocaleString()} + $${v2.toLocaleString()} + 禮盒$${boxFee} = 
+    </span>
+    <span style="color:#b8860b; font-size:18px; font-weight:800; margin-left:4px;">
+      NT$ ${total.toLocaleString()}
+    </span>
+  `;
+
   submit.innerText = editingId ? "確認修改" : "加入購物車";
   submit.disabled = false;
   submit.classList.add("enabled");
 }
 
 export function loadGiftBoxForEdit(data) {
-  // 1. 載入資料
   selectedItems[1] = data.slot1;
   selectedItems[2] = data.slot2;
-  editingId = data.id; // 記錄我們正在編輯哪個 ID
+  editingId = data.id;
 
-  // 2. 更新 UI
   updateMetalSlot(1, selectedItems[1]);
   updateMetalSlot(2, selectedItems[2]);
   updateGiftboxProgress();
-  
-  // 3. 觸發驗證 (這會更新按鈕文字為 "確認修改")
   validateGiftbox();
 
-  // 4. 滾動到禮盒區塊
+  const submit = document.getElementById("giftbox-submit");
   const section = document.getElementById("giftboxCard");
+
+  if(submit) submit.innerText = "確認修改";
+
   if (section) {
       setTimeout(() => {
         section.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -229,7 +232,9 @@ export function initGiftBox() {
         submitBtn.addEventListener("click", () => {
           if (submitBtn.disabled) return;
 
-          // 計算總價
+          // 🔥 取得禮盒費用
+          const boxFee = CONFIG.GIFT_BOX_PRICE || 200;
+
           const p1 = selectedItems[1];
           const p2 = selectedItems[2];
           const price1 = p1.price * (p1.qty || 1);
@@ -238,12 +243,12 @@ export function initGiftBox() {
           const finalGiftbox = {
             slot1: selectedItems[1],
             slot2: selectedItems[2],
-            totalPrice: price1 + price2,
+            // 🔥 寫入總價時包含禮盒費
+            totalPrice: price1 + price2 + boxFee,
           };
 
           flyToCart();
 
-          // 🔥 區分：是「更新舊禮盒」還是「新增禮盒」
           if (editingId) {
             const ok = updateGiftBoxInCart(editingId, finalGiftbox);
             if(ok) alert("禮盒內容已更新！");
