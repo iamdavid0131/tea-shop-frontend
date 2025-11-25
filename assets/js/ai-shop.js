@@ -492,7 +492,7 @@ function buildRecommendBubble(out, products) {
         <div class="prod-reason" style="color:#888;">${out.second.reason}</div>
       </div>` : ""}
 
-      ${getCardButtonHtml(best.title, out.card_text)}
+      ${getCardButtonHtml(best.title, out.card_text, out.card_image)}
     </div>
   `;
 }
@@ -514,7 +514,7 @@ function buildPairingBubble(out, products) {
         <div class="prod-reason">${out.reason}</div>
       </div>
 
-      ${getCardButtonHtml(tea.title, out.card_text)}
+      ${getCardButtonHtml(tea.title, out.card_text, out.card_image)}
     </div>
   `;
 }
@@ -536,7 +536,7 @@ function buildGiftBubble(out, products) {
         </div>
       </div>
 
-      ${getCardButtonHtml(tea.title, out.card_text)}
+      ${getCardButtonHtml(tea.title, out.card_text, out.card_image)}
     </div>
   `;
 }
@@ -605,7 +605,7 @@ function buildPersonalityBubble(out, products) {
         </div>
       </div>
 
-      ${getCardButtonHtml(tea.title, out.card_text)}
+      ${getCardButtonHtml(tea.title, out.card_text, out.card_image)}
     </div>
   `;
 }
@@ -638,17 +638,20 @@ function buildMasterpickBubble(out, tea, isSecret = false) {
 }
 
 // ------------------------------------------------------------
-// 💌 茶籤按鈕（點擊 → Nano Banana AI 作畫）
+// 💌 茶籤按鈕 (v5.2 支援圖片傳遞)
 // ------------------------------------------------------------
-function getCardButtonHtml(teaTitle, cardText) {
+function getCardButtonHtml(teaTitle, cardText, cardImageUrl = null) {
   if (!cardText) return "";
 
   const safeTitle = teaTitle.replace(/'/g, "\\'");
   const safeText = cardText.replace(/'/g, "\\'").replace(/\n/g, " ");
+  
+  // 如果後端有傳圖片網址，也要處理引號並傳入
+  const safeImg = cardImageUrl ? `'${cardImageUrl}'` : "null";
 
   return `
     <button class="ai-card-btn"
-            onclick="drawTeaCard('${safeTitle}', '${safeText}')">
+            onclick="drawTeaCard('${safeTitle}', '${safeText}', ${safeImg})">
       🍌 Nano Banana 靈魂茶籤
     </button>
   `;
@@ -828,47 +831,42 @@ export function openSecretModal(product) {
   };
 }
 // ============================================================
-// ✨ 11. Nano Banana AI — 茶籤金框卡片生成器（v5.2）
+// ✨ 11. Nano Banana AI — 茶籤金框卡片生成器 (v5.2 Fix)
 // ============================================================
-//
-// 功能：
-// ✔ 後端傳回 image_base64 （AI 背景）
-// ✔ Canvas 疊上金框 + 手寫字
-// ✔ 自動文字換行
-// ✔ 儲存分享用 Modal
-//
-
-window.drawTeaCard = async function(title, text) {
+window.drawTeaCard = async function(title, text, preGeneratedUrl = null) {
   console.log("🎨 開始生成茶籤：", title);
 
-  // ============================================================
-  // 1. 呼叫後端獲取 AI 背景（Nano Banana）
-  // ============================================================
-  let bgImage = null;
-  try {
-    const res = await fetch("https://tea-order-server.onrender.com/api/ai-tea-card", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        special_intent: "generate_card_image",
-        title,
-        text
-      })
-    });
+  // 1. 顯示讀取中 (因為畫圖很吃資源)
+  const loadingBubble = document.createElement("div");
+  loadingBubble.className = "ai-modal-overlay show";
+  loadingBubble.style.zIndex = "9999";
+  loadingBubble.innerHTML = `<div style="color:#fff; font-size:1.5rem;">🍌 阿興師正在磨墨畫圖...</div>`;
+  document.body.appendChild(loadingBubble);
 
-    const json = await res.json();
-    bgImage = json.image_base64;   // <--- 後端必須傳這個欄位
+  let bgSrc = preGeneratedUrl;
 
-    if (!bgImage) {
-      console.error("❌ 後端沒有回傳 image_base64");
+  // 2. 如果沒有預先生成的圖，才呼叫後端 API 現場生成
+  if (!bgSrc) {
+    try {
+      // 注意：這裡網址改成跟 callAI 一樣的主路徑
+      const res = await fetch("https://tea-order-server.onrender.com/api/ai-tea", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          special_intent: "generate_card_image", // 告訴後端我要畫圖
+          card_title: title,
+          card_text: text
+        })
+      });
+
+      const json = await res.json();
+      bgSrc = json.image_url; // 後端 v5.2 回傳的是 image_url
+    } catch (err) {
+      console.error("AI 背景生成失敗:", err);
     }
-  } catch (err) {
-    console.error("AI 背景生成失敗:", err);
   }
 
-  // ============================================================
-  // 2. 建立 Canvas
-  // ============================================================
+  // 3. 建立 Canvas
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
 
@@ -877,11 +875,19 @@ window.drawTeaCard = async function(title, text) {
   canvas.width = width;
   canvas.height = height;
 
-  // 2.1 背景：若有 AI 背景 → 套用；沒有 → 套柔光米白底
-  if (bgImage) {
+  // 4. 繪製背景 (處理跨域問題)
+  if (bgSrc) {
     const img = new Image();
-    img.src = bgImage;
-    await new Promise(resolve => img.onload = resolve);
+    img.crossOrigin = "Anonymous"; // ⭐ 關鍵：允許跨域，否則無法導出圖片
+    img.src = bgSrc;
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = () => {
+        console.warn("圖片載入失敗，使用預設背景");
+        resolve(); // 失敗也繼續，改用純色
+      };
+    });
+    // 保持圖片比例填滿
     ctx.drawImage(img, 0, 0, width, height);
   } else {
     // Fallback：米白底
@@ -889,26 +895,26 @@ window.drawTeaCard = async function(title, text) {
     ctx.fillRect(0, 0, width, height);
   }
 
-  // ============================================================
-  // 3. 金色雙框（iOS 奢華茶行感）
-  // ============================================================
-  // 外框
+  // === 以下繪圖樣式保持不變 ===
+
+  // 金色雙框
   ctx.strokeStyle = "#D4AF37";
   ctx.lineWidth = 12;
   ctx.strokeRect(40, 40, width - 80, height - 80);
-
-  // 內框（白金）
   ctx.strokeStyle = "rgba(255,255,255,0.85)";
   ctx.lineWidth = 6;
   ctx.strokeRect(60, 60, width - 120, height - 120);
 
-  // ============================================================
-  // 4. 標題（茶名）
-  // ============================================================
+  // 標題
   ctx.fillStyle = "#2F4B3C";
   ctx.font = "bold 64px 'Noto Serif TC', serif";
   ctx.textAlign = "center";
+  
+  // 標題陰影增強可讀性 (因為背景變複雜了)
+  ctx.shadowColor = "rgba(255,255,255,0.8)";
+  ctx.shadowBlur = 10;
   ctx.fillText(title, width / 2, 180);
+  ctx.shadowBlur = 0; // 重置
 
   // 分隔線
   ctx.beginPath();
@@ -918,24 +924,24 @@ window.drawTeaCard = async function(title, text) {
   ctx.lineWidth = 3;
   ctx.stroke();
 
-  // ============================================================
-  // 5. 文字內容（自動換行核心）
-  // ============================================================
-  ctx.fillStyle = "#333333";
+  // 內文 (自動換行)
+  ctx.fillStyle = "#1a1a1a"; // 改深一點，避免背景干擾
   ctx.font = "36px 'Noto Serif TC', serif";
   ctx.textAlign = "center";
+  
+  // 內文加一點白底暈光，確保在複雜背景上看得到
+  ctx.shadowColor = "rgba(255,255,255, 1)";
+  ctx.shadowBlur = 15;
 
   const maxWidth = 700;
   const lineHeight = 55;
   let y = 320;
-
-  const chars = text.replace(/\n/g, "").split(""); // 去除換行後自己排
+  const chars = text.replace(/\n/g, "").split(""); 
   let line = "";
 
   for (let i = 0; i < chars.length; i++) {
     const testLine = line + chars[i];
     const metrics = ctx.measureText(testLine);
-
     if (metrics.width > maxWidth) {
       ctx.fillText(line, width / 2, y);
       line = chars[i];
@@ -945,65 +951,25 @@ window.drawTeaCard = async function(title, text) {
     }
   }
   ctx.fillText(line, width / 2, y);
-  y += 120;
+  
+  ctx.shadowBlur = 0; // 重置陰影
 
-  // ============================================================
-  // 6. 品牌落款「祥興茶行」
-  // ============================================================
+  // 落款
   ctx.fillStyle = "#b8860b";
   ctx.font = "bold 40px 'Noto Serif TC', serif";
   ctx.fillText("—— 祥興茶行", width / 2, height - 180);
+  // 移除 Loading
+  loadingBubble.remove();
 
-  // ============================================================
-  // 7. 朱紅茶印章（強化品牌）
-  // ============================================================
-  ctx.strokeStyle = "#B22222";
-  ctx.lineWidth = 5;
-  const sealX = width / 2 - 50;
-  const sealY = height - 150;
-  ctx.strokeRect(sealX, sealY, 100, 100);
-
-  ctx.fillStyle = "#B22222";
-  ctx.font = "48px serif";
-  ctx.fillText("祥興", width / 2, sealY + 72);
-
-  // ============================================================
-  // 8. 轉 PNG 並顯示 Modal
-  // ============================================================
-  const dataUrl = canvas.toDataURL("image/png");
-  showCardModal(dataUrl);
+  // 顯示結果
+  try {
+    const dataUrl = canvas.toDataURL("image/png");
+    showCardModal(dataUrl);
+  } catch (e) {
+    alert("圖片生成失敗 (跨域安全性阻擋)，請聯絡管理員");
+    console.error(e);
+  }
 };
-
-// ============================================================
-// 📸 Modal 顯示卡片（可長按儲存）
-// ============================================================
-function showCardModal(imgUrl) {
-  const modal = document.createElement("div");
-  modal.className = "ai-modal-overlay show";
-  modal.style.zIndex = "10000";
-
-  modal.innerHTML = `
-    <div class="ai-box"
-         style="background:transparent; box-shadow:none; border:none; align-items:center;">
-
-      <img src="${imgUrl}"
-           style="width:100%; max-width:480px; border-radius:12px;
-                  box-shadow:0 10px 30px rgba(0,0,0,0.4);">
-
-      <p style="color:#fff; margin-top:12px; font-size:15px;">
-        📌 長按圖片即可儲存
-      </p>
-
-      <button class="ai-close-icon"
-              style="position:static; margin-top:12px;
-                     background:rgba(255,255,255,0.9);"
-              onclick="this.closest('.ai-modal-overlay').remove()">
-        ×
-      </button>
-    </div>
-  `;
-  document.body.appendChild(modal);
-}
 // ============================================================
 // 🚀 12. 注入 AI 導購按鈕（入口模組）
 // ============================================================
