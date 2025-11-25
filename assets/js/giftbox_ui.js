@@ -6,7 +6,7 @@ let currentSlot = null;
 let selectedItems = { 1: null, 2: null };
 let editingId = null;
 
-// ... (updateMetalSlot 保持不變) ...
+// ====== 1. Slot UI 更新 (修正 x2 位置到單位旁) ======
 function updateMetalSlot(slot, product) {
   const slotEl = document.getElementById(`slot${slot}`);
   const text = slotEl.querySelector(`.metal-text`);
@@ -14,13 +14,17 @@ function updateMetalSlot(slot, product) {
   if (!text) return;
 
   if (product) {
+    // 判斷是否為複數 (75g x2)
     const isMulti = product.qty && product.qty > 1;
-    const qtyTag = isMulti ? `<span style="font-size:12px; color:#e67e22; margin-left:4px;">x${product.qty}</span>` : "";
+    // 🔥 修正：x2 標籤樣式
+    const qtyTag = isMulti ? `<span style="font-size:13px; color:#e67e22; font-weight:800; margin-left:4px;">x${product.qty}</span>` : "";
     
-    // 移除舊的 x2 價格邏輯，只顯示單品名稱
+    // 🔥 修正：將 ${qtyTag} 移到第二行 (metal-sub) 裡面
     text.innerHTML = `
-        <span style="color:#2f4b3c; font-weight:bold;">${product.title}</span>${qtyTag}<br>
-        <span class="metal-sub">${product.unit}</span>
+        <span style="color:#2f4b3c; font-weight:bold;">${product.title}</span><br>
+        <span class="metal-sub" style="display:flex; align-items:center; justify-content:center;">
+          ${product.unit} ${qtyTag}
+        </span>
     `;
     slotEl.classList.add('active');
   } else {
@@ -29,7 +33,7 @@ function updateMetalSlot(slot, product) {
   }
 }
 
-// ... (window.openProductSelector 等函式保持不變，請保留原本的) ...
+// ====== 2. 開啟選單 (修正為嚴格篩選) ======
 window.openProductSelector = function (slot) {
   if (!CONFIG.PRODUCTS || CONFIG.PRODUCTS.length === 0) {
     alert("商品資料載入中，請稍候...");
@@ -47,10 +51,13 @@ window.openProductSelector = function (slot) {
   
   if(list) list.innerHTML = "";
 
+  // 🔥 修正：嚴格篩選 (只允許 "75g" 或 "150g")
+  // 排除 "75g包" 或其他不符合規格的商品
   const valid = CONFIG.PRODUCTS.filter(p => {
       if (!p.unit) return false;
-      const u = p.unit.toLowerCase();
-      return u.includes("75") || u.includes("150");
+      // 去除空白並轉小寫，確保比對精準
+      const u = p.unit.trim().toLowerCase();
+      return u === "75g" || u === "150g";
   });
 
   if(valid.length === 0) {
@@ -62,16 +69,20 @@ window.openProductSelector = function (slot) {
     const div = document.createElement("div");
     div.className = "selector-item";
     
-    const isSmall = p.unit.includes("75");
+    const u = p.unit.trim().toLowerCase();
+    const isSmall = (u === "75g");
     const note = isSmall ? `<span style="color:#e67e22; font-size:12px;">(需2包)</span>` : "";
+    
+    // 列表顯示：單價 x 2
     const priceCalc = isSmall ? p.price * 2 : p.price;
+    const priceHtml = isSmall ? `NT$ ${p.price} <span style="color:#e67e22; font-size:13px;">x 2</span>` : `NT$ ${p.price}`;
 
     div.innerHTML = `
       <div>
         <div class="sel-name">${p.title} ${note}</div>
         <div class="sel-meta">${p.unit}</div>
       </div>
-      <div class="sel-price">NT$ ${p.price} ${isSmall ? '<span style="font-size:12px;color:#e67e22">x2</span>' : ''}</div>
+      <div class="sel-price">${priceHtml}</div>
     `;
     div.onclick = () => selectProduct(p);
     list.appendChild(div);
@@ -86,31 +97,30 @@ window.closeSelector = () => {
     }
 };
 
-// ====== 選中商品 (加入動畫觸發) ======
+// ====== 3. 選中商品 (對應嚴格邏輯 + 保留動畫) ======
 function selectProduct(product) {
   let qty = 1;
-  if (product.unit && product.unit.includes("75")) {
+  const u = product.unit ? product.unit.trim().toLowerCase() : "";
+  
+  // 自動判斷：若是 75g，數量設為 2
+  if (u === "75g") {
       qty = 2;
   }
 
   selectedItems[currentSlot] = { ...product, qty: qty };
   
-  // 1. 更新 UI
   updateMetalSlot(currentSlot, selectedItems[currentSlot]);
   updateGiftboxProgress();
   validateGiftbox();
-  
-  // 2. 關閉選單
   window.closeSelector();
 
-  // 3. 🔥 播放茶葉飛入動畫
-  // 稍微延遲一點點，等選單關閉後再飛
+  // 播放茶葉動畫
   setTimeout(() => {
       playTeaLeavesAnimation(currentSlot);
   }, 300);
 }
 
-// ====== 🔥 新增：茶葉飛入動畫 (使用 GSAP) ======
+// ====== 茶葉飛入動畫 (使用 GSAP) ======
 function playTeaLeavesAnimation(targetSlotId) {
     const slotEl = document.getElementById(`slot${targetSlotId}`);
     if (!slotEl || !window.gsap) return;
@@ -127,8 +137,8 @@ function playTeaLeavesAnimation(targetSlotId) {
         document.body.appendChild(leaf);
 
         // 起點：螢幕隨機上方
-        const startX = targetX + (Math.random() - 0.5) * 200; // 左右隨機 200px
-        const startY = rect.top - 300 - Math.random() * 200; // 上方 300px 外
+        const startX = targetX + (Math.random() - 0.5) * 200; 
+        const startY = rect.top - 300 - Math.random() * 200; 
 
         // 設定初始位置
         gsap.set(leaf, { 
@@ -137,13 +147,13 @@ function playTeaLeavesAnimation(targetSlotId) {
             opacity: 1, 
             scale: 0.5 + Math.random() * 0.5,
             rotation: Math.random() * 360,
-            backgroundColor: Math.random() > 0.5 ? '#5a7b68' : '#8fb79c' // 深淺綠交錯
+            backgroundColor: Math.random() > 0.5 ? '#5a7b68' : '#8fb79c' 
         });
 
         // 動畫路徑
         gsap.to(leaf, {
             duration: 0.8 + Math.random() * 0.5,
-            x: targetX + (Math.random() - 0.5) * 40, // 稍微散落在罐子周圍
+            x: targetX + (Math.random() - 0.5) * 40, 
             y: targetY,
             rotation: "+=360",
             ease: "power2.in",
@@ -167,8 +177,7 @@ function playTeaLeavesAnimation(targetSlotId) {
     }
 }
 
-// ... (以下其餘函式 getGiftBoxWeight, updateGiftboxProgress, validateGiftbox, loadGiftBoxForEdit... 保持不變) ...
-// 請務必保留 validateGiftbox 中的 boxFee 邏輯
+// ... (以下保持不變，包含重量計算與價格公式顯示) ...
 
 function getGiftBoxWeight() {
   let w = 0;
@@ -187,6 +196,7 @@ function updateGiftboxProgress() {
   const w = getGiftBoxWeight();
   const fill = document.getElementById('giftbox-progress-fill');
   const text = document.getElementById('giftbox-progress-text');
+  
   if(fill && text) {
       fill.style.width = Math.min((w / 300) * 100, 100) + '%';
       text.innerText = `${w} / 300 g`;
@@ -196,11 +206,9 @@ function updateGiftboxProgress() {
 function validateGiftbox() {
   const status = document.getElementById("giftbox-status");
   const submit = document.getElementById("giftbox-submit");
-  
-  // 移除光暈
   const container = document.getElementById('giftbox-container');
-  container.style.boxShadow = "0 10px 40px rgba(90, 123, 104, 0.1)";
-  container.style.borderColor = "rgba(255, 255, 255, 0.6)";
+
+  container.classList.remove('gold-flow-active');
 
   if (!selectedItems[1] || !selectedItems[2]) {
     status.innerText = "請選擇兩罐茶品";
@@ -211,10 +219,9 @@ function validateGiftbox() {
     return;
   }
 
-  // 成功樣式：加強綠色光暈
-  container.style.boxShadow = "0 0 0 2px #8fb79c, 0 15px 50px rgba(90, 123, 104, 0.2)";
-  container.style.borderColor = "#8fb79c";
-
+  // 成功樣式
+  container.classList.add('gold-flow-active');
+  
   const boxFee = CONFIG.GIFT_BOX_PRICE || 200;
   const p1 = selectedItems[1];
   const p2 = selectedItems[2];
@@ -263,38 +270,19 @@ function resetUI() {
   validateGiftbox();
 }
 
-// 🛒 禮盒飛入購物車動畫
 function flyToCart() {
     const ghost = document.createElement('div');
-    // 使用與茶葉一樣的綠色圓點，或禮盒圖示
-    ghost.classList.add('fly-item'); 
-    ghost.style.width = '40px';
-    ghost.style.height = '40px';
-    ghost.style.background = '#5a7b68';
-    ghost.style.borderRadius = '8px';
-    ghost.innerHTML = '🎁';
-    ghost.style.display = 'flex';
-    ghost.style.alignItems = 'center';
-    ghost.style.justifyContent = 'center';
-    ghost.style.color = '#fff';
+    ghost.classList.add('fly-item');
     document.body.appendChild(ghost);
 
     const startBox = document.getElementById('giftbox-container').getBoundingClientRect();
     const startX = startBox.left + startBox.width / 2;
     const startY = startBox.top + startBox.height / 2;
 
-    // 修正：如果 StickyBar 被遮住，改飛向視窗底部中央
-    const cartBtn = document.getElementById('viewCartBtn');
-    let endX, endY;
-    
-    if (cartBtn && cartBtn.offsetParent !== null) {
-       const endBox = cartBtn.getBoundingClientRect();
-       endX = endBox.left + endBox.width / 2;
-       endY = endBox.top + endBox.height / 2;
-    } else {
-       endX = window.innerWidth / 2;
-       endY = window.innerHeight - 50;
-    }
+    const cartBtn = document.getElementById('viewCartBtn') || document.body;
+    const endBox = cartBtn.getBoundingClientRect();
+    const endX = endBox.left + endBox.width / 2;
+    const endY = endBox.top + endBox.height / 2;
 
     ghost.style.left = `${startX}px`;
     ghost.style.top = `${startY}px`;
@@ -342,7 +330,7 @@ export function initGiftBox() {
 
     const slot1 = document.getElementById("slot1");
     const slot2 = document.getElementById("slot2");
-    // 使用 addEventListener，不要寫 onclick
+    // 使用 addEventListener
     if(slot1) slot1.addEventListener("click", () => openProductSelector(1));
     if(slot2) slot2.addEventListener("click", () => openProductSelector(2));
 }
