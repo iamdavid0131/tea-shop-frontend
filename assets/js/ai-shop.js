@@ -45,6 +45,18 @@ function appendAIBubble(container, text) {
   bubble.innerHTML = `<div class="ai-bubble-text">${text.replace(/\n/g, "<br>")}</div>`;
   container.appendChild(bubble);
   container.scrollTop = container.scrollHeight;
+  if (audio) {
+  const audioBtn = document.createElement("button");
+  audioBtn.className = "ai-audio-btn";
+  audioBtn.innerHTML = `
+    🔊
+  `;
+  audioBtn.onclick = () => {
+    const snd = new Audio(audio);
+    snd.play();
+  };
+  bubble.appendChild(audioBtn);
+}
 }
 
 function appendUserBubble(container, text) {

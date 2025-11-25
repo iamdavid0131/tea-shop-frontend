@@ -289,6 +289,25 @@
   background: #fffbf5;
 }
 
+.ai-audio-btn {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.55);
+  border: 1px solid rgba(160,180,165,0.5);
+  border-radius: 10px;
+  font-size: 14px;
+  color: #324b3f;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 12px rgba(90,123,104,0.15);
+  transition: 0.25s ease;
+}
+
+.ai-audio-btn:hover {
+  background: rgba(255,255,255,0.75);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(90,123,104,0.25);
+}
 /* ============================================================
    📱 手機版優化：轉變為 Bottom Sheet 模式
    (貼在 ai-chat.css 最下方)
