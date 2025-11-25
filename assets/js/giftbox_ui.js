@@ -1,13 +1,12 @@
 import { addGiftBoxToCart, updateGiftBoxInCart } from './cart.js';
 import { CONFIG } from './config.js';
-import { $ } from './dom.js'; // 建議引入 $ 來簡化程式碼
+import { $ } from './dom.js';
 
-// 狀態變數
 let currentSlot = null;
 let selectedItems = { 1: null, 2: null };
 let editingId = null;
 
-// ====== Slot UI 更新 ======
+// ====== Slot UI 更新 (新增數量顯示) ======
 function updateMetalSlot(slot, product) {
   const slotEl = document.getElementById(`slot${slot}`);
   const text = slotEl.querySelector(`.metal-text`);
@@ -15,18 +14,22 @@ function updateMetalSlot(slot, product) {
   if (!text) return;
 
   if (product) {
-    text.innerHTML = `<span style="color:#2f4b3c; font-weight:bold;">${product.title}</span><br><span class="metal-sub">${product.unit}</span>`;
+    // 🔥 如果數量 > 1 (例如 75g x2)，顯示出來
+    const qtyTag = product.qty > 1 ? `<span style="font-size:12px; color:#e67e22; margin-left:4px;">x${product.qty}</span>` : "";
+    const priceDisplay = product.qty > 1 ? product.price * product.qty : product.price;
+
+    text.innerHTML = `
+        <span style="color:#2f4b3c; font-weight:bold;">${product.title}</span>${qtyTag}<br>
+        <span class="metal-sub">${product.unit}</span>
+    `;
     slotEl.classList.add('active');
   } else {
-    // 恢復預設樣式 (因應新 CSS 調整)
     text.innerHTML = `<i class="ph ph-plus-circle" style="font-size: 28px; color: #8fb79c; margin-bottom:4px;"></i><br><span style="color:#5a7b68">選擇茶品</span>`;
     slotEl.classList.remove('active');
   }
 }
 
-// ====== 選茶 Selector (核心邏輯) ======
-function openProductSelector(slot) {
-  // 防呆：如果商品資料還沒載入
+window.openProductSelector = function (slot) {
   if (!CONFIG.PRODUCTS || CONFIG.PRODUCTS.length === 0) {
     alert("商品資料載入中，請稍候...");
     return;
@@ -38,27 +41,20 @@ function openProductSelector(slot) {
   
   if(modal) {
       modal.style.display = "flex";
-      // 延遲加入 show class 以觸發 CSS 淡入動畫
       setTimeout(() => modal.classList.add("show"), 10);
   }
   
   if(list) list.innerHTML = "";
 
-  // 🔥 修改：放寬篩選條件 (不分大小寫，只要包含 75 或 150 即可)
+  // 放寬篩選：只要單位含 75 或 150
   const valid = CONFIG.PRODUCTS.filter(p => {
       if (!p.unit) return false;
-      const u = p.unit.toLowerCase(); // 轉小寫比對
-      // 只要單位裡有 "75" 或 "150" 就視為合格 (例如 "75g", "75克", "150G" 都通)
+      const u = p.unit.toLowerCase();
       return u.includes("75") || u.includes("150");
   });
 
-  // 如果真的沒資料，顯示提示
   if(valid.length === 0) {
-      if(list) list.innerHTML = `
-        <div style="padding:40px 20px; text-align:center; color:#889990;">
-           <div style="font-size:40px; margin-bottom:10px;">🍃</div>
-           <div>暫無符合禮盒規格 (75g/150g) 的茶品</div>
-        </div>`;
+      if(list) list.innerHTML = `<div style="padding:40px 20px; text-align:center; color:#889990;">暫無符合禮盒規格 (75g/150g) 的茶品</div>`;
       return;
   }
 
@@ -66,45 +62,59 @@ function openProductSelector(slot) {
     const div = document.createElement("div");
     div.className = "selector-item";
     
-    // 使用新的 CSS class 結構
+    // 提示文字：如果是 75g，顯示「需兩包」
+    const isSmall = p.unit.includes("75");
+    const note = isSmall ? `<span style="color:#e67e22; font-size:12px;">(需2包)</span>` : "";
+    const priceCalc = isSmall ? p.price * 2 : p.price;
+
     div.innerHTML = `
       <div>
-        <div class="sel-name">${p.title}</div>
+        <div class="sel-name">${p.title} ${note}</div>
         <div class="sel-meta">${p.unit}</div>
       </div>
-      <div class="sel-price">NT$ ${p.price}</div>
+      <div class="sel-price">NT$ ${priceCalc}</div>
     `;
     div.onclick = () => selectProduct(p);
     list.appendChild(div);
   });
-}
+};
 
-// 讓關閉按鈕也能運作 (包含移除動畫 class)
 window.closeSelector = () => {
     const modal = document.getElementById("selector-modal");
     if(modal) {
         modal.classList.remove("show");
-        // 等動畫跑完再隱藏
-        setTimeout(() => {
-            modal.style.display = "none";
-        }, 300);
+        setTimeout(() => { modal.style.display = "none"; }, 300);
     }
 };
 
-// ====== 選中商品 ======
+// ====== 選中商品 (核心邏輯：75g * 2) ======
 function selectProduct(product) {
-  selectedItems[currentSlot] = product;
-  updateMetalSlot(currentSlot, product);
+  // 🔥 判斷單位，自動設定數量
+  let qty = 1;
+  if (product.unit && product.unit.includes("75")) {
+      qty = 2;
+  }
+
+  // 儲存時把 qty 寫進去
+  selectedItems[currentSlot] = { ...product, qty: qty };
+  
+  updateMetalSlot(currentSlot, selectedItems[currentSlot]);
   updateGiftboxProgress();
   validateGiftbox();
   window.closeSelector();
 }
 
-// ====== 重量與進度條 ======
 function getGiftBoxWeight() {
   let w = 0;
-  if (selectedItems[1]) w += parseInt(selectedItems[1].unit) || 0;
-  if (selectedItems[2]) w += parseInt(selectedItems[2].unit) || 0;
+  // 計算重量時要乘上數量
+  if (selectedItems[1]) {
+      const unitW = parseInt(selectedItems[1].unit) || 0;
+      w += unitW * (selectedItems[1].qty || 1);
+  }
+  if (selectedItems[2]) {
+      const unitW = parseInt(selectedItems[2].unit) || 0;
+      w += unitW * (selectedItems[2].qty || 1);
+  }
   return w;
 }
 
@@ -115,17 +125,15 @@ function updateGiftboxProgress() {
   
   if(fill && text) {
       fill.style.width = Math.min((w / 300) * 100, 100) + '%';
-      text.innerText = `${w} / 300 g (建議)`;
+      text.innerText = `${w} / 300 g`;
   }
 }
 
-// ====== 驗證禮盒 ======
 function validateGiftbox() {
   const status = document.getElementById("giftbox-status");
   const submit = document.getElementById("giftbox-submit");
   const container = document.getElementById('giftbox-container');
 
-  // 清除狀態
   container.classList.remove('gold-flow-active');
 
   if (!selectedItems[1] || !selectedItems[2]) {
@@ -136,17 +144,13 @@ function validateGiftbox() {
     return;
   }
 
-  // 成功狀態：啟動流光
   container.classList.add('gold-flow-active');
-
   status.innerText = editingId ? "✔ 準備完成，請確認修改" : "✔ 完美組合！";
-  status.style.color = "#2f4b3c"; // 品牌綠
-
+  status.style.color = "#2f4b3c";
   submit.disabled = false;
   submit.classList.add("enabled");
 }
 
-// ====== 編輯模式 ======
 export function loadGiftBoxForEdit(data) {
   selectedItems[1] = data.slot1;
   selectedItems[2] = data.slot2;
@@ -155,7 +159,7 @@ export function loadGiftBoxForEdit(data) {
   updateMetalSlot(1, selectedItems[1]);
   updateMetalSlot(2, selectedItems[2]);
   updateGiftboxProgress();
-  validateGiftbox(); // 重新驗證以觸發樣式
+  validateGiftbox();
 
   const status = document.getElementById("giftbox-status");
   const submit = document.getElementById("giftbox-submit");
@@ -174,21 +178,17 @@ export function loadGiftBoxForEdit(data) {
   }
 }
 
-// ====== 重置 UI ======
 function resetUI() {
   selectedItems = { 1: null, 2: null };
   editingId = null;
-
   updateMetalSlot(1, null);
   updateMetalSlot(2, null);
   updateGiftboxProgress();
-  validateGiftbox(); // 重置按鈕狀態
-
+  validateGiftbox();
   const submit = document.getElementById("giftbox-submit");
   if(submit) submit.innerText = "加入購物車";
 }
 
-// 🛒 飛入購物車動畫 (維持原樣)
 function flyToCart() {
     const ghost = document.createElement('div');
     ghost.classList.add('fly-item');
@@ -216,20 +216,20 @@ function flyToCart() {
     setTimeout(() => ghost.remove(), 800);
 }
 
-// ==========================================
-// ✨ 初始化函式 (Init) - 這是修復點擊的關鍵！
-// ==========================================
 export function initGiftBox() {
-    // 1. 綁定加入購物車按鈕
     const submitBtn = document.getElementById("giftbox-submit");
     if (submitBtn) {
         submitBtn.addEventListener("click", () => {
           if (submitBtn.disabled) return;
 
+          // 🔥 計算總價：(單價 * 數量) + (單價 * 數量)
+          const price1 = selectedItems[1].price * (selectedItems[1].qty || 1);
+          const price2 = selectedItems[2].price * (selectedItems[2].qty || 1);
+
           const finalGiftbox = {
             slot1: selectedItems[1],
             slot2: selectedItems[2],
-            totalPrice: selectedItems[1].price + selectedItems[2].price,
+            totalPrice: price1 + price2,
           };
 
           flyToCart();
@@ -245,12 +245,8 @@ export function initGiftBox() {
         });
     }
 
-    // 2. 🔥 綁定罐子點擊事件 (取代 HTML 中的 onclick)
     const slot1 = document.getElementById("slot1");
     const slot2 = document.getElementById("slot2");
-
     if(slot1) slot1.addEventListener("click", () => openProductSelector(1));
     if(slot2) slot2.addEventListener("click", () => openProductSelector(2));
-
-    console.log("🎁 禮盒系統初始化完成 (Event Listeners Attached)");
 }

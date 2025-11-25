@@ -23,7 +23,9 @@ const SECRET_PRODUCT_DEF = {
 // 顯示購物明細 Sheet (防呆修復版)
 // ========================================================
 export async function showCartSheet() {
-  // 1. Config 檢查
+  // (請保留您原本 showCartSheet 的內容，或我可以直接提供完整檔案)
+  // 為確保無誤，這裡提供完整的 showCartSheet 供覆蓋：
+  
   const cart = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
   if (cart[SECRET_PRODUCT_DEF.id] && !CONFIG.PRODUCTS.find(p => p.id === SECRET_PRODUCT_DEF.id)) {
     CONFIG.PRODUCTS.push(SECRET_PRODUCT_DEF);
@@ -44,15 +46,13 @@ export async function showCartSheet() {
     sheet.dataset.open = "true";
   });
 
-  // 2. 渲染列表
+  // 渲染列表
   list.innerHTML = "";
   const items = buildOrderItems();
 
   if (!items.length) {
     list.innerHTML = `<div class="muted" style="padding:12px; text-align:center;">尚未選購商品</div>`;
-    // 安全清空金額
-    const els = ["cartSub", "cartShip", "cartTotal"];
-    els.forEach(id => { if($(id)) $(id).textContent = "NT$ 0"; });
+    ["cartSub", "cartShip", "cartTotal"].forEach(id => { if($(id)) $(id).textContent = "NT$ 0"; });
     if($("cartDiscRow")) $("cartDiscRow").style.display = "none";
     if($("promoMsg")) $("promoMsg").textContent = "";
     return; 
@@ -62,7 +62,6 @@ export async function showCartSheet() {
     const row = document.createElement("div");
     row.className = "line-item clickable";
     row.dataset.id = i.id;
-    // 區分是一般商品還是禮盒
     row.dataset.type = i.type || 'regular'; 
 
     let titleHtml = i.name;
@@ -71,13 +70,15 @@ export async function showCartSheet() {
     // 針對禮盒顯示內容物詳情
     if (i.type === 'giftbox') {
         const d = i.details;
-        // 顯示：第一罐 + 第二罐
-        const detailText = `<span class="muted" style="font-size:12px; display:block; margin-top:2px;">
-            1. ${d.slot1.title}<br>2. ${d.slot2.title}
+        // 禮盒內容顯示邏輯
+        const s1Name = d.slot1.title + (d.slot1.qty > 1 ? ` x${d.slot1.qty}` : "");
+        const s2Name = d.slot2.title + (d.slot2.qty > 1 ? ` x${d.slot2.qty}` : "");
+        
+        const detailText = `<span class="muted" style="font-size:12px; display:block; margin-top:2px; color:#888;">
+            1. ${s1Name}<br>2. ${s2Name}
         </span>`;
         titleHtml += detailText;
     } else {
-        // 一般商品邏輯
         const packStr = i.packQty > 0 ? `（裝罐 ${i.packQty}）` : "";
         const isSecret = i.id === "secret_888";
         titleHtml = isSecret ? `<span style="color:#b8860b; font-weight:800;">🤫 ${i.name}</span>` : i.name;
@@ -96,75 +97,43 @@ export async function showCartSheet() {
     `;
     list.appendChild(row);
     
-    // 只有一般商品能點進去修改，禮盒點了沒反應（或者你可以做成點了跳回去禮盒選單）
-    if (i.type !== 'giftbox') {
-        // row.addEventListener... (原本的綁定是綁在整個 sheet 上的 handleItemClick)
-    }
-    
     enableSwipeDelete(row);
   });
 
-  // 3. 金額試算 (加上嚴格防呆)
+  // 金額試算
   try {
-    // 預填
     if (document.getElementById("total_s")) {
       if($("cartTotal")) $("cartTotal").textContent = $("total_s").textContent;
       if($("cartShip")) $("cartShip").textContent = $("ship_s").textContent;
       if($("cartSub")) $("cartSub").textContent = $("sub_s").textContent;
     }
 
-    // 抓取運送方式
     const selectedShip = document.querySelector("input[name='shipping']:checked")?.value || "store";
-    
-    // Call API
     const preview = await api.previewTotals(items, selectedShip, promoCode);
     const data = preview.data || preview;
 
-    // 🔥 安全更新 DOM (檢查元素存在才更新)
-    if ($("cartSub")) {
-        $("cartSub").textContent = `NT$ ${(data.subtotal || 0).toLocaleString("zh-TW")}`;
-    }
+    if ($("cartSub")) $("cartSub").textContent = `NT$ ${(data.subtotal || 0).toLocaleString("zh-TW")}`;
     
-    // 折扣列 (最容易報錯的地方)
     const discRow = $("cartDiscRow");
     const discTxt = $("cartDisc");
     if (discRow) {
         const hasDiscount = data.discount > 0;
         discRow.style.display = hasDiscount ? "flex" : "none";
-        if (discTxt) {
-            discTxt.textContent = hasDiscount ? `- NT$ ${data.discount.toLocaleString("zh-TW")}` : "";
-        }
+        if (discTxt) discTxt.textContent = hasDiscount ? `- NT$ ${data.discount.toLocaleString("zh-TW")}` : "";
     }
     
-    // 運費
-    if ($("cartShip")) {
-        const shipFee = data.shipping ?? data.shippingFee ?? 0;
-        $("cartShip").textContent = `NT$ ${shipFee.toLocaleString("zh-TW")}`;
-    }
+    if ($("cartShip")) $("cartShip").textContent = `NT$ ${(data.shipping ?? data.shippingFee ?? 0).toLocaleString("zh-TW")}`;
+    if ($("cartTotal")) $("cartTotal").textContent = `NT$ ${(data.total ?? data.totalAfterDiscount ?? 0).toLocaleString("zh-TW")}`;
 
-    // 總金額
-    if ($("cartTotal")) {
-        const total = data.total ?? data.totalAfterDiscount ?? 0;
-        $("cartTotal").textContent = `NT$ ${total.toLocaleString("zh-TW")}`;
-    }
-
-    // 優惠碼訊息
     if ($("promoMsg")) {
-        $("promoMsg").textContent =
-          promoCode && data.discount > 0 ? `🎉 已套用優惠碼：${promoCode}` : 
-          promoCode ? "❌ 無效的優惠碼" : "";
-        
-        // 成功時字體改綠色，失敗改紅色 (選用)
+        $("promoMsg").textContent = promoCode && data.discount > 0 ? `🎉 已套用優惠碼：${promoCode}` : promoCode ? "❌ 無效的優惠碼" : "";
         $("promoMsg").style.color = data.discount > 0 ? "#5a7b68" : "#c9544d";
     }
 
   } catch (err) {
-    console.error("明細更新錯誤 (請查看詳細 Log):", err);
-    // 只有在真的出錯時才顯示，但因為上面加了防呆，這裡應該不會再觸發了
     if ($("promoMsg")) $("promoMsg").textContent = ""; 
   }
 
-  // 綁定點擊
   if (!sheet.dataset.listenerAdded) {
       document.addEventListener("click", handleItemClick);
       sheet.dataset.listenerAdded = "true";
@@ -177,10 +146,13 @@ function handleItemClick(e) {
   // 如果點到刪除按鈕，不觸發
   if (!row || e.target.classList.contains("swipe-delete")) return;
 
-  const sheet = $("cartSheet");
+  const sheet = document.getElementById("cartSheet");
   if (!sheet || sheet.dataset.open !== "true") return;
 
   const id = row.dataset.id;
+  
+  // 🔥【關鍵修正】這裡補上了 type 的定義
+  const type = row.dataset.type || 'regular'; 
 
   // 🚪 先關閉購物明細 (讓畫面乾淨)
   hideCartSheet();
@@ -189,7 +161,8 @@ function handleItemClick(e) {
   if (type === 'giftbox') {
       const boxData = getGiftBox(id); // 從 cart.js 拿資料
       if (boxData) {
-          loadGiftBoxForEdit(boxData); // 呼叫 giftbox_ui.js 的編輯功能
+          // 呼叫 giftbox_ui.js 的編輯功能 (會自動捲動到禮盒區)
+          loadGiftBoxForEdit(boxData); 
       } else {
           toast("讀取禮盒資料失敗");
       }
@@ -198,8 +171,6 @@ function handleItemClick(e) {
 
   // 🕵️ 針對隱藏商品的特殊處理
   if (id === "secret_888") {
-    // 🔥 修改這裡：不再 Alert，而是直接打開尊爵金 Modal
-    // 我們直接傳入 SECRET_PRODUCT_DEF，因為隱藏商品只有這一款
     openSecretModal(SECRET_PRODUCT_DEF);
     return;
   }
@@ -207,7 +178,6 @@ function handleItemClick(e) {
   // 一般商品：開啟該商品 Modal
   const productCard = document.querySelector(`.tea-card[data-id="${id}"]`);
   if (productCard) {
-      // 稍微延遲一點點，讓 sheet 關閉動畫順暢後再開商品
       setTimeout(() => productCard.click(), 150);
   }
 }
@@ -237,10 +207,66 @@ export function initSheetModal() {
   sheet.style.transition = "transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)";
   backdrop.style.display = "none";
 
-  // 鎖定背景捲動 (但不鎖 Sheet 內部)
   backdrop.addEventListener("touchmove", (e) => {
     if (e.target === backdrop) e.preventDefault();
   }, { passive: false });
+}
+
+export function enableSmartSheetControl() {
+  const sheet = $("cartSheet");
+  const backdrop = $("cartSheetBackdrop");
+  const handle = sheet?.querySelector(".sheet-handle");
+
+  if (!sheet || !backdrop) return;
+
+  backdrop.addEventListener("click", (e) => {
+    if (e.target === backdrop) hideCartSheet();
+  });
+
+  let startY = 0;
+  let currentY = 0;
+  let isDragging = false;
+  let isAtTop = true;
+
+  sheet.addEventListener("touchstart", (e) => {
+    startY = e.touches[0].clientY;
+    isDragging = false;
+    isAtTop = sheet.scrollTop <= 0;
+    sheet.style.transition = "none";
+  }, { passive: true });
+
+  sheet.addEventListener("touchmove", (e) => {
+    const touchY = e.touches[0].clientY;
+    const deltaY = touchY - startY;
+    const isHandle = e.target === handle || e.target.closest('.sheet-handle');
+
+    if (isHandle || (isAtTop && deltaY > 0)) {
+        if (e.cancelable) e.preventDefault();
+        isDragging = true;
+        currentY = touchY;
+        const translateY = deltaY * 0.7;
+        sheet.style.transform = `translateY(${translateY}px)`;
+        backdrop.style.opacity = Math.max(0, 1 - translateY / 500);
+    }
+  }, { passive: false });
+
+  sheet.addEventListener("touchend", () => {
+    sheet.style.transition = "transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)";
+    backdrop.style.transition = "opacity 0.35s ease";
+
+    if (isDragging) {
+      const deltaY = currentY - startY;
+      if (deltaY > 120) {
+        sheet.style.transform = "translateY(100%)";
+        backdrop.style.opacity = "0";
+        setTimeout(() => hideCartSheet(), 300);
+      } else {
+        sheet.style.transform = "translateY(0)";
+        backdrop.style.opacity = "1";
+      }
+    }
+    isDragging = false;
+  });
 }
 
 // ========================================================
@@ -310,10 +336,11 @@ function enableSwipeDelete(row) {
   const deleteBtn = row.querySelector(".swipe-delete");
   let startX = 0;
 
+  if (typeof Hammer === 'undefined') return; // 防呆
+
   const hammer = new Hammer(row);
   hammer.get("pan").set({ direction: Hammer.DIRECTION_HORIZONTAL, touchAction: 'pan-y' });
 
-  // ... (panstart, panmove, panend 的邏輯完全不用改，保留原樣) ...
   hammer.on("panstart", () => {
     const currentTransform = content.style.transform;
     const isOpen = currentTransform.includes("-90px");
@@ -335,23 +362,18 @@ function enableSwipeDelete(row) {
     deleteBtn.style.transform = `translateX(${x + 90}px)`;
   });
 
-  // 🗑️ 點擊刪除按鈕
   deleteBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     const id = deleteBtn.dataset.id;
-    const type = deleteBtn.dataset.type; // 抓我們剛剛加的 data-type
+    const type = deleteBtn.dataset.type;
 
-    // 🟢 分流處理刪除
     if (type === 'giftbox') {
-        // 刪除禮盒
-        removeGiftBox(id); // 呼叫 cart.js 的函式
+        removeGiftBox(id);
     } else {
-        // 刪除一般商品 (原本的邏輯)
         const cart = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
         delete cart[id];
         localStorage.setItem("teaOrderCart", JSON.stringify(cart));
         
-        // 也要記得把首頁 UI 的數字歸零
         const qtyEl = document.getElementById(`qty-${id}`);
         if(qtyEl) {
              if ("value" in qtyEl) qtyEl.value = 0;
@@ -359,7 +381,6 @@ function enableSwipeDelete(row) {
         }
     }
 
-    // 刪除動畫
     row.style.transition = "height .25s ease, opacity .25s ease";
     row.style.height = row.offsetHeight + "px";
     requestAnimationFrame(() => {
@@ -367,23 +388,14 @@ function enableSwipeDelete(row) {
         row.style.height = "0px";
     });
 
-    setTimeout(async () => { // 這裡加 async
+    setTimeout(async () => {
         row.remove();
+        await updateTotals();
         
-        // 🔥 關鍵修正：確保金額即時更新
-        // 因為 removeGiftBox 裡面已經呼叫 updateTotals() 了，
-        // 但我們這裡為了保險起見（並且為了更新 Sheet 上面的數字），我們手動再呼叫一次 API
-        await updateTotals(); // 更新底部 Sticky Bar
-        
-        // 重新渲染 Sheet 上面的金額 (因為 updateTotals 只更新 StickyBar)
-        // 這裡我們偷懶一點，直接用我們剛剛寫好的邏輯再算一次
         const items = buildOrderItems();
         if (items.length === 0) {
-            showCartSheet(); // 顯示「尚未選購」
+            showCartSheet();
         } else {
-             // 這裡如果不重新呼叫 API，Sheet 上的金額不會變
-             // 所以簡單的方法是：重新呼叫一次 showCartSheet()，或者把 updateTotals 的結果拿來用
-             // 為了效能，我們這裡手動觸發一下重新渲染
              const promoCode = ($("promoCode")?.value || "").trim();
              const selectedShip = document.querySelector("input[name='shipping']:checked")?.value || "store";
              const preview = await api.previewTotals(items, selectedShip, promoCode);
@@ -391,9 +403,7 @@ function enableSwipeDelete(row) {
              
              if($("cartTotal")) $("cartTotal").textContent = `NT$ ${(data.total || 0).toLocaleString("zh-TW")}`;
              if($("cartSub")) $("cartSub").textContent = `NT$ ${(data.subtotal || 0).toLocaleString("zh-TW")}`;
-             // ... 其他金額更新 ...
         }
-        
     }, 250);
   });
 }
