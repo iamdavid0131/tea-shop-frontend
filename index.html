@@ -153,39 +153,31 @@
 
 
 <div class="giftbox-container metal-ui" id="giftbox-container">
-<div class="giftbox-slots metal-slots">
-<!-- 罐 1 -->
-<div class="metal-slot" id="slot1" onclick="openProductSelector(1)">
-<div class="metal-cap"></div>
-<div class="metal-body">
-<div class="metal-text">第一罐<br><span class="metal-sub">選擇茶款</span></div>
-</div>
-</div>
+  <div class="giftbox-slots metal-slots">
+    <div class="metal-slot" id="slot1"> <div class="metal-cap"></div>
+      <div class="metal-body">
+        <div class="metal-text">第一罐<br><span class="metal-sub">選擇茶款</span></div>
+      </div>
+    </div>
 
+    <div class="metal-slot" id="slot2"> <div class="metal-cap"></div>
+      <div class="metal-body">
+        <div class="metal-text">第二罐<br><span class="metal-sub">選擇茶款</span></div>
+      </div>
+    </div>
+  </div>
 
-<!-- 罐 2 -->
-<div class="metal-slot" id="slot2" onclick="openProductSelector(2)">
-<div class="metal-cap"></div>
-<div class="metal-body">
-<div class="metal-text">第二罐<br><span class="metal-sub">選擇茶款</span></div>
-</div>
-</div>
-</div>
+  <div class="giftbox-progress">
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="giftbox-progress-fill"></div>
+    </div>
+    <div class="progress-text" id="giftbox-progress-text">0 / 300 g</div>
+  </div>
 
-
-<!-- 重量進度條 -->
-<div class="giftbox-progress">
-<div class="progress-bar-bg"><div class="progress-bar-fill" id="giftbox-progress-fill"></div></div>
-<div class="progress-text" id="giftbox-progress-text">0 / 300 g</div>
+  <div class="giftbox-status" id="giftbox-status">尚未滿足兩罐組合</div>
+  <input type="hidden" id="giftbox-data-input" name="giftboxData" />
+  <button class="giftbox-submit" id="giftbox-submit" disabled>加入購物車</button>
 </div>
-
-
-<div class="giftbox-status" id="giftbox-status">尚未滿足兩罐組合</div>
-<input type="hidden" id="giftbox-data-input" name="giftboxData" />
-<button class="giftbox-submit" id="giftbox-submit" disabled>加入購物車</button>
-</div>
-</div>
-
 <!-- ✅ Step 2: 收件資料 -->
 <div class="section">
   <h2 class="section-title">
