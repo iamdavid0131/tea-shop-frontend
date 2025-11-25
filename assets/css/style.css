@@ -12,7 +12,10 @@
 
 body {
   /* StickyBar 高度 + 送出按鈕預留空間 */
-  padding-bottom: calc(var(--sticky-height, 90px) + 120px);
+  padding-bottom: 90px !important;
+  /* 2. iPhone X+ 安全區域適配 (瀏海/Home條) */
+  /* 會自動疊加安全距離，避免按鈕被 iPhone 的黑條擋住 */
+  padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important;
   background: transparent; /* 背景交給 .aurora-bg */
   margin: 0;
   color: var(--text-primary);

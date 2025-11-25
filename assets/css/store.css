@@ -173,9 +173,22 @@
 
 /* === 搜尋結果 === */
 .sp-scroll {
-  flex: 1; overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch; touch-action: pan-y;
-  margin-top: 8px; padding-right: 4px; min-height: 0;
+  flex: 1; 
+  overflow-y: auto !important;
+  
+  /* 🔥 關鍵修復：鎖定滾動，防止外層頁面跟著動 */
+  overscroll-behavior: contain; 
+  
+  /* iOS 慣性滾動優化 */
+  -webkit-overflow-scrolling: touch; 
+  touch-action: pan-y;
+  
+  margin-top: 8px; 
+  padding-right: 4px; 
+  min-height: 0;
+  
+  /* 確保內容有足夠空間被滑動，不會卡住 */
+  padding-bottom: 20px; 
 }
 #sp-results { display: flex; flex-direction: column; }
 
@@ -773,3 +786,4 @@ textarea.sp-input {
   .pay-btn::before { margin-bottom: 0; margin-right: 12px; }
   .pay-info { display: flex; flex-direction: column; } /* 如果你有包一層的話，但目前 HTML 沒有，所以這行備用 */
 }
+
