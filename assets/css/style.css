@@ -16,6 +16,10 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  
+  /* 🔥 關鍵修正：確保 body 沒有 transform 或 filter，否則 stickybar 會失效 */
+  transform: none !important;
+  filter: none; /* 這裡不要加 !important，以免 AI 夜間模式失效，但預設要為 none */
 }
 /* ============================================================
    🍃 基礎設定 & Header (旗艦版 - 茶香極光)

@@ -6,7 +6,7 @@ let currentSlot = null;
 let selectedItems = { 1: null, 2: null };
 let editingId = null;
 
-// ====== Slot UI 更新 (新增數量顯示) ======
+// ====== Slot UI 更新 ======
 function updateMetalSlot(slot, product) {
   const slotEl = document.getElementById(`slot${slot}`);
   const text = slotEl.querySelector(`.metal-text`);
@@ -14,10 +14,10 @@ function updateMetalSlot(slot, product) {
   if (!text) return;
 
   if (product) {
-    // 🔥 如果數量 > 1 (例如 75g x2)，顯示出來
-    const qtyTag = product.qty > 1 ? `<span style="font-size:12px; color:#e67e22; margin-left:4px;">x${product.qty}</span>` : "";
-    const priceDisplay = product.qty > 1 ? product.price * product.qty : product.price;
-
+    // 判斷是否為複數 (75g x2)
+    const isMulti = product.qty && product.qty > 1;
+    const qtyTag = isMulti ? `<span style="font-size:12px; color:#e67e22; margin-left:4px;">x${product.qty}</span>` : "";
+    
     text.innerHTML = `
         <span style="color:#2f4b3c; font-weight:bold;">${product.title}</span>${qtyTag}<br>
         <span class="metal-sub">${product.unit}</span>
@@ -29,6 +29,7 @@ function updateMetalSlot(slot, product) {
   }
 }
 
+// ====== 開啟選單 (核心修正處) ======
 window.openProductSelector = function (slot) {
   if (!CONFIG.PRODUCTS || CONFIG.PRODUCTS.length === 0) {
     alert("商品資料載入中，請稍候...");
@@ -46,7 +47,7 @@ window.openProductSelector = function (slot) {
   
   if(list) list.innerHTML = "";
 
-  // 放寬篩選：只要單位含 75 或 150
+  // 寬鬆篩選：只要單位含 75 或 150
   const valid = CONFIG.PRODUCTS.filter(p => {
       if (!p.unit) return false;
       const u = p.unit.toLowerCase();
@@ -62,17 +63,24 @@ window.openProductSelector = function (slot) {
     const div = document.createElement("div");
     div.className = "selector-item";
     
-    // 提示文字：如果是 75g，顯示「需兩包」
+    // 🔥 判斷是否為 75g 小包裝
     const isSmall = p.unit.includes("75");
     const note = isSmall ? `<span style="color:#e67e22; font-size:12px;">(需2包)</span>` : "";
-    const priceCalc = isSmall ? p.price * 2 : p.price;
+    
+    // 🔥【關鍵修正】價格顯示邏輯：顯示「原價 x 2」
+    let priceHtml = "";
+    if (isSmall) {
+        priceHtml = `NT$ ${p.price} <span style="color:#e67e22; font-size:13px;">x 2</span>`;
+    } else {
+        priceHtml = `NT$ ${p.price}`;
+    }
 
     div.innerHTML = `
       <div>
         <div class="sel-name">${p.title} ${note}</div>
         <div class="sel-meta">${p.unit}</div>
       </div>
-      <div class="sel-price">NT$ ${priceCalc}</div>
+      <div class="sel-price">${priceHtml}</div>
     `;
     div.onclick = () => selectProduct(p);
     list.appendChild(div);
@@ -87,9 +95,9 @@ window.closeSelector = () => {
     }
 };
 
-// ====== 選中商品 (核心邏輯：75g * 2) ======
+// ====== 選中商品 (核心邏輯) ======
 function selectProduct(product) {
-  // 🔥 判斷單位，自動設定數量
+  // 自動判斷：若是 75g，數量設為 2
   let qty = 1;
   if (product.unit && product.unit.includes("75")) {
       qty = 2;
@@ -106,7 +114,7 @@ function selectProduct(product) {
 
 function getGiftBoxWeight() {
   let w = 0;
-  // 計算重量時要乘上數量
+  // 計算重量時需乘上數量
   if (selectedItems[1]) {
       const unitW = parseInt(selectedItems[1].unit) || 0;
       w += unitW * (selectedItems[1].qty || 1);
@@ -222,9 +230,11 @@ export function initGiftBox() {
         submitBtn.addEventListener("click", () => {
           if (submitBtn.disabled) return;
 
-          // 🔥 計算總價：(單價 * 數量) + (單價 * 數量)
-          const price1 = selectedItems[1].price * (selectedItems[1].qty || 1);
-          const price2 = selectedItems[2].price * (selectedItems[2].qty || 1);
+          // 計算總價：(單價 * 數量) + (單價 * 數量)
+          const p1 = selectedItems[1];
+          const p2 = selectedItems[2];
+          const price1 = p1.price * (p1.qty || 1);
+          const price2 = p2.price * (p2.qty || 1);
 
           const finalGiftbox = {
             slot1: selectedItems[1],

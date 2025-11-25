@@ -6,38 +6,56 @@
    1. StickyBar (底部懸浮島嶼 - 旗艦版)
    ============================================================ */
 
+
 .stickybar {
-  overflow: visible !important;
-  position: fixed; 
-  bottom: 20px; /* 懸浮距離 */
-  left: 16px; 
-  right: 16px; 
-  z-index: 999;
+  /* 🔥 核心修正：強制固定定位 */
+  position: fixed !important; 
+  bottom: 20px !important; /* 距離底部 */
   
+  /* 🔥 核心修正：水平置中新寫法 */
+  left: 20px !important; 
+  right: 20px !important; 
+  margin: 0 auto !important;
+  width: auto !important;
+  max-width: 600px;
+  
+  z-index: 2147483647 !important; /* 使用最高層級，確保浮在最上面 */
+  
+  overflow: visible !important;
   padding: 16px 20px;
-  border-radius: 24px; /* 大圓角 */
+  border-radius: 24px;
   
   /* 高級玻璃質感 */
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   
   border: 1px solid rgba(255, 255, 255, 0.6);
   box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.1),
+    0 10px 30px rgba(0, 0, 0, 0.15),
     0 4px 8px rgba(0, 0, 0, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
     
-  transition: all 0.45s cubic-bezier(0.25, 1, 0.5, 1);
-  transform-origin: bottom center;
+  /* 動畫設定 */
+  transition: transform 0.3s ease, opacity 0.3s ease;
   
-  /* 確保寬度不會爆版 */
-  max-width: 600px;
-  margin: 0 auto;
+  /* 預設狀態：不做任何 transform，避免干擾 fixed */
+  transform: none;
+  opacity: 1;
 }
 
-.stickybar.hide { transform: translateY(150%) scale(0.9); opacity: 0; }
-.stickybar.show { transform: translateY(0) scale(1); opacity: 1; }
+/* 隱藏狀態 (往下推) */
+.stickybar.hide { 
+  transform: translateY(150%) !important; 
+  opacity: 0 !important; 
+  pointer-events: none;
+}
+
+/* 顯示狀態 (復原) */
+.stickybar.show {
+  transform: translateY(0) !important;
+  opacity: 1 !important;
+}
 
 /* === 內部排版 === */
 .sticky-inner {
