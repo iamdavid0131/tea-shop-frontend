@@ -212,63 +212,6 @@ export function initSheetModal() {
   }, { passive: false });
 }
 
-export function enableSmartSheetControl() {
-  const sheet = $("cartSheet");
-  const backdrop = $("cartSheetBackdrop");
-  const handle = sheet?.querySelector(".sheet-handle");
-
-  if (!sheet || !backdrop) return;
-
-  backdrop.addEventListener("click", (e) => {
-    if (e.target === backdrop) hideCartSheet();
-  });
-
-  let startY = 0;
-  let currentY = 0;
-  let isDragging = false;
-  let isAtTop = true;
-
-  sheet.addEventListener("touchstart", (e) => {
-    startY = e.touches[0].clientY;
-    isDragging = false;
-    isAtTop = sheet.scrollTop <= 0;
-    sheet.style.transition = "none";
-  }, { passive: true });
-
-  sheet.addEventListener("touchmove", (e) => {
-    const touchY = e.touches[0].clientY;
-    const deltaY = touchY - startY;
-    const isHandle = e.target === handle || e.target.closest('.sheet-handle');
-
-    if (isHandle || (isAtTop && deltaY > 0)) {
-        if (e.cancelable) e.preventDefault();
-        isDragging = true;
-        currentY = touchY;
-        const translateY = deltaY * 0.7;
-        sheet.style.transform = `translateY(${translateY}px)`;
-        backdrop.style.opacity = Math.max(0, 1 - translateY / 500);
-    }
-  }, { passive: false });
-
-  sheet.addEventListener("touchend", () => {
-    sheet.style.transition = "transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)";
-    backdrop.style.transition = "opacity 0.35s ease";
-
-    if (isDragging) {
-      const deltaY = currentY - startY;
-      if (deltaY > 120) {
-        sheet.style.transform = "translateY(100%)";
-        backdrop.style.opacity = "0";
-        setTimeout(() => hideCartSheet(), 300);
-      } else {
-        sheet.style.transform = "translateY(0)";
-        backdrop.style.opacity = "1";
-      }
-    }
-    isDragging = false;
-  });
-}
-
 // ========================================================
 // 智慧型手勢控制 (下拉關閉 + 列表滾動 完美共存版)
 // ========================================================
