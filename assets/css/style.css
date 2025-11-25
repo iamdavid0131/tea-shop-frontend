@@ -10,15 +10,6 @@
    ☁️ 祥興茶行 Main Style - 首頁、商品展示、詳情頁
    ============================================================ */
 
-/* 🔥 強制重置：確保 Fixed 定位生效 */
-html, body {
-  transform: none !important;
-  filter: none !important;
-  perspective: none !important;
-  contain: none !important;
-  overflow-x: hidden; /* 防止橫向卷軸 */
-}
-
 body {
   /* StickyBar 高度 + 送出按鈕預留空間 */
   padding-bottom: calc(var(--sticky-height, 90px) + 120px);
