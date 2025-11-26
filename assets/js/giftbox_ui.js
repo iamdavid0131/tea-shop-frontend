@@ -2,9 +2,13 @@ import { addGiftBoxToCart, updateGiftBoxInCart } from './cart.js';
 import { CONFIG } from './config.js';
 import { $ } from './dom.js';
 
+// ==========================================
+// 1. 狀態變數 (State Variables)
+// ==========================================
 let currentSlot = null;
 let selectedItems = { 1: null, 2: null };
 let editingId = null;
+let boxQuantity = 1; // 🟢 [修復重點] 補上這個變數宣告！
 
 // ====== Slot UI 更新 ======
 function updateMetalSlot(slot, product) {
