@@ -10,6 +10,7 @@ import { openSecretModal } from "./ai-shop.js";
 import { removeGiftBox } from "./cart.js";
 import { getGiftBox } from "./cart.js";
 import { loadGiftBoxForEdit } from "./giftbox_ui.js";
+import { openProductModal } from "./products.js";
 // 🤫 隱藏商品備份 (UI 顯示用)
 const SECRET_PRODUCT_DEF = {
   id: "secret_888",
@@ -196,16 +197,16 @@ function handleItemClick(e) {
   }
 
   // 🍵 4. 一般商品：開啟該商品 Modal
-  const productCard = document.querySelector(`.tea-card[data-id="${id}"]`);
+  const product = CONFIG.PRODUCTS.find(p => p.id == id);
   
-  // 檢查元素是否存在
-  if (productCard) {
+  if (product) {
       setTimeout(() => {
-          // 強制觸發原本卡片的點擊事件 (模擬用戶點擊)
-          productCard.click(); 
+          // 直接呼叫 products.js 提供的功能
+          // 它會自動渲染畫面、並帶入 LocalStorage 裡的數量設定
+          openProductModal(product);
       }, DELAY_TIME);
   } else {
-      console.warn(`找不到 ID 為 ${id} 的商品卡片，無法開啟詳情。`);
+      console.warn(`資料庫中找不到 ID: ${id}`);
   }
 }
 

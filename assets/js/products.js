@@ -170,6 +170,50 @@ export function renderTeaScenes() {
 // ============================================================
 // 🟩 單品 Modal（開啟 / 關閉 / 拖曳）- 適配 Sticky Header 版
 // ============================================================
+// ============================================================
+// 🆕 新增：公開的開啟 Modal 函式 (給購物車或外部呼叫用)
+// ============================================================
+export function openProductModal(product) {
+  const modal = $("teaModal");
+  const container = $("teaCollection");
+  const modalTitle = $("modalTitle");
+
+  if (!modal || !container) return;
+
+  // 🔍 查找分類資訊
+  const catInfo = CATEGORY_MAP.find((c) => c.key === product.category);
+
+  // 1. 顯示 Modal
+  modal.classList.add("show");
+  modal.setAttribute("aria-hidden", "false");
+
+  // 2. 設定標題與顏色
+  if (catInfo) {
+      modalTitle.textContent = catInfo.title_zh; 
+      modalTitle.style.color = catInfo.profileColor; 
+  } else {
+      modalTitle.textContent = "精選茗茶";
+      modalTitle.style.color = "#5a7b68";
+  }
+
+  // 3. 渲染內容 (會自動帶入 LocalStorage 的數量)
+  renderSingleProduct(product, container, catInfo);
+
+  // 4. 鎖定背景捲動
+  document.body.style.overflow = "hidden";
+
+  // 5. 初始化數量控制鈕
+  setTimeout(() => initQtyControls(), 50);
+
+  // 6. 同步極光背景顏色
+  if (typeof AURORA !== 'undefined' && catInfo) {
+      AURORA.setColor(catInfo.colorA, catInfo.colorB);
+  }
+}
+
+// ============================================================
+// 🟩 單品 Modal 初始化 (事件監聽)
+// ============================================================
 export function initTeaModal() {
   const modal = $("teaModal");
   const sheet = $("teaSheet");
@@ -179,7 +223,7 @@ export function initTeaModal() {
 
   if (!modal || !sheet || !container) return;
 
-  // === 1. 開啟 Modal ===
+  // === 1. 開啟 Modal (修改後：改為呼叫共用函式) ===
   document.addEventListener("click", (e) => {
     const card = e.target.closest(".tea-card");
     if (!card) return; // 防止 Carousel 拖曳誤觸
@@ -188,38 +232,11 @@ export function initTeaModal() {
     const product = CONFIG.PRODUCTS.find((p) => p.id == id);
     if (!product) return;
 
-    // 🔍 查找分類資訊
-    const catInfo = CATEGORY_MAP.find((c) => c.key === product.category);
-
-    // 顯示 Modal
-    modal.classList.add("show");
-    modal.setAttribute("aria-hidden", "false");
-    
-    // 🔥【關鍵修正】標題改成「分類名稱」，並加上分類的主題色
-    if (catInfo) {
-        // 加上一個小葉子圖示 🌿 + 分類中文名
-        modalTitle.textContent = catInfo.title_zh; 
-        modalTitle.style.color = catInfo.profileColor; // 讓標題顏色跟著分類變
-    } else {
-        modalTitle.textContent = "精選茗茶";
-        modalTitle.style.color = "#5a7b68";
-    }
-    
-    // 渲染內容
-    renderSingleProduct(product, container, catInfo);
-
-    // 鎖定背景捲動
-    document.body.style.overflow = "hidden";
-
-    setTimeout(() => initQtyControls(), 50);
-    
-    // 同步極光背景顏色
-    if (typeof AURORA !== 'undefined' && catInfo) {
-        AURORA.setColor(catInfo.colorA, catInfo.colorB);
-    }
+    // 👇 直接呼叫上面抽出來的函式
+    openProductModal(product);
   });
 
-  // === 2. 關閉 Modal ===
+  // === 2. 關閉 Modal (維持原樣) ===
   const close = () => {
     modal.classList.remove("show");
     modal.setAttribute("aria-hidden", "true");
@@ -243,7 +260,7 @@ export function initTeaModal() {
     }
   });
 
-  // === 3. Hammer.js 拖曳下拉 (綁定在 Header 上) ===
+  // === 3. Hammer.js 拖曳下拉 (維持原樣) ===
   if (window.Hammer) {
     const headerEl = document.querySelector(".tea-modal-header");
     if (headerEl) {
@@ -284,7 +301,6 @@ export function initTeaModal() {
     }
   }
 }
-
 // ============================================================
 // 🟩 Modal 內單品渲染 (內容保持不變)
 // ============================================================
