@@ -28,6 +28,17 @@ export async function showCartSheet() {
   if (cart[SECRET_PRODUCT_DEF.id] && !CONFIG.PRODUCTS.find(p => p.id === SECRET_PRODUCT_DEF.id)) {
     CONFIG.PRODUCTS.push(SECRET_PRODUCT_DEF);
   }
+
+  const backdrop = $("cartSheetBackdrop"); // 👈 就是少了這一行！
+  const sheet = $("cartSheet");
+  const list = $("cartItems");
+  const promoCode = ($("promoCode")?.value || "").trim();
+
+  if (!backdrop || !sheet) {
+      console.error("找不到 cartSheet 或 cartSheetBackdrop 元素");
+      return;
+  }
+
 // 🔄 同步箭頭狀態：轉向 (變向下)
   const arrow = document.querySelector("#viewCartBtn .arrow-icon");
   if (arrow) arrow.classList.add("rotated");
