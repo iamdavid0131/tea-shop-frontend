@@ -4,7 +4,12 @@
 /* ============================================================
    1. Store Picker (地圖選擇器 - 樣式強制修復版)
    ============================================================ */
-
+/* === 1. 防止背景滑動 (關鍵) === */
+/* 當選單開啟時，請透過 JS 給 body 加上這這 class */
+body.sp-lock-scroll {
+  overflow: hidden !important;
+  touch-action: none;
+}
 /* === 容器與遮罩 === */
 #store-picker { position: fixed; inset: 0; z-index: 9999; display: none; }
 #store-picker[aria-hidden="false"] { display: block; }
@@ -182,6 +187,7 @@
   overflow: hidden; position: relative; margin: 4px 0;
   box-shadow: inset 0 2px 6px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03);
   z-index: 1;
+  touch-action: pan-x pan-y !important;
 }
 
 /* === 搜尋結果 === */

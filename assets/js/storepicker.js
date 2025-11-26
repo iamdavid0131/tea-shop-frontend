@@ -196,11 +196,14 @@ export function initStorePicker() {
   });
 
   // =========================
-  // Sheet 控制邏輯
+  // 1. Sheet 開關控制 (含背景鎖定)
   // =========================
   const openSheet = () => {
     picker.setAttribute("aria-hidden", "false");
-    // 強制重繪以觸發 transition
+    
+    // 🔥 鎖定背景滾動
+    document.body.classList.add("sp-lock-scroll");
+
     requestAnimationFrame(() => {
         sheet.classList.add("sp-open");
         backdrop.style.opacity = "1";
@@ -210,36 +213,74 @@ export function initStorePicker() {
   };
 
   const closeSheet = () => {
+    // 🔥 解除背景鎖定
+    document.body.classList.remove("sp-lock-scroll");
+    
     sheet.classList.remove("sp-open");
+    sheet.style.transform = ""; // 清除拖曳時留下的 inline style
     backdrop.style.opacity = "0";
+    
     setTimeout(() => picker.setAttribute("aria-hidden", "true"), 300);
   };
 
-  // 綁定開關
   if (openBtn) openBtn.addEventListener("click", openSheet);
   closeBtns.forEach(btn => btn.addEventListener("click", closeSheet));
   backdrop.addEventListener("click", closeSheet);
 
   // =========================
-  // Hammer.js 拖曳 (優化版)
+  // 2. 拖曳關閉邏輯 (取代 Hammer.js)
   // =========================
-  if (window.Hammer) {
-    const hammer = new window.Hammer(sheet);
-    // 🔥 關鍵：允許垂直滾動 (pan-y)，否則列表會滑不動！
-    hammer.get('pan').set({ direction: window.Hammer.DIRECTION_VERTICAL, touchAction: 'pan-y' });
+  let startY = 0;
+  let currentY = 0;
+  let isDragging = false;
 
-    hammer.on("panmove", (e) => {
-        // 只有在列表置頂時，往下拉才觸發關閉拖曳
-        if (sheet.scrollTop <= 0 && e.deltaY > 0) {
-            sheet.style.transform = `translateY(${e.deltaY}px)`;
-        }
-    });
+  // 監聽觸控開始
+  sheet.addEventListener("touchstart", (e) => {
+    // 🔥🔥🔥 關鍵邏輯：檢查按下的位置 🔥🔥🔥
+    // 只有當按下的是「拉桿(.sp-handle)」或「標題列(.sp-header)」時，才啟動拖曳
+    const target = e.target;
+    const isHeader = target.closest('.sp-header');
+    const isHandle = target.closest('.sp-handle');
 
-    hammer.on("panend", (e) => {
-        if (e.deltaY > 100) closeSheet(); // 拉超過 100px 關閉
-        else sheet.style.transform = ""; // 回彈
-    });
-  }
+    if (!isHeader && !isHandle) {
+        // 如果按的是地圖或搜尋結果，這裡直接 return，讓瀏覽器處理預設滾動
+        return; 
+    }
+
+    isDragging = true;
+    startY = e.touches[0].clientY;
+    sheet.style.transition = "none"; // 拖曳時移除過渡效果，避免延遲感
+  }, { passive: false });
+
+  // 監聽觸控移動
+  sheet.addEventListener("touchmove", (e) => {
+    if (!isDragging) return;
+
+    const y = e.touches[0].clientY;
+    const delta = y - startY;
+
+    // 只有往下拉 (delta > 0) 才移動
+    if (delta > 0) {
+        e.preventDefault(); // 防止拉動時觸發瀏覽器的重整或捲動
+        sheet.style.transform = `translateY(${delta}px)`;
+        currentY = delta;
+    }
+  }, { passive: false });
+
+  // 監聽觸控結束
+  sheet.addEventListener("touchend", () => {
+    if (!isDragging) return;
+    isDragging = false;
+    sheet.style.transition = "transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)"; // 恢復動畫
+
+    // 如果拉超過 120px 就關閉，否則回彈
+    if (currentY > 120) {
+        closeSheet();
+    } else {
+        sheet.style.transform = ""; // 清空 transform 回到 CSS class 定義的位置 (0)
+    }
+    currentY = 0;
+  });
 
   // =========================
   // 搜尋邏輯
