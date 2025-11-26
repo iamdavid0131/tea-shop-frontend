@@ -465,14 +465,66 @@ function renderBrewGuide(p) {
 }
 
 function darkenRGBA(rgba, factor = 0.35) {
+  // 1. 解析 RGBA 字串
   const match = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([0-9.]+))?\)/);
   if (!match) return rgba;
+  
   let [_, r, g, b, a] = match;
-  r = Math.round(r * (1 - factor));
-  g = Math.round(g * (1 - factor));
-  b = Math.round(b * (1 - factor));
-  a = a !== undefined ? a : 1;
-  return `rgba(${r}, ${g}, ${b}, ${a})`;
+  r = Number(r);
+  g = Number(g);
+  b = Number(b);
+  a = a !== undefined ? Number(a) : 1;
+
+  // 2. 將 RGB (0-255) 轉為 HSL
+  r /= 255;
+  g /= 255;
+  b /= 255;
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h, s, l = (max + min) / 2;
+
+  if (max === min) {
+    h = s = 0; // 灰色
+  } else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h /= 6;
+  }
+
+  // 3. 核心修正：只降低亮度 (Lightness)
+  // 這裡使用乘法 (l * (1 - factor)) 來保留相對層次
+  l = Math.max(0, l * (1 - factor));
+
+  // 4. 將 HSL 轉回 RGB (0-255)
+  let r2, g2, b2;
+
+  if (s === 0) {
+    r2 = g2 = b2 = l; // 灰色
+  } else {
+    const hue2rgb = (p, q, t) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    };
+
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    r2 = hue2rgb(p, q, h + 1 / 3);
+    g2 = hue2rgb(p, q, h);
+    b2 = hue2rgb(p, q, h - 1 / 3);
+  }
+
+  // 5. 組合回字串
+  return `rgba(${Math.round(r2 * 255)}, ${Math.round(g2 * 255)}, ${Math.round(b2 * 255)}, ${a})`;
 }
 
 // ============================================================
