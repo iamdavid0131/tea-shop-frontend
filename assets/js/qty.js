@@ -61,7 +61,7 @@ function handlePackBtn(btn) {
       qtyEl.value = qty; // 同步 UI
       
       // (選用) 可以在這裡也跳一個氣泡提示總數增加了，看你需求
-      // spawnQtyBubble(btn, "同步+1"); 
+       spawnQtyBubble(btn, "同步+1"); 
     }
   }
 
@@ -186,9 +186,19 @@ function spawnQtyBubble(btn, text) {
   bubble.textContent = text;
 
   const rect = btn.getBoundingClientRect();
-  bubble.style.left = rect.left + rect.width / 2 + "px";
-  bubble.style.top = rect.top - 4 + "px";
+
+  // 優化 1: 加上 window.scrollX/Y，防止頁面捲動後位置跑掉
+  // 優化 2: 減去 10px (或更多) 讓氣泡起點稍微高於按鈕
+  const topPos = rect.top + window.scrollY - 10; 
+  const leftPos = rect.left + window.scrollX + (rect.width / 2);
+
+  bubble.style.top = topPos + "px";
+  bubble.style.left = leftPos + "px";
 
   document.body.appendChild(bubble);
-  setTimeout(() => bubble.remove(), 600);
+
+  // 監聽動畫結束自動移除，比 setTimeout 更精準 (雖然 setTimeout 也沒錯)
+  bubble.addEventListener('animationend', () => {
+    bubble.remove();
+  });
 }

@@ -544,17 +544,43 @@ padding: 20px 24px 16px;
 }
 .step:hover { background: #e8f3ed; border-color: #8fb79c; transform: translateY(-1px); }
 
-/* 氣泡動畫 */
-.qty-bubble {
-  position: absolute; font-size: 14px; font-weight: 800; color: #2f4b3c; opacity: 0;
-  pointer-events: none; z-index: 9999; animation: qtyBubbleMove 0.8s forwards;
-}
-@keyframes qtyBubbleMove {
-  0% { opacity: 0; transform: translate(-50%, 0) scale(0.6); }
-  20% { opacity: 1; transform: translate(-50%, -20px) scale(1.1); }
-  100% { opacity: 0; transform: translate(-50%, -40px) scale(1); }
+qty-bubble {
+  position: absolute; /* 絕對定位，相對於 body */
+  z-index: 9999;      /* 確保在最上層 */
+  
+  /* 視覺樣式 */
+  font-size: 16px;
+  font-weight: 800;
+  color: #2f4b3c;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
+  pointer-events: none;
+  
+  /* 這裡不需要定義 top/left，因為 JS 會寫入 inline style */
+  
+  /* 關鍵：水平置中修正 */
+  /* JS 計算的是按鈕中心點，CSS 要把氣泡往左拉回 50% 才會剛好對齊中心 */
+  transform: translate3d(-50%, 0, 0); 
+  
+  animation: qtyBubbleMoveBody 0.8s forwards;
 }
 
+@keyframes qtyBubbleMoveBody {
+  0% {
+    opacity: 0;
+    /* 這裡一定要保留 translate3d(-50%, ...) 否則水平會歪掉 */
+    transform: translate3d(-50%, 0, 0) scale(0.5);
+  }
+  20% {
+    opacity: 1;
+    /* 往上飄移 -20px */
+    transform: translate3d(-50%, -20px, 0) scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    /* 繼續往上飄到 -50px */
+    transform: translate3d(-50%, -50px, 0) scale(1);
+  }
+}
 
 /* ============================================================
    📘 詳細說明與功能 (Details & Profile - No Toggle Version)
