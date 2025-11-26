@@ -194,8 +194,9 @@
   left: 50%;
   transform: translateX(-50%) translateY(10px) scale(0.9); /* 初始狀態：微縮+下沉 */
   
+  
   /* 外觀美化 */
-  background: rgba(47, 75, 60, 0.9); /* 深墨綠底 */
+  background: rgba(47, 75, 60, 0.75); /* 深墨綠底 */
   color: #fff;
   font-size: 13px;
   font-weight: 500;

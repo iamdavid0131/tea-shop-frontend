@@ -24,12 +24,25 @@
   border-top: 1px solid rgba(255, 255, 255, 0.8);
   box-shadow: 0 -10px 40px rgba(90, 123, 104, 0.2);
   backdrop-filter: blur(20px);
-  padding: 12px 20px 32px;
-  max-height: 90vh; height: 90vh; /* 固定高度體驗較好 */
+  padding: 12px 20px 0; /* 🔥 修改：底部 padding 改為 0，由內部控制 */
+  
+  /* 高度設定 */
+  max-height: 90vh; 
+  height: 90vh; 
+  
+  /* 動畫與定位 */
   transform: translateY(110%);
   transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-  display: flex; flex-direction: column; gap: 12px;
+  
+  /* 佈局 */
+  display: flex; 
+  flex-direction: column; 
+  gap: 12px;
+  
+  /* 🔥 關鍵：雖然外層禁止 touch，但要允許溢出隱藏，避免雙捲軸 */
   touch-action: none;
+  overflow: hidden; 
+  z-index: 10000;
 }
 .sp-sheet.sp-open { transform: translateY(0); }
 
@@ -173,22 +186,29 @@
 
 /* === 搜尋結果 === */
 .sp-scroll {
-  flex: 1; 
+  /* 🔥 1. 確保佔滿剩餘空間 */
+  flex: 1;
+  min-height: 0; /* 防止 Flex 子元素溢出問題 */
+  
+  /* 🔥 2. 捲動設定 */
   overflow-y: auto !important;
+  overscroll-behavior: contain; /* 捲到底部時不觸發網頁重新整理或背景捲動 */
+  -webkit-overflow-scrolling: touch; /* iOS 慣性捲動 */
   
-  /* 🔥 關鍵修復：鎖定滾動，防止外層頁面跟著動 */
-  overscroll-behavior: contain; 
+  /* 🔥 3. 復活捲動能力 (覆蓋掉父層的 none) */
+  touch-action: pan-y !important;
   
-  /* iOS 慣性滾動優化 */
-  -webkit-overflow-scrolling: touch; 
-  touch-action: pan-y;
+  /* 🔥 4. 排版與間距 */
+  margin-top: 8px;
+  padding-right: 4px; /* 預留捲軸空間 */
   
-  margin-top: 8px; 
-  padding-right: 4px; 
-  min-height: 0;
+  /* 🔥 5. 解決被 Sticky Bar 擋住的問題 */
+  /* 加大底部內距，讓最後一個項目可以被滑到視窗中間 */
+  padding-bottom: 120px !important; 
   
-  /* 確保內容有足夠空間被滑動，不會卡住 */
-  padding-bottom: 20px; 
+  /* 確保內容寬度正確 */
+  width: 100%;
+  box-sizing: border-box;
 }
 #sp-results { display: flex; flex-direction: column; }
 
