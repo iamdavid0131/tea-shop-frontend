@@ -7,10 +7,18 @@
   position: fixed; inset: 0; display: flex; justify-content: center; align-items: flex-end;
   padding: 0 0 40px; background: rgba(0,0,0,0.25);
   backdrop-filter: blur(8px) saturate(140%); -webkit-backdrop-filter: blur(8px) saturate(140%);
-  opacity: 0; pointer-events: none; transition: opacity .28s ease; z-index: 9999;
+  opacity: 0; pointer-events: none; transition: opacity .28s ease; 
+  z-index: 2147483650 !important;
+  padding-bottom: env(safe-area-inset-bottom) !important;
 }
 .ai-modal-overlay.show { opacity: 1; pointer-events: auto; }
-
+/* === 2. 手機版底部間距優化 === */
+@media (max-width: 600px) {
+  .ai-box {
+    /* 確保輸入框不會貼底貼太緊 */
+    padding-bottom: calc(16px + env(safe-area-inset-bottom)) !important;
+  }
+}
 /* === AI Modal Card (主視窗) === */
 .ai-box {
   width: 92%; max-width: 450px; max-height: 80vh;
@@ -155,8 +163,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0;           /* 移除內距 */
-  padding-left: 4px;    /* 微調：紙飛機視覺重心偏左，所以補一點左邊距讓它看起來置中 */
+  padding: 0!important;           /* 移除內距 */
+  padding-left: 4px!important;    /* 微調：紙飛機視覺重心偏左，所以補一點左邊距讓它看起來置中 */
   
   /* 3. 顏色與質感 */
   background: linear-gradient(135deg, #5a7b68, #7fa38a);
@@ -184,9 +192,17 @@
 
 /* 圖示微調 */
 .ai-send-btn svg {
-  width: 20px;
+width: 20px;
   height: 20px;
-  pointer-events: none; /* 點擊穿透 */
+  pointer-events: none;
+  
+  /* 🔥 關鍵：強制變成白色 */
+  fill: #ffffff !important;   /* 如果是實心圖示 */
+  stroke: #ffffff !important; /* 如果是線條圖示 */
+  color: #ffffff !important;  /* 雙重保險 */
+  
+  /* 增加一點陰影讓它在綠底上更立體 */
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
 }
 
 /* === Loading Animation === */
