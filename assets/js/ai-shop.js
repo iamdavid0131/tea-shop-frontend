@@ -233,7 +233,7 @@ function showAIModal() {
   } else {
     appendAIBubble(chat, 
       "嗨～我是阿興師！\n" +
-      "今天想要找茶、送禮，或是試試 **Nano Banana 茶籤** 嗎？🍌✨"
+      "今天想要找茶、送禮，或是試試可愛的茶籤嗎？✨"
     );
     appendAskOptions(chat, [
       "我想找茶",
