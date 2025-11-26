@@ -579,9 +579,9 @@ function buildBrewBubble(out, products) {
     <div class="ai-bubble ai-bubble-ai">
       <div class="ai-bubble-title">🍵 ${tea.title} 泡法</div>
 
-      <div class="brew-item">🔥 熱泡：${out.brew.hot}</div>
-      <div class="brew-item">🧊 冰鎮：${out.brew.ice_bath}</div>
-      <div class="brew-item">❄️ 冷泡：${out.brew.cold_brew}</div>
+      <div class="brew-item">${out.brew.hot}</div>
+      <div class="brew-item">${out.brew.ice_bath}</div>
+      <div class="brew-item">${out.brew.cold_brew}</div>
     </div>
   `;
 }
