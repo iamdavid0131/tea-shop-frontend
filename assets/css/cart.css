@@ -161,7 +161,8 @@
 /* 箭頭旋轉動畫 */
 .arrow-icon {
   display: inline-block;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* 讓箭頭轉動跟視窗滑動的時間一致，視覺上會更同步 */
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 /* 當明細打開時，箭頭轉 180 度 (變向下) */
@@ -282,7 +283,8 @@
   box-shadow: 0 -10px 40px rgba(90, 123, 104, 0.2);
   border-top: 1px solid rgba(255, 255, 255, 0.8);
   
-  transform: translateY(110%); transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translateY(110%); 
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
   z-index: 2001 !important; padding: 24px 24px calc(32px + env(safe-area-inset-bottom));
   overflow-y: auto; -webkit-overflow-scrolling: touch;
 }

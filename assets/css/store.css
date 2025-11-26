@@ -180,8 +180,15 @@ body.sp-lock-scroll {
 
 /* === 地圖容器 === */
 #sp-map {
+  width: 100%;
+  /* 改成相對高度：佔畫面高度的 30% ~ 35% 即可，不要寫死 px */
+  height: 30vh !important; 
+  min-height: 200px; /* 最小防呆 */
+  max-height: 300px; /* 最大限制 */
+  flex-shrink: 0;
+  border-radius: 20px;
+  margin-bottom: 12px;
   display: block !important; width: 100%; 
-  height: 280px !important; min-height: 280px !important; /* 強制高度 */
   flex-shrink: 0 !important;
   border-radius: 20px; background: #eef2f0;
   overflow: hidden; position: relative; margin: 4px 0;
@@ -210,7 +217,7 @@ body.sp-lock-scroll {
   
   /* 🔥 5. 解決被 Sticky Bar 擋住的問題 */
   /* 加大底部內距，讓最後一個項目可以被滑到視窗中間 */
-  padding-bottom: 120px !important; 
+  padding-bottom: 100px !important; 
   
   /* 確保內容寬度正確 */
   width: 100%;
@@ -223,6 +230,13 @@ body.sp-lock-scroll {
   background: #fff; border: 1px solid rgba(0,0,0,0.04);
   cursor: pointer; transition: all 0.2s ease;
   display: flex; justify-content: space-between; align-items: center;
+}
+.sp-item.active {
+  background: #f0fdf4 !important; /* 淡淡的綠底 */
+  border-color: #5a7b68 !important; /* 深綠邊框 */
+  box-shadow: 0 0 0 2px rgba(90, 123, 104, 0.2); /* 光暈 */
+  transform: scale(1.02); /* 微微放大 */
+  z-index: 10;
 }
 .sp-item:hover { background: linear-gradient(135deg, #f5f9f7, #fff); border-color: #8fb79c; box-shadow: 0 4px 12px rgba(90, 123, 104, 0.08); transform: translateY(-1px); }
 .sp-item b { color: #2f4b3c; font-size: 15.5px; }

@@ -59,6 +59,29 @@ export function initStorePicker() {
         setTimeout(() => map.invalidateSize(), 300);
     }
   }
+  function highlightStore(storeName) {
+    const list = document.getElementById("sp-results");
+    if (!list) return;
+
+    // 1. 清除舊的高亮
+    const activeItem = list.querySelector(".sp-item.active");
+    if (activeItem) activeItem.classList.remove("active");
+
+    // 2. 找到對應的 DOM 元素 (靠 data-name)
+    // 注意：CSS選擇器中如果有特殊字元(如括號)可能會報錯，這裡用屬性選取比較安全
+    const targetItem = list.querySelector(`.sp-item[data-name="${storeName}"]`);
+
+    if (targetItem) {
+        // 3. 加上高亮樣式
+        targetItem.classList.add("active");
+
+        // 4. ✨ 關鍵 UX：平滑捲動到列表正中央
+        targetItem.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center' // 讓該項目位於視窗中間，不會被頭尾擋住
+        });
+    }
+}
 
   function updateMapMarkers(lat, lng, stores = [], mode = "user") {
     if (!map) initMap(lat, lng);
@@ -121,6 +144,18 @@ export function initStorePicker() {
                 <div style="font-weight:bold; margin-bottom:4px;">${s.name}</div>
                 <div style="color:#666; font-size:12px;">${s.address}</div>
             `);
+
+            // 🔥🔥🔥 新增：綁定點擊事件 🔥🔥🔥
+            marker.on('click', () => {
+            // 1. 地圖飛過去 (選擇性，看你想不想讓地圖跟著動)
+            map.panTo([s.lat, s.lng]); 
+
+            // 2. 觸發列表連動
+            highlightStore(s.name);
+        });
+
+        // 如果想要 Popup 打開時也觸發，可以用 'popupopen'
+        marker.on('popupopen', () => highlightStore(s.name));
     });
   }
 

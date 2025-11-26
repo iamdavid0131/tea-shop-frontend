@@ -199,23 +199,35 @@ export function hideCartSheet() {
   const backdrop = $("cartSheetBackdrop");
   const sheet = $("cartSheet");
   
-  // 🔄 同步箭頭狀態：復原 (變向上)
+  // 1. 箭頭同步復原
   const arrow = document.querySelector("#viewCartBtn .arrow-icon");
   if (arrow) arrow.classList.remove("rotated");
 
+  // 2. 狀態標記更新
   sheet.dataset.open = "false";
+
+  // 🔥🔥🔥 核心修復開始 🔥🔥🔥
   
-  // 🔥【核心修復】明確把 Transform 設回 100% (滑下去)
-  // 這樣才能觸發 transition 動畫，而不是卡在 0 導致瞬間消失
+  // A. 強制恢復動畫屬性 (防止被拖曳邏輯的 transition: none 干擾)
+  sheet.style.transition = "transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)";
+  
+  // B. 明確告訴瀏覽器：往下移動 100% (滑下去)
+  // 這行 inline style 會覆蓋掉開啟時的 translateY(0)
   sheet.style.transform = "translateY(100%)";
 
-  // 等待 CSS transition (0.35s) 結束後再隱藏 display
+  // C. 只有背景淡出 (背景不需要滑動，只需要淡出)
+  backdrop.style.opacity = "0";
+
+  // D. 等待動畫跑完 (400ms) 再真的隱藏 DOM
   setTimeout(() => {
     backdrop.setAttribute("aria-hidden", "true");
-    backdrop.style.opacity = "0"; // 確保淡出
     backdrop.style.display = "none";
     document.body.classList.remove("modal-open");
-  }, 400);
+    
+    // (選用) 動畫結束後，清除所有 inline style，讓下次開啟保持乾淨
+    sheet.style.transform = "";
+    sheet.style.transition = ""; 
+  }, 400); // 這裡的時間要跟上面 transition 的 0.4s 對應
 }
 
 // 綁定關閉按鈕
