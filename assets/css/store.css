@@ -8,7 +8,7 @@
 /* 當選單開啟時，請透過 JS 給 body 加上這這 class */
 body.sp-lock-scroll {
   overflow: hidden !important;
-  touch-action: none;
+  overscroll-behavior: none;
 }
 /* === 容器與遮罩 === */
 #store-picker { position: fixed; inset: 0; z-index: 9999; display: none; }
@@ -45,7 +45,7 @@ body.sp-lock-scroll {
   gap: 12px;
   
   /* 🔥 關鍵：雖然外層禁止 touch，但要允許溢出隱藏，避免雙捲軸 */
-  touch-action: none;
+  touch-action: pan-y;
   overflow: hidden; 
   z-index: 10000;
 }
