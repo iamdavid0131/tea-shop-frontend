@@ -322,3 +322,73 @@
 .sel-name { font-size: 16px; font-weight: 600; color: #2f4b3c; }
 .sel-meta { font-size: 13px; color: #889990; margin-top: 4px; }
 .sel-price { font-weight: 700; color: #b8860b; font-family: "Noto Serif TC", serif; }
+
+/* =========================================
+   GIFTBOX QUANTITY SELECTOR (數量控制器)
+   ========================================= */
+
+.giftbox-qty-row {
+  margin: 15px auto 10px;
+  text-align: center;
+  display: flex;
+  flex-direction: column; /* 垂直排列：標籤在上方，控制器在下方 */
+  align-items: center;
+}
+
+.giftbox-qty-row label {
+  font-size: 14px;
+  color: #5C4832; /* 深棕色/咖啡色文字 */
+  margin-bottom: 6px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* 數量控制本體 */
+.qty-control {
+  display: flex;
+  width: 140px; /* 固定寬度 */
+  border: 1px solid #B8860B; /* 尊爵金邊框 */
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+}
+
+/* 增減按鈕樣式 */
+.qty-btn {
+  background: #F8F8F8;
+  color: #2F4B3C; /* 品牌深綠色 */
+  border: none;
+  padding: 8px 12px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  line-height: 1;
+}
+
+.qty-btn:hover {
+  background: #EFECE4; /* 底部背景色 */
+  color: #B8860B; /* 尊爵金色 */
+}
+
+/* 輸入框 (只顯示數字) */
+.qty-control input {
+  text-align: center;
+  border: none;
+  flex-grow: 1;
+  width: 40px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #2F4B3C;
+  background: white;
+  padding: 8px 0;
+  /* 移除瀏覽器預設的增減箭頭 */
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.qty-control input::-webkit-outer-spin-button,
+.qty-control input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

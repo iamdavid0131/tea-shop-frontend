@@ -15,41 +15,7 @@ const SECRET_PRODUCT_DEF = {
   desc: "阿興師爺爺留下來的壓箱寶。"
 };
 
-// 🛠️ 修復 CONFIG
-function ensureSecretProductInConfig() {
-  const cart = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
-  if (cart[SECRET_PRODUCT_DEF.id] && !CONFIG.PRODUCTS.find(p => p.id === SECRET_PRODUCT_DEF.id)) {
-    CONFIG.PRODUCTS.push(SECRET_PRODUCT_DEF);
-  }
-}
 
-// 🛠️ 格式化品項 (🟢 核心修改：支援禮盒)
-function formatCartItems(rawItems) {
-  return rawItems.map((i) => {
-    // 1. 如果是禮盒，直接回傳詳細結構，不需查 CONFIG
-    if (i.type === 'giftbox') {
-        return {
-            type: 'giftbox',
-            id: i.id, // 這是虛擬 ID (giftbox_...)
-            name: i.name || "客製雙罐禮盒",
-            qty: 1, // 禮盒本身是 1 組
-            price: i.price,
-            details: i.details // 🔥 把內容物 (slot1, slot2) 傳給後端
-        };
-    }
-
-    // 2. 一般商品邏輯 (需查 CONFIG 補齊資料)
-    const product = CONFIG.PRODUCTS.find((p) => p.id === i.id);
-    return {
-      type: 'regular',
-      id: i.id,
-      name: product?.name || product?.title || i.name || "",
-      qty: Number(i.qty) || 0,
-      pack: i.pack || false,
-      productId: i.id // 為了後端扣庫存方便，多傳一個 productId
-    };
-  });
-}
 
 // -------------------------------
 // 封裝 validate (維持原樣，但 getCartItems 必須已經包含禮盒)

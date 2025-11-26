@@ -6,7 +6,7 @@ let currentSlot = null;
 let selectedItems = { 1: null, 2: null };
 let editingId = null;
 
-// ====== 1. Slot UI 更新 (修正 x2 位置到單位旁) ======
+// ====== Slot UI 更新 ======
 function updateMetalSlot(slot, product) {
   const slotEl = document.getElementById(`slot${slot}`);
   const text = slotEl.querySelector(`.metal-text`);
@@ -14,12 +14,9 @@ function updateMetalSlot(slot, product) {
   if (!text) return;
 
   if (product) {
-    // 判斷是否為複數 (75g x2)
     const isMulti = product.qty && product.qty > 1;
-    // 🔥 修正：x2 標籤樣式
     const qtyTag = isMulti ? `<span style="font-size:13px; color:#e67e22; font-weight:800; margin-left:4px;">x${product.qty}</span>` : "";
     
-    // 🔥 修正：將 ${qtyTag} 移到第二行 (metal-sub) 裡面
     text.innerHTML = `
         <span style="color:#2f4b3c; font-weight:bold;">${product.title}</span><br>
         <span class="metal-sub" style="display:flex; align-items:center; justify-content:center;">
@@ -101,8 +98,6 @@ window.closeSelector = () => {
 function selectProduct(product) {
   let qty = 1;
   const u = product.unit ? product.unit.trim().toLowerCase() : "";
-  
-  // 自動判斷：若是 75g，數量設為 2
   if (u === "75g") {
       qty = 2;
   }
@@ -114,8 +109,8 @@ function selectProduct(product) {
   validateGiftbox();
   window.closeSelector();
 
-  // 播放茶葉動畫
   setTimeout(() => {
+      // 播放茶葉動畫
       playTeaLeavesAnimation(currentSlot);
   }, 300);
 }
@@ -181,6 +176,7 @@ function playTeaLeavesAnimation(targetSlotId) {
 
 function getGiftBoxWeight() {
   let w = 0;
+  // 🟢 修正：單罐重量 * 組數
   if (selectedItems[1]) {
       const unitW = parseInt(selectedItems[1].unit) || 0;
       w += unitW * (selectedItems[1].qty || 1);
@@ -189,17 +185,27 @@ function getGiftBoxWeight() {
       const unitW = parseInt(selectedItems[2].unit) || 0;
       w += unitW * (selectedItems[2].qty || 1);
   }
-  return w;
+  return w * boxQuantity; // 乘以總組數
 }
 
 function updateGiftboxProgress() {
-  const w = getGiftBoxWeight();
+  const w = getGiftBoxWeight(); // 這是總重
   const fill = document.getElementById('giftbox-progress-fill');
   const text = document.getElementById('giftbox-progress-text');
   
   if(fill && text) {
-      fill.style.width = Math.min((w / 300) * 100, 100) + '%';
-      text.innerText = `${w} / 300 g`;
+      // 關鍵：將總重除以組數，得出單組的重量
+      const qtyInput = document.getElementById('box-qty');
+      const currentQty = parseInt(qtyInput?.value) || 1;
+      const singleBoxW = w / currentQty; 
+      
+      const maxWeight = 300; // 假設雙罐禮盒滿載為 300g
+
+      // 1. Progress bar 仍然使用單組重量來計算進度
+      fill.style.width = Math.min((singleBoxW / maxWeight) * 100, 100) + '%';
+      
+      // 2. 🟢 修正顯示：只顯示單組重量與標準
+      text.innerText = `${singleBoxW} g / ${maxWeight} g (單組重量)`;
   }
 }
 
@@ -218,6 +224,13 @@ function validateGiftbox() {
     submit.classList.remove("enabled");
     return;
   }
+  
+  if (boxQuantity < 1) { // 🟢 新增：檢查數量
+    status.innerText = "禮盒組數必須大於 0";
+    status.style.color = "#e74c3c";
+    submit.disabled = true;
+    return;
+  }
 
   // 成功樣式
   container.classList.add('gold-flow-active');
@@ -225,25 +238,32 @@ function validateGiftbox() {
   const boxFee = CONFIG.GIFT_BOX_PRICE || 200;
   const p1 = selectedItems[1];
   const p2 = selectedItems[2];
+  
+  // 計算單組價格
   const v1 = p1.price * (p1.qty || 1);
   const v2 = p2.price * (p2.qty || 1);
-  const total = v1 + v2 + boxFee;
+  const singleTotal = v1 + v2 + boxFee;
+  const grandTotal = singleTotal * boxQuantity; // 總價 = 單組價格 * 組數
 
   status.innerHTML = `
     <span style="color:#666; font-size:13px;">
-      $${v1.toLocaleString()} + $${v2.toLocaleString()} + 禮盒$${boxFee} = 
+      單組價格: $${singleTotal.toLocaleString()} x ${boxQuantity} 組 = 
     </span>
     <span style="color:#b8860b; font-size:18px; font-weight:800; margin-left:4px;">
-      NT$ ${total.toLocaleString()}
+      NT$ ${grandTotal.toLocaleString()}
     </span>
   `;
 
-  submit.innerText = editingId ? "確認修改" : "加入購物車";
+  submit.innerText = editingId ? "確認修改" : `加入購物車 (x${boxQuantity})`;
   submit.disabled = false;
   submit.classList.add("enabled");
 }
 
 export function loadGiftBoxForEdit(data) {
+  // 🟢 修正：讀取整體組數
+  boxQuantity = data.qty || 1;
+  document.getElementById('box-qty').value = boxQuantity;
+
   selectedItems[1] = data.slot1;
   selectedItems[2] = data.slot2;
   editingId = data.id;
@@ -299,6 +319,27 @@ function flyToCart() {
 
 export function initGiftBox() {
     const submitBtn = document.getElementById("giftbox-submit");
+    const qtyInput = document.getElementById('box-qty');
+    const qtyControls = document.querySelector('.giftbox-qty-row');
+
+    // 🟢 數量控制綁定
+    if (qtyControls) {
+        qtyControls.addEventListener('click', (e) => {
+            const action = e.target.dataset.action;
+            if (!qtyInput || !action) return;
+            
+            let currentQty = parseInt(qtyInput.value) || 1;
+            
+            if (action === 'increase' && currentQty < 99) currentQty++;
+            if (action === 'decrease' && currentQty > 1) currentQty--;
+
+            qtyInput.value = currentQty;
+            boxQuantity = currentQty; // 更新狀態
+            validateGiftbox();
+            updateGiftboxProgress();
+        });
+    }
+
     if (submitBtn) {
         submitBtn.addEventListener("click", () => {
           if (submitBtn.disabled) return;
@@ -308,19 +349,22 @@ export function initGiftBox() {
           const p2 = selectedItems[2];
           const price1 = p1.price * (p1.qty || 1);
           const price2 = p2.price * (p2.qty || 1);
+          const singleTotal = price1 + price2 + boxFee;
 
           const finalGiftbox = {
             slot1: selectedItems[1],
             slot2: selectedItems[2],
-            totalPrice: price1 + price2 + boxFee,
+            totalPrice: singleTotal, // 這裡只傳單組價格，總價在 cart.js 和後端算
+            qty: boxQuantity, // 🟢 關鍵：傳遞整體組數
           };
 
           flyToCart();
 
           if (editingId) {
             const ok = updateGiftBoxInCart(editingId, finalGiftbox);
-            if(ok) alert("禮盒內容已更新！");
+            if(ok) alert(`禮盒內容已更新！共 ${boxQuantity} 組`);
           } else {
+            // 🟢 新增模式：傳入組數
             addGiftBoxToCart(finalGiftbox);
             window.dispatchEvent(new CustomEvent("cart:update"));
           }
@@ -330,7 +374,6 @@ export function initGiftBox() {
 
     const slot1 = document.getElementById("slot1");
     const slot2 = document.getElementById("slot2");
-    // 使用 addEventListener
     if(slot1) slot1.addEventListener("click", () => openProductSelector(1));
     if(slot2) slot2.addEventListener("click", () => openProductSelector(2));
 }

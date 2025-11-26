@@ -35,27 +35,27 @@ export function initStorePicker() {
   // 🛠 地圖核心邏輯
   // =========================
   function initMap(lat, lng) {
-    // 1. 如果地圖容器還沒初始化，就建立
+    // 1. 如果地圖容器還沒初始化
     if (!map) {
-        // 防呆：清除可能殘留的 DOM 內容
         if (mapEl._leaflet_id) mapEl.innerHTML = "";
         
         map = L.map(mapEl, {
-            zoomControl: false, // 我們自訂 Zoom 樣式，或不需要
-            attributionControl: false // 簡化介面
+            zoomControl: false,
+            attributionControl: false
         }).setView([lat, lng], 16);
 
         L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png", {
             maxZoom: 19
         }).addTo(map);
 
-        // 初始化圖層群組
         userLayer = L.layerGroup().addTo(map);
         storeLayer = L.layerGroup().addTo(map);
+
+        // 🔥 新增：確保第一次初始化也能正確抓到視窗大小
+        setTimeout(() => map.invalidateSize(), 100);
     } else {
-        // 2. 如果已經有地圖，就飛過去
+        // 2. 如果已經有地圖
         map.setView([lat, lng], 16);
-        // 🔥 關鍵修復：強制重算大小 (解決 display:none 切換後地圖空白問題)
         setTimeout(() => map.invalidateSize(), 300);
     }
   }
@@ -83,6 +83,9 @@ export function initStorePicker() {
     }
 }
 
+  // =========================
+  // 修正後的 updateMapMarkers
+  // =========================
   function updateMapMarkers(lat, lng, stores = [], mode = "user") {
     if (!map) initMap(lat, lng);
 
@@ -91,16 +94,14 @@ export function initStorePicker() {
     if (animationId) cancelAnimationFrame(animationId);
 
     if (mode === "user") {
-        // 🔵 藍點 + 呼吸光暈
         const pulse = L.circle([lat, lng], {
             radius: 20, color: "transparent", fillColor: "#1E90FF", fillOpacity: 0.2
         }).addTo(userLayer);
 
-        const dot = L.circleMarker([lat, lng], {
+        L.circleMarker([lat, lng], {
             radius: 6, color: "#fff", weight: 2, fillColor: "#1E90FF", fillOpacity: 1
         }).addTo(userLayer);
 
-        // 呼吸動畫
         let t = 0;
         function animate() {
             t += 0.03;
@@ -110,7 +111,6 @@ export function initStorePicker() {
         }
         animate();
     } else {
-        // 📍 地標模式
         L.marker([lat, lng]).addTo(userLayer).bindPopup("📍 搜尋中心").openPopup();
     }
 
@@ -126,7 +126,6 @@ export function initStorePicker() {
         if (!s.lat || !s.lng) return;
         const { color } = identifyBrand(s.name);
 
-        // 自訂漂亮 Icon
         const icon = L.divIcon({
             className: "",
             html: `<div style="
@@ -138,23 +137,23 @@ export function initStorePicker() {
             iconAnchor: [8, 8]
         });
 
-        L.marker([s.lat, s.lng], { icon })
+        // 🔥🔥🔥 修正重點在此 🔥🔥🔥
+        // 必須宣告 const marker = ... 才能在後面使用它
+        const marker = L.marker([s.lat, s.lng], { icon })
             .addTo(storeLayer)
             .bindPopup(`
                 <div style="font-weight:bold; margin-bottom:4px;">${s.name}</div>
                 <div style="color:#666; font-size:12px;">${s.address}</div>
             `);
 
-            // 🔥🔥🔥 新增：綁定點擊事件 🔥🔥🔥
-            marker.on('click', () => {
-            // 1. 地圖飛過去 (選擇性，看你想不想讓地圖跟著動)
+        // 現在 marker 變數存在了，事件監聽才會生效
+        marker.on('click', () => {
+            // 1. 地圖飛過去
             map.panTo([s.lat, s.lng]); 
-
             // 2. 觸發列表連動
             highlightStore(s.name);
         });
 
-        // 如果想要 Popup 打開時也觸發，可以用 'popupopen'
         marker.on('popupopen', () => highlightStore(s.name));
     });
   }

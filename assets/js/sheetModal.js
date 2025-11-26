@@ -154,6 +154,7 @@ export async function showCartSheet() {
 }
 
 // 處理列表點擊
+// 處理列表點擊
 function handleItemClick(e) {
   const row = e.target.closest(".line-item.clickable");
   // 如果點到刪除按鈕，不觸發
@@ -163,35 +164,48 @@ function handleItemClick(e) {
   if (!sheet || sheet.dataset.open !== "true") return;
 
   const id = row.dataset.id;
-  
-  // 🔥【關鍵修正】這裡補上了 type 的定義
   const type = row.dataset.type || 'regular'; 
 
-  // 🚪 先關閉購物明細 (讓畫面乾淨)
+  // 🚪 1. 先關閉購物明細
   hideCartSheet();
 
-  // 🟢 處理禮盒點擊
+  // ⏳ 設定延遲時間：必須大於 hideCartSheet 的動畫時間 (400ms)
+  // 這樣才不會因為 hideCartSheet 的清理動作把新開的視窗關掉
+  const DELAY_TIME = 420; 
+
+  // 🟢 2. 處理禮盒點擊
   if (type === 'giftbox') {
-      const boxData = getGiftBox(id); // 從 cart.js 拿資料
+      const boxData = getGiftBox(id);
       if (boxData) {
-          // 呼叫 giftbox_ui.js 的編輯功能 (會自動捲動到禮盒區)
-          loadGiftBoxForEdit(boxData); 
+          // 延遲開啟，體驗比較順暢
+          setTimeout(() => {
+            loadGiftBoxForEdit(boxData); 
+          }, DELAY_TIME);
       } else {
           toast("讀取禮盒資料失敗");
       }
       return;
   }
 
-  // 🕵️ 針對隱藏商品的特殊處理
+  // 🕵️ 3. 針對隱藏商品的特殊處理
   if (id === "secret_888") {
-    openSecretModal(SECRET_PRODUCT_DEF);
+    setTimeout(() => {
+        openSecretModal(SECRET_PRODUCT_DEF);
+    }, DELAY_TIME);
     return;
   }
 
-  // 一般商品：開啟該商品 Modal
+  // 🍵 4. 一般商品：開啟該商品 Modal
   const productCard = document.querySelector(`.tea-card[data-id="${id}"]`);
+  
+  // 檢查元素是否存在
   if (productCard) {
-      setTimeout(() => productCard.click(), 150);
+      setTimeout(() => {
+          // 強制觸發原本卡片的點擊事件 (模擬用戶點擊)
+          productCard.click(); 
+      }, DELAY_TIME);
+  } else {
+      console.warn(`找不到 ID 為 ${id} 的商品卡片，無法開啟詳情。`);
   }
 }
 

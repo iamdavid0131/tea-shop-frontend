@@ -321,7 +321,7 @@ export function buildOrderItems() {
       id: box.id,           // 例如 giftbox_1715000000
       name: "客製雙罐禮盒",   // 顯示在購物明細的名稱
       price: box.totalPrice,// 禮盒總價
-      qty: 1,               // 禮盒本身是 1 組
+      qty: box.qty,               // 讀取總數
       details: {            // 把內容物傳給後端備查
         slot1: box.slot1,
         slot2: box.slot2
@@ -384,6 +384,29 @@ export function addGiftBoxToCart(giftboxData) {
   console.log("🎁 禮盒已加入購物車:", boxes);
 }
 
+// ============================================================
+// 🎁 [新增] 儲存禮盒進購物車 (存入 LocalStorage)
+// ============================================================
+export function addGiftBoxToCart(giftboxData) {
+  // 1. 讀取目前的禮盒清單
+  const boxes = JSON.parse(localStorage.getItem("teaGiftBoxCart") || "[]");
+  
+  // 2. 加入新禮盒
+  boxes.push({
+    ...giftboxData,
+    id: `giftbox_${Date.now()}`, // 給每個禮盒唯一的 ID，方便刪除
+    qty: giftboxData.qty || 1 // 🟢 修正：儲存傳入的組數
+  });
+
+  // 3. 存回 LocalStorage
+  localStorage.setItem("teaGiftBoxCart", JSON.stringify(boxes));
+
+  // 4. 立即更新金額與介面
+  updateTotals();
+  
+  console.log("🎁 禮盒已加入購物車:", boxes);
+}
+
 // 🗑️ [新增] 移除單個禮盒
 export function removeGiftBox(giftboxId) {
   let boxes = JSON.parse(localStorage.getItem("teaGiftBoxCart") || "[]");
@@ -408,8 +431,12 @@ export function updateGiftBoxInCart(id, newData) {
   const index = boxes.findIndex(b => b.id === id);
   
   if (index !== -1) {
-    // 保留原本的 id，更新內容
-    boxes[index] = { ...newData, id: id, qty: 1 };
+    // 🟢 修正：讀取並更新組數 (newData.qty 來自前端提交)
+    boxes[index] = { 
+        ...newData, 
+        id: id, 
+        qty: newData.qty || boxes[index].qty || 1 // 使用新的組數
+    };
     localStorage.setItem("teaGiftBoxCart", JSON.stringify(boxes));
     updateTotals(); // 重新算錢
     return true;
