@@ -23,8 +23,6 @@ const SECRET_PRODUCT_DEF = {
 // 顯示購物明細 Sheet (防呆修復版)
 // ========================================================
 export async function showCartSheet() {
-  // (請保留您原本 showCartSheet 的內容，或我可以直接提供完整檔案)
-  // 為確保無誤，這裡提供完整的 showCartSheet 供覆蓋：
   
   const cart = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
   if (cart[SECRET_PRODUCT_DEF.id] && !CONFIG.PRODUCTS.find(p => p.id === SECRET_PRODUCT_DEF.id)) {
@@ -37,6 +35,9 @@ export async function showCartSheet() {
   const promoCode = ($("promoCode")?.value || "").trim();
 
   // 開啟動畫
+  // 🔄 同步箭頭狀態：轉向
+  const arrow = document.querySelector("#viewCartBtn .arrow-icon");
+  if (arrow) arrow.classList.add("rotated");
   backdrop.style.opacity = "0";
   backdrop.style.display = "block";
   requestAnimationFrame(() => {
@@ -66,7 +67,7 @@ export async function showCartSheet() {
 
     let titleHtml = i.name;
     let qtyStr = `× ${i.qty}`;
-    
+    let displayPrice = i.price;
     // 針對禮盒顯示內容物詳情
     if (i.type === 'giftbox') {
         const d = i.details;
@@ -84,6 +85,7 @@ export async function showCartSheet() {
         titleHtml = isSecret ? `<span style="color:#b8860b; font-weight:800;">🤫 ${i.name}</span>` : i.name;
         qtyStr += ` ${packStr}`;
     }
+    const lineTotal = (displayPrice || 0) * (i.qty || 1);
 
     row.innerHTML = `
         <div class="swipe-content">
@@ -91,7 +93,7 @@ export async function showCartSheet() {
               <div class="li-title">${titleHtml}</div>
               <div class="li-qty">${qtyStr}</div>
           </div>
-          <div class="li-sub">NT$ ${(i.price * i.qty).toLocaleString("zh-TW")}</div>
+          <div class="li-sub">NT$ ${lineTotal.toLocaleString("zh-TW")}</div>
         </div>
         <button class="swipe-delete" data-id="${i.id}" data-type="${i.type || 'regular'}">刪除</button>
     `;
@@ -185,13 +187,18 @@ function handleItemClick(e) {
 export function hideCartSheet() {
   const backdrop = $("cartSheetBackdrop");
   const sheet = $("cartSheet");
+  
+  // 🔄 同步箭頭狀態：復原
+  const arrow = document.querySelector("#viewCartBtn .arrow-icon");
+  if (arrow) arrow.classList.remove("rotated");
+
   sheet.dataset.open = "false";
 
   setTimeout(() => {
     backdrop.setAttribute("aria-hidden", "true");
     backdrop.style.display = "none";
     document.body.classList.remove("modal-open");
-  }, 400);
+  }, 400); // 等待 CSS transition 結束
 }
 
 // 綁定關閉按鈕
@@ -210,6 +217,88 @@ export function initSheetModal() {
   backdrop.addEventListener("touchmove", (e) => {
     if (e.target === backdrop) e.preventDefault();
   }, { passive: false });
+}
+
+// ========================================================
+// 3. 切換開關 (Toggle) - 給箭頭按鈕用
+// ========================================================
+export function toggleCartSheet() {
+  const sheet = $("cartSheet");
+  if (sheet.dataset.open === "true") {
+    hideCartSheet();
+  } else {
+    showCartSheet();
+  }
+}
+
+// ========================================================
+// 4. 強制關閉所有視窗並前往結帳
+// ========================================================
+export function goToCheckout() {
+  // A. 關閉購物明細 Sheet
+  hideCartSheet();
+
+  // B. 關閉所有 Bootstrap Modal (如果有用 Bootstrap)
+  document.querySelectorAll('.modal.show').forEach(modal => {
+    // 嘗試點擊關閉按鈕，或直接移除 class
+    const closeBtn = modal.querySelector('[data-bs-dismiss="modal"]');
+    if(closeBtn) closeBtn.click();
+    else modal.classList.remove('show'); 
+  });
+  
+  // C. 關閉任何自定義的 Modal (例如隱藏商品視窗)
+  const customModals = document.querySelectorAll('.custom-modal-backdrop'); // 假設你的 class
+  customModals.forEach(el => el.style.display = 'none');
+
+  // D. 確保 Body 捲動鎖定被解除
+  document.body.classList.remove("modal-open");
+  document.body.style.overflow = "";
+
+  // E. 平滑捲動到收件資料區
+  const target = document.getElementById("submit-area");
+  if (target) {
+    // 稍微延遲一點點，確保視窗關閉動畫順暢後再捲動
+    setTimeout(() => {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }
+}
+
+// ========================================================
+// 5. 初始化互動 (請在 main.js 或 app 啟動時呼叫此函式)
+// ========================================================
+export function initStickyBarInteractions() {
+  // 綁定「箭頭按鈕」
+  const viewBtn = $("viewCartBtn");
+  if (viewBtn) {
+    // 移除舊的監聽器 (防呆)
+    const newBtn = viewBtn.cloneNode(true);
+    viewBtn.parentNode.replaceChild(newBtn, viewBtn);
+    
+    newBtn.addEventListener("click", (e) => {
+      e.stopPropagation(); // 防止冒泡
+      toggleCartSheet();
+    });
+  }
+
+  // 綁定「去買單按鈕」
+  const submitBtn = $("submitBtnSticky");
+  if (submitBtn) {
+    // 移除舊的監聽器
+    const newSubmit = submitBtn.cloneNode(true);
+    submitBtn.parentNode.replaceChild(newSubmit, submitBtn);
+
+    newSubmit.addEventListener("click", (e) => {
+      e.preventDefault();
+      goToCheckout();
+    });
+  }
+  
+  // 綁定「背景遮罩」點擊關閉 (原本應該有了，再次確保)
+  const backdrop = $("cartSheetBackdrop");
+  if (backdrop) {
+      backdrop.addEventListener("click", hideCartSheet);
+  }
 }
 
 // ========================================================

@@ -158,6 +158,16 @@
   box-shadow: 0 6px 18px rgba(47, 75, 60, 0.4);
   background: linear-gradient(135deg, #3a5c4a, #5a7b68);
 }
+/* 箭頭旋轉動畫 */
+.arrow-icon {
+  display: inline-block;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 當明細打開時，箭頭轉 180 度 (變向下) */
+.arrow-icon.rotated {
+  transform: rotate(180deg);
+}
 
 /* === 免運進度條 (整合在頂部) === */
 .progress-bar-wrap {

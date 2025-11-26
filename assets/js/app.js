@@ -17,6 +17,7 @@ import { initZipAuto } from "./zipcode.js";
 import { initPaymentUI } from "./paymentUI.js";
 import { initSubmitOrder } from "./submitOrder.js";
 import { initGiftBox } from "./giftbox_ui.js";
+import { initStickyBarInteractions } from "./sheetModal.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
   const loadingEl = $("globalLoading");
@@ -66,6 +67,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     initZipAuto();
     initMemberLookup();
     initGiftBox();
+    initStickyBarInteractions()
 
     requestAnimationFrame(() => {
       CONFIG.PRODUCTS.forEach(p => updatePackUI(p.id));
