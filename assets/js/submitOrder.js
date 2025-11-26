@@ -1,10 +1,9 @@
 // ===============================
 // ☕ submitOrder.js（旗艦優化版 - 支援禮盒）
 // ===============================
-
 import { api } from "./app.api.js";
 import { $, toast } from "./dom.js";
-import { getCartItems, clearCart } from "./cart.js"; // 記得確認 getCartItems 已經支援禮盒了
+import { buildOrderItems, clearCart } from "./cart.js"; // 🟢 關鍵：改用 buildOrderItems
 import { CONFIG } from "./config.js";
 
 // 🤫 隱藏版商品備份
@@ -55,8 +54,8 @@ function formatCartItems(rawItems) {
 // -------------------------------
 // 封裝 validate (維持原樣，但 getCartItems 必須已經包含禮盒)
 // -------------------------------
+// 封裝 validate
 export function validateSubmit() {
-  ensureSecretProductInConfig();
   const btn = $("submitOrderBtn");
   if (!btn) return false;
 
@@ -66,9 +65,9 @@ export function validateSubmit() {
   const shipRadios = document.querySelectorAll("input[name='shipping']");
   const payRadios = document.querySelectorAll("input[name='payment']");
 
-  // 檢查條件
-  const cartItems = getCartItems();
-  const hasItem = (cartItems && cartItems.length > 0); // 只要有東西就好 (含禮盒)
+  // 🟢 檢查：使用 buildOrderItems 來判斷購物車是否有東西 (含禮盒)
+  const cartItems = buildOrderItems();
+  const hasItem = (cartItems && cartItems.length > 0);
   
   const hasName = name?.value.trim().length > 0;
   const hasPhone = phone?.value.trim().length >= 8;
@@ -101,13 +100,11 @@ export async function submitOrder() {
     loadingOverlay?.setAttribute("aria-hidden", "false");
 
     const shippingMethod = document.querySelector("input[name='shipping']:checked")?.value || "";
-    
-    // 取得付款方式
     const payBtn = document.querySelector(".pay-btn.active");
     const payMethod = payBtn ? payBtn.dataset.method : (document.querySelector("input[name='payment']:checked")?.value || "cod");
 
-    // 🟢 取得格式化後的商品資料 (含禮盒)
-    const items = formatCartItems(getCartItems());
+    // 🟢 關鍵修正：直接取得處理好的商品陣列 (包含禮盒)
+    const items = buildOrderItems();
 
     const order = {
       timestamp: new Date().toLocaleString("zh-TW", { hour12: false }),
@@ -125,19 +122,17 @@ export async function submitOrder() {
       consent: $("consentAgree")?.checked ? "Y" : "N",
       paymentMethod: payMethod,
       paymentStatus: "pending",
-      items, // 這裡會包含正確的禮盒結構
+      items, // 這裡現在一定會有禮盒資料了
       subtotal: 0, 
       discount: 0, 
       shippingFee: 0,
-      // 這裡直接取 UI 上的金額，後端會再驗算一次 (preview.js 已經改好支援禮盒驗算了)
       total: Number($("total_s")?.textContent.replace(/[^\d]/g, "") || 0),
       status: "created",
     };
 
-    // 二次防呆
     if (!order.buyerName || !order.buyerPhone) {
       toast("⚠️ 請完整填寫收件人資料");
-      loadingOverlay?.classList.remove("show"); // 記得要關掉 Loading
+      loadingOverlay?.classList.remove("show");
       btn.disabled = false;
       return;
     }
@@ -148,11 +143,9 @@ export async function submitOrder() {
       return;
     }
 
-    // Form Post to Server
-    // 請確認這個網址是正確的 render 網址
     const form = document.createElement("form");
     form.method = "POST";
-    form.action = "https://tea-order-server.onrender.com/api/order/submit"; 
+    form.action = "https://tea-order-server.onrender.com/api/order/submit"; // 確認網址
     form.style.display = "none";
 
     const input = document.createElement("input");
