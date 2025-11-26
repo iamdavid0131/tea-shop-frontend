@@ -28,26 +28,26 @@ export async function showCartSheet() {
   if (cart[SECRET_PRODUCT_DEF.id] && !CONFIG.PRODUCTS.find(p => p.id === SECRET_PRODUCT_DEF.id)) {
     CONFIG.PRODUCTS.push(SECRET_PRODUCT_DEF);
   }
-
-  const backdrop = $("cartSheetBackdrop");
-  const sheet = $("cartSheet");
-  const list = $("cartItems");
-  const promoCode = ($("promoCode")?.value || "").trim();
-
-  // 開啟動畫
-  // 🔄 同步箭頭狀態：轉向
+// 🔄 同步箭頭狀態：轉向 (變向下)
   const arrow = document.querySelector("#viewCartBtn .arrow-icon");
   if (arrow) arrow.classList.add("rotated");
-  backdrop.style.opacity = "0";
+
+  // A. 先設定顯示 (但在畫面外)
   backdrop.style.display = "block";
+  // 強制瀏覽器重繪 (Reflow)，確保 display: block 生效後才跑 transition
+  void backdrop.offsetWidth; 
+
+  // B. 執行進場動畫
   requestAnimationFrame(() => {
     backdrop.setAttribute("aria-hidden", "false");
     backdrop.style.opacity = "1";
+    
+    // 🔥 關鍵修正：確保這裡設定滑入位置
     sheet.style.transform = "translateY(0)";
     sheet.dataset.open = "true";
   });
 
-  // 渲染列表
+  // 渲染列表邏輯 (維持你原本的代碼不變)
   list.innerHTML = "";
   const items = buildOrderItems();
 
@@ -188,17 +188,23 @@ export function hideCartSheet() {
   const backdrop = $("cartSheetBackdrop");
   const sheet = $("cartSheet");
   
-  // 🔄 同步箭頭狀態：復原
+  // 🔄 同步箭頭狀態：復原 (變向上)
   const arrow = document.querySelector("#viewCartBtn .arrow-icon");
   if (arrow) arrow.classList.remove("rotated");
 
   sheet.dataset.open = "false";
+  
+  // 🔥【核心修復】明確把 Transform 設回 100% (滑下去)
+  // 這樣才能觸發 transition 動畫，而不是卡在 0 導致瞬間消失
+  sheet.style.transform = "translateY(100%)";
 
+  // 等待 CSS transition (0.35s) 結束後再隱藏 display
   setTimeout(() => {
     backdrop.setAttribute("aria-hidden", "true");
+    backdrop.style.opacity = "0"; // 確保淡出
     backdrop.style.display = "none";
     document.body.classList.remove("modal-open");
-  }, 400); // 等待 CSS transition 結束
+  }, 400);
 }
 
 // 綁定關閉按鈕
@@ -224,7 +230,12 @@ export function initSheetModal() {
 // ========================================================
 export function toggleCartSheet() {
   const sheet = $("cartSheet");
-  if (sheet.dataset.open === "true") {
+  const backdrop = $("cartSheetBackdrop");
+
+  // 判斷是否開啟：檢查 dataset.open 或是 display 狀態
+  const isOpen = sheet.dataset.open === "true" && backdrop.style.display !== "none";
+
+  if (isOpen) {
     hideCartSheet();
   } else {
     showCartSheet();
