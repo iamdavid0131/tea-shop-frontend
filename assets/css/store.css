@@ -304,7 +304,7 @@
   
   /* ✅ 文字排版修正：確保垂直置中 */
   font-size: 16px; /* 防止 iOS 自動放大 */
-  padding: 0 16px; 
+  padding: 4px 16px; 
   line-height: normal; /* 讓瀏覽器自動計算垂直置中 */
   
   border-radius: 12px; /* 圓角稍微收斂一點，比較俐落 */
