@@ -544,7 +544,7 @@ padding: 20px 24px 16px;
 }
 .step:hover { background: #e8f3ed; border-color: #8fb79c; transform: translateY(-1px); }
 
-qty-bubble {
+.qty-bubble {
   position: absolute; /* 絕對定位，相對於 body */
   z-index: 9999;      /* 確保在最上層 */
   
