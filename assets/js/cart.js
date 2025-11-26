@@ -360,29 +360,6 @@ export function refreshSheetTotals() {
     });
 }
 
-// ============================================================
-// 🎁 [新增] 儲存禮盒進購物車 (存入 LocalStorage)
-// ============================================================
-export function addGiftBoxToCart(giftboxData) {
-  // 1. 讀取目前的禮盒清單
-  const boxes = JSON.parse(localStorage.getItem("teaGiftBoxCart") || "[]");
-  
-  // 2. 加入新禮盒
-  // giftboxData 結構預期: { slot1: {...}, slot2: {...}, totalPrice: 800 }
-  boxes.push({
-    ...giftboxData,
-    id: `giftbox_${Date.now()}`, // 給每個禮盒唯一的 ID，方便刪除
-    qty: 1
-  });
-
-  // 3. 存回 LocalStorage
-  localStorage.setItem("teaGiftBoxCart", JSON.stringify(boxes));
-
-  // 4. 立即更新金額與介面
-  updateTotals();
-  
-  console.log("🎁 禮盒已加入購物車:", boxes);
-}
 
 // ============================================================
 // 🎁 [新增] 儲存禮盒進購物車 (存入 LocalStorage)
