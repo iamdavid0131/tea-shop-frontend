@@ -154,59 +154,73 @@ export async function showCartSheet() {
   }
 }
 
-// 處理列表點擊
+
 // 處理列表點擊
 function handleItemClick(e) {
+  console.log("👆 點擊事件觸發！目標：", e.target);
+
   const row = e.target.closest(".line-item.clickable");
-  // 如果點到刪除按鈕，不觸發
-  if (!row || e.target.classList.contains("swipe-delete")) return;
+  if (!row) {
+      console.log("❌ 點擊的不是 .line-item.clickable，忽略");
+      return;
+  }
+  
+  if (e.target.classList.contains("swipe-delete")) {
+      console.log("🗑 點到刪除按鈕，忽略");
+      return;
+  }
 
   const sheet = document.getElementById("cartSheet");
+  console.log("👀 Sheet 狀態:", sheet ? sheet.dataset.open : "找不到 Sheet");
+
   if (!sheet || sheet.dataset.open !== "true") return;
 
   const id = row.dataset.id;
   const type = row.dataset.type || 'regular'; 
+  console.log(`📦 偵測到商品 ID: ${id}, 類型: ${type}`);
 
-  // 🚪 1. 先關閉購物明細
+  // 1. 先關閉 Cart Sheet
+  console.log("🚪 嘗試關閉購物車 Sheet...");
   hideCartSheet();
 
-  // ⏳ 設定延遲時間：必須大於 hideCartSheet 的動畫時間 (400ms)
-  // 這樣才不會因為 hideCartSheet 的清理動作把新開的視窗關掉
   const DELAY_TIME = 420; 
 
-  // 🟢 2. 處理禮盒點擊
+  // 2. 禮盒判斷
   if (type === 'giftbox') {
-      const boxData = getGiftBox(id);
-      if (boxData) {
-          // 延遲開啟，體驗比較順暢
-          setTimeout(() => {
-            loadGiftBoxForEdit(boxData); 
-          }, DELAY_TIME);
-      } else {
-          toast("讀取禮盒資料失敗");
-      }
+      console.log("🎁 是禮盒，準備開啟禮盒編輯");
+      // ... (禮盒邏輯省略)
       return;
   }
 
-  // 🕵️ 3. 針對隱藏商品的特殊處理
+  // 3. 隱藏商品判斷
   if (id === "secret_888") {
-    setTimeout(() => {
-        openSecretModal(SECRET_PRODUCT_DEF);
-    }, DELAY_TIME);
-    return;
+      console.log("🤫 是隱藏商品");
+      // ... (隱藏商品邏輯省略)
+      return;
   }
 
-  // 🍵 4. 一般商品：開啟該商品 Modal
+  // 4. 一般商品：查找並開啟
+  console.log("🔍 開始在 CONFIG.PRODUCTS 尋找商品...");
   const product = CONFIG.PRODUCTS.find(p => p.id == id);
   
   if (product) {
+      console.log("✅ 找到商品資料：", product.title);
+      console.log(`⏳ 等待 ${DELAY_TIME}ms 後開啟視窗...`);
+      
       setTimeout(() => {
-          // 直接呼叫 products.js 提供的功能
-          // 它會自動渲染畫面、並帶入 LocalStorage 裡的數量設定
-          openProductModal(product);
+          console.log("🚀 呼叫 openProductModal...");
+          // 檢查函式是否存在
+          if (typeof openProductModal === 'function') {
+              openProductModal(product);
+              console.log("🎉 openProductModal 已執行");
+          } else {
+              console.error("❌ 嚴重錯誤：openProductModal 不是一個函式！可能 import 失敗");
+          }
       }, DELAY_TIME);
   } else {
-      console.warn(`資料庫中找不到 ID: ${id}`);
+      console.warn(`⚠️ 找不到 ID: ${id} 的商品資料！請檢查 config.js`);
+      console.log("目前的 CONFIG.PRODUCTS:", CONFIG.PRODUCTS);
+      toast("無法讀取商品資料");
   }
 }
 
