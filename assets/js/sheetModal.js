@@ -341,7 +341,7 @@ export function goToCheckout() {
               });
 
               // (選用) 體驗加分：直接幫使用者聚焦在電話欄位，方便輸入
-              // setTimeout(() => phoneInput.focus({preventScroll: true}), 600);
+              setTimeout(() => phoneInput.focus({preventScroll: true}), 600);
           }
       } else {
           // 備案：如果真的找不到電話欄，就滾到 #paymentCard 的上方
