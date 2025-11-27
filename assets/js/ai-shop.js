@@ -179,9 +179,7 @@ function createAIModal() {
 
           <input id="aiInput" class="ai-text-input" placeholder="輸入訊息..." />
 
-          <button id="aiSend" class="ai-send-btn">
-            ➤
-          </button>
+          <button id="aiSend" class="ai-send-btn"><i class="ph ph-paper-plane-right"></i></button>
         </div>
 
         <button id="aiClose" class="ai-close-icon">×</button>

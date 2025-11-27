@@ -154,55 +154,37 @@
 }
 
 .ai-send-btn {
- /* 1. 形狀設定：正圓形 */
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
+  width: 44px; height: 44px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 !important; /* 強制移除多餘內距 */
   
-  /* 2. 排版：絕對置中 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0!important;           /* 移除內距 */
-  padding-left: 4px!important;    /* 微調：紙飛機視覺重心偏左，所以補一點左邊距讓它看起來置中 */
-  
-  /* 3. 顏色與質感 */
   background: linear-gradient(135deg, #5a7b68, #7fa38a);
   border: none;
-  box-shadow: 
-    0 4px 10px rgba(90, 123, 104, 0.3),
-    inset 0 1px 0 rgba(255,255,255,0.3);
-    
+  box-shadow: 0 4px 10px rgba(90, 123, 104, 0.3), inset 0 1px 0 rgba(255,255,255,0.3);
+  
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  flex-shrink: 0; /* 防止被擠扁 */  
+  flex-shrink: 0;
 }
-/* Hover 懸浮效果 */
+
 .ai-send-btn:hover {
   transform: translateY(-2px) scale(1.05);
   background: linear-gradient(135deg, #668a75, #8fb79c);
   box-shadow: 0 6px 16px rgba(90, 123, 104, 0.4);
 }
 
-/* Active 點擊效果 */
 .ai-send-btn:active {
   transform: scale(0.95);
   box-shadow: 0 2px 6px rgba(90, 123, 104, 0.2);
 }
 
-/* 圖示微調 */
-.ai-send-btn svg {
-width: 20px;
-  height: 20px;
-  pointer-events: none;
-  
-  /* 🔥 關鍵：強制變成白色 */
-  fill: #ffffff !important;   /* 如果是實心圖示 */
-  stroke: #ffffff !important; /* 如果是線條圖示 */
-  color: #ffffff !important;  /* 雙重保險 */
-  
-  /* 增加一點陰影讓它在綠底上更立體 */
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+/* 🔥 這裡修正你的 icon 樣式 */
+.ai-send-btn i {
+  font-size: 20px;
+  color: #ffffff !important;
+  /* 視需要微調位置，如果覺得歪歪的 */
+  margin-left: 2px; 
+  margin-top: 1px;
 }
 
 /* === Loading Animation === */
