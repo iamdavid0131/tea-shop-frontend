@@ -346,6 +346,48 @@ function renderSingleProduct(p, container, catInfo) {
   }
 
   // 裝罐選項 (HTML 結構正確，無需修改)
+  // 🔥 判斷是否為 75g 商品
+  const is75g = p.unit && p.unit.includes("75g");
+
+  // 根據規格產生不同的裝罐選項 HTML
+  let packOptionsHtml = "";
+  if (is75g) {
+      // ✅ 75g 專用：雙軌選項 (小罐 & 大罐)
+      packOptionsHtml = `
+      <div class="pack-option-item">
+        <span class="lbl">75g 單入小罐 <small>(每罐消耗1包)</small></span>
+        <div class="stepper">
+           <button class="step" data-dir="minus" data-pack="${p.id}" data-type="small" data-cost="1">−</button>
+           <input type="number" id="packQtySmall-${p.id}" value="${savedPackData.small || 0}" min="0" readonly>
+           <button class="step" data-dir="plus" data-pack="${p.id}" data-type="small" data-cost="1">＋</button>
+        </div>
+      </div>
+
+      <div class="pack-option-item">
+         <span class="lbl">150g 雙入大罐 <small>(每罐消耗2包)</small></span>
+         <div class="stepper">
+           <button class="step" data-dir="minus" data-pack="${p.id}" data-type="large" data-cost="2">−</button>
+           <input type="number" id="packQtyLarge-${p.id}" value="${savedPackData.large || 0}" min="0" readonly>
+           <button class="step" data-dir="plus" data-pack="${p.id}" data-type="large" data-cost="2">＋</button>
+        </div>
+      </div>`;
+  } else {
+      // ✅ 150g (或其他) 專用：單一選項 (1包裝1罐)
+      // 為了資料一致性，我們將其存為 "standard" 或直接視為 "large" 也可以，
+      // 這裡建議使用一個獨立的 key: "standard" 比較不會混淆邏輯
+      const savedStandard = savedPackData.standard || 0;
+      
+      packOptionsHtml = `
+      <div class="pack-option-item">
+        <span class="lbl">✨ 精緻茶罐 <small>(每罐消耗1包)</small></span>
+        <div class="stepper">
+           <button class="step" data-dir="minus" data-pack="${p.id}" data-type="standard" data-cost="1">−</button>
+           <input type="number" id="packQtyStandard-${p.id}" value="${savedStandard}" min="0" readonly>
+           <button class="step" data-dir="plus" data-pack="${p.id}" data-type="standard" data-cost="1">＋</button>
+        </div>
+      </div>`;
+  }
+  // 組合最終 HTML
   const packHtml = p.packable ? `
   <div class="pack-row ${savedPack ? 'active' : ''}">
     <div class="pack-header">
@@ -357,25 +399,7 @@ function renderSingleProduct(p, container, catInfo) {
     </div>
 
     <div class="pack-options ${savedPack ? "" : "hidden"}" id="packQtyWrap-${p.id}">
-      
-      <div class="pack-option-item">
-        <span class="lbl">75g 單入小罐 <small>(每罐消耗1包)</small></span>
-        <div class="stepper">
-           <button class="step" data-dir="minus" data-pack="${p.id}" data-type="small">−</button>
-           <input type="number" id="packQtySmall-${p.id}" value="${savedPackData.small || 0}" min="0" readonly>
-           <button class="step" data-dir="plus" data-pack="${p.id}" data-type="small">＋</button>
-        </div>
-      </div>
-
-      <div class="pack-option-item">
-         <span class="lbl">150g 雙入大罐 <small>(每罐消耗2包)</small></span>
-         <div class="stepper">
-           <button class="step" data-dir="minus" data-pack="${p.id}" data-type="large">−</button>
-           <input type="number" id="packQtyLarge-${p.id}" value="${savedPackData.large || 0}" min="0" readonly>
-           <button class="step" data-dir="plus" data-pack="${p.id}" data-type="large">＋</button>
-        </div>
-      </div>
-
+      ${packOptionsHtml}
     </div>
   </div>` : "";
 

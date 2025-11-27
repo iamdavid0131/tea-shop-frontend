@@ -31,10 +31,9 @@ export function saveCartItem(id, qty, pack, packData) {
   const cart = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
 
   if (qty > 0) {
-    // 確保 packData 是物件，如果舊程式傳數字進來，做相容
-    let safePackData = { small: 0, large: 0 };
+    let safePackData = { small: 0, large: 0, standard: 0 }; // 🔥 初始化包含 standard
     if (typeof packData === 'number') {
-        safePackData.small = packData; // 舊邏輯視為小罐
+        safePackData.small = packData; 
     } else if (packData) {
         safePackData = packData;
     }
@@ -42,7 +41,7 @@ export function saveCartItem(id, qty, pack, packData) {
     cart[id] = { 
         qty, 
         pack, 
-        packQty: safePackData // 統一存在 packQty 欄位，但內容變成物件
+        packQty: safePackData 
     };
   } else {
     delete cart[id];
@@ -67,7 +66,7 @@ export function restoreCart() {
     const saved = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
 
     Object.entries(saved).forEach(([id, data]) => {
-      const { qty, pack, packQty } = data; // packQty 可能是物件
+      const { qty, pack, packQty } = data;
 
       // 1. 還原總數
       const qtyEl = $(`qty-${id}`);
@@ -78,30 +77,27 @@ export function restoreCart() {
       if (packEl) packEl.checked = pack;
 
       // 3. 還原裝罐 inputs
-      // 解析 packQty (可能是舊版數字 或 新版物件)
-      let sVal = 0, lVal = 0;
+      let sVal = 0, lVal = 0, stdVal = 0; // 🔥 新增 stdVal
+      
       if (typeof packQty === 'number') {
           sVal = packQty;
       } else if (packQty) {
           sVal = packQty.small || 0;
           lVal = packQty.large || 0;
+          stdVal = packQty.standard || 0; // 🔥 讀取 standard
       }
 
       const sInput = $(`packQtySmall-${id}`);
       const lInput = $(`packQtyLarge-${id}`);
+      const stdInput = $(`packQtyStandard-${id}`); // 🔥 取得 150g 的 input
       
       if (sInput) sInput.value = sVal;
       if (lInput) lInput.value = lVal;
-
-      // 觸發 UI 狀態文字更新
-      if(typeof window.updatePackUI === "function") {
-         // 這裡假設 updatePackUI 沒有被 export 到 window，
-         // 實際上它在 qty.js 裡被呼叫，qty.js init 時會處理，所以這裡可以略過，
-         // 或是在 main.js 裡做一次全域 refresh
-      }
+      if (stdInput) stdInput.value = stdVal; // 🔥 還原數值
     });
 
-    updateTotals();
+    // 不需要在此呼叫 updateTotals，因為 main.js 通常會做，避免重複呼叫
+    // updateTotals(); 
   } catch (err) {
     console.warn("⚠️ restoreCart 錯誤:", err);
   }
@@ -112,7 +108,6 @@ export function restoreCart() {
 // 💰 金額試算 + Sticky Bar 更新 (完整修正版)
 // ============================================================
 export async function updateTotals() {
-  // 1. 確保隱藏商品在列
   ensureSecretProduct();
   
   const items = buildOrderItems();
@@ -120,14 +115,13 @@ export async function updateTotals() {
   
   if (!stickyBar) return;
 
-  // 2. 🪫 空車狀態處理
+  // 空車處理
   if (items.length === 0) {
     $("total_s").textContent = "NT$ 0";
     if($("sub_s")) $("sub_s").textContent = "—";
     if($("disc_s")) $("disc_s").textContent = "—";
     if($("ship_s")) $("ship_s").textContent = "—";
     
-    // 隱藏進度條與提示
     const progressWrap = $("freeProgress");
     if(progressWrap) progressWrap.classList.add("hidden");
     
@@ -141,57 +135,38 @@ export async function updateTotals() {
     return;
   }
 
-  // 3. 顯示 Sticky Bar
   stickyBar.classList.add("show");
   stickyBar.classList.remove("hide");
 
   try {
-    // 🔥【關鍵修正 1】抓取目前勾選的運送方式，而不是寫死 "store"
-    // 邏輯：先找有沒有被勾選的 radio，沒有的話預設 "store"
     const selectedShip = document.querySelector("input[name='shipping']:checked")?.value || "store";
     const promoCode = document.getElementById("promoCode")?.value || "";
 
-    // 🔥【關鍵修正 2】呼叫後端時傳入正確參數
     const preview = await api.previewTotals(items, selectedShip, promoCode);
     const data = preview?.data ?? preview ?? {};
-    console.log("🔍 後端回傳的完整資料:", data);
-
-    // 💰 前端修正：加上裝罐費 (如果後端沒算的話)
-    // 我們遍歷 items 算出總裝罐費
-    let totalPackFee = 0;
-    items.forEach(it => {
-        if (it.packFee) totalPackFee += it.packFee;
-    });
-
-    // 取得後端算出來的茶葉小計
-    let finalSubtotal = data.subtotal || 0;
     
-    // 如果後端沒算裝罐費 (通常後端只算 price * qty)，我們手動加上
-    // 判斷依據：看你的後端邏輯。假設後端還沒改好，我們前端先加。
-    // 如果後端已經會算 packFee，這裡就不用加。
-    // 這裡假設：後端只回傳原本茶葉價格，我們要自己加 Pack Fee 到 Subtotal 和 Total
-    
-    finalSubtotal += totalPackFee;
-    let finalTotal = (data.total || data.totalAfterDiscount || 0) + totalPackFee;
+    // console.log("🔍 後端金額:", data);
 
-    // 格式化
     const fmt = n => `NT$ ${Number(n || 0).toLocaleString("zh-TW")}`;
 
-    if($("sub_s")) $("sub_s").textContent = fmt(finalSubtotal);
+    // 🔥 修正重點：直接使用後端回傳的 subtotal 與 total
+    // 後端已經把 (小+大+標準)*10 的費用算在 subtotal 裡了，前端不要再加一次！
+    
+    if($("sub_s")) $("sub_s").textContent = fmt(data.subtotal);
     if($("disc_s")) $("disc_s").textContent = fmt(data.discount);
     
     const shipVal = data.shipping ?? data.shippingFee ?? 0;
     if($("ship_s")) $("ship_s").textContent = fmt(shipVal);
     
-    if($("total_s")) $("total_s").textContent = fmt(finalTotal);
+    const totalVal = data.total ?? data.totalAfterDiscount ?? 0;
+    if($("total_s")) $("total_s").textContent = fmt(totalVal);
     
     animateMoney();
 
-    // 5. 控制折扣標籤顯示
+    // 折扣與免運邏輯
     const discWrap = $("disc_wrap");
     if (discWrap) discWrap.style.display = data.discount > 0 ? "inline" : "none";
 
-    // 6. 免運進度條邏輯 (保留你原本的完整寫法)
     const sub = data.subtotal || 0;
     const freeThreshold = CONFIG.FREE_SHIPPING_THRESHOLD || 1000;
     const isFree = sub >= freeThreshold;
@@ -211,10 +186,8 @@ export async function updateTotals() {
       progressBar.classList.toggle("flash-free", isFree);
     }
 
-    // 7. 免運提示氣泡
     if (freeHint) {
       if (isFree) {
-        // 防止文字一直跳動，只有剛顯示或文字為空時才隨機
         if (!freeHint.textContent || !freeHint.classList.contains("show")) {
              freeHint.textContent = randomTeaQuote();
         }
@@ -333,73 +306,51 @@ export function buildOrderItems() {
   ensureSecretProduct(); 
   const items = [];
 
-  // --- 1. 處理單品茶 (包含裝罐費計算) ---
+  // 1. 單品茶
   const cart = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
   
   Object.entries(cart).forEach(([id, data]) => {
     const p = CONFIG.PRODUCTS.find(x => x.id == id);
     if (p) {
-      // 解析裝罐資料
       let packSmall = 0;
       let packLarge = 0;
+      let packStandard = 0; // 🔥 新增 standard
+
       if (data.pack && data.packQty) {
           if (typeof data.packQty === 'number') {
               packSmall = data.packQty;
           } else {
               packSmall = data.packQty.small || 0;
               packLarge = data.packQty.large || 0;
+              packStandard = data.packQty.standard || 0; // 🔥 讀取
           }
       }
 
-      // 💰 裝罐費計算：不管大小罐，一律 +10 元
-      // 但我們這裡不直接改 p.price，而是要把這筆費用算進 item subtotal 或者 create extra fee
-      // 為了後端方便，通常有兩種做法：
-      // A. 把裝罐費加在單價 (如果後端支援動態單價)
-      // B. 傳送 original price，後端根據 packQty * 10 另外算
-      // 這裡採用前端計算總價供預覽，後端參數傳遞 details
-
-      // 我們透過 "items" 陣列傳給後端 api.previewTotals
-      // 這裡我們需要確認後端怎麼算錢。
-      // 假設後端只看 price * qty，那我們需要把裝罐費「灌水」進去嗎？
-      // 或者後端會讀取 packQty 欄位自動加錢？
-      
-      // 👉 為了讓前端 updateTotals 顯示正確，我們這裡計算一個 virtual price
-      // 注意：這會影響顯示的 subtotal。
-      
-      // 但比較好的做法是：把「裝罐服務」當作一個隱性成本，
-      // 或是我們手動在這裡算好 total 給 previewTotals 用 (如果 API 支援 override total)
-      
-      // 在此範例中，我們假設 api.previewTotals 會根據我們傳入的 `packFee` 參數加總
-      // 或是我們把 item 拆成兩個：茶葉本體 & 裝罐費 (這樣最準)
-      
-      // ⚠️ 修正策略：我們將 pack details 完整傳給後端，
-      // 並在前端顯示時，自行加上裝罐費。
-      
       items.push({
         type: 'regular',
         id: p.id,
         name: p.title,
         price: p.price,
         qty: data.qty,
-        pack: data.pack, // bool
-        packDetails: { small: packSmall, large: packLarge }, // 傳給後端看
-        // 🔥 為了讓前端預覽金額正確，我們把裝罐費加進一個自訂欄位讓 API 處理，或是 API 本來就會算
-        // 這裡假設 API 只會算 price*qty。
-        // 我們手動在此函式外部 (updateTotals) 補算 pack fee 比較安全
-        packFee: (packSmall + packLarge) * 10 
+        pack: data.pack, 
+        packDetails: { small: packSmall, large: packLarge, standard: packStandard },
+        // 🔥 裝罐費：給那些後端還沒計算 packFee 的情況備用
+        // 但我們主要依賴後端算好的 subtotal
+        packFee: (packSmall + packLarge + packStandard) * 10 
       });
     }
   });
-  // --- 2. 處理客製化禮盒 [新增這段] ---
+
+  // 2. 禮盒
   const giftboxes = JSON.parse(localStorage.getItem("teaGiftBoxCart") || "[]");
   giftboxes.forEach(box => {
     items.push({
-      type: 'giftbox',      // 標記為禮盒
-      id: box.id,           // 例如 giftbox_1715000000
-      name: "客製雙罐禮盒",   // 顯示在購物明細的名稱
-      price: box.totalPrice,// 禮盒總價
-      qty: box.qty,               // 讀取總數
-      details: {            // 把內容物傳給後端備查
+      type: 'giftbox',      
+      id: box.id,           
+      name: "客製雙罐禮盒",   
+      price: box.totalPrice,
+      qty: box.qty,               
+      details: {            
         slot1: box.slot1,
         slot2: box.slot2
       }

@@ -51,10 +51,13 @@ export function handleQtyClick(btn) {
 function handlePackBtn(btn) {
   const id = btn.dataset.pack;
   const dir = btn.dataset.dir;
-  const type = btn.dataset.type; // "small" 或 "large"
+  const type = btn.dataset.type; // "small", "large", "standard"
 
-  // 取得該類型的 input
-  const inputId = type === "small" ? `packQtySmall-${id}` : `packQtyLarge-${id}`;
+  // 根據類型組出 ID
+  // type 首字母大寫: small -> Small
+  const typeCap = type.charAt(0).toUpperCase() + type.slice(1);
+  const inputId = `packQty${typeCap}-${id}`;
+  
   const inputEl = document.getElementById(inputId);
   if (!inputEl) return;
 
@@ -67,11 +70,10 @@ function handlePackBtn(btn) {
     val--;
   }
 
-  // 更新介面上的 input 數值
   inputEl.value = val;
 
-  // 🔥 核心邏輯：檢查總數是否足夠，不夠自動加
-  checkAndAutoIncrementTotal(id, btn, type);
+  // 🔥 核心邏輯：檢查總數 (現在會自動支援 data-cost 計算)
+  checkAndAutoIncrementTotal(id, btn);
   
   syncToCart(id);
 }
@@ -79,22 +81,37 @@ function handlePackBtn(btn) {
 /* ============================================================
 🧮 輔助：計算裝罐需求
 ============================================================ */
+/* ============================================================
+🧮 輔助：計算裝罐需求 (通用版)
+============================================================ */
 function calculatePackRequirements(id) {
-  const sInput = document.getElementById(`packQtySmall-${id}`);
-  const lInput = document.getElementById(`packQtyLarge-${id}`);
+  // 取得容器內所有的 input
+  const wrap = document.getElementById(`packQtyWrap-${id}`);
+  if (!wrap) return { totalNeeded: 0, details: {} };
 
-  // 如果 UI 沒有展開或找不到，視為 0
-  if (!sInput || !lInput) return { totalNeeded: 0, small: 0, large: 0 };
+  const inputs = wrap.querySelectorAll("input[type='number']");
+  let totalNeeded = 0;
+  let details = { small: 0, large: 0, standard: 0 };
 
-  const small = parseInt(sInput.value || 0);
-  const large = parseInt(lInput.value || 0);
+  inputs.forEach(input => {
+      // 取得對應的按鈕來讀取 cost (或是直接讀 input 的 ID 分析)
+      // 這裡我們用 input ID 來判斷類型: packQtySmall-xxx
+      const val = parseInt(input.value || 0);
+      
+      if (input.id.includes("Small")) {
+          details.small = val;
+          totalNeeded += val * 1; // 小罐消耗 1
+      } else if (input.id.includes("Large")) {
+          details.large = val;
+          totalNeeded += val * 2; // 大罐消耗 2
+      } else if (input.id.includes("Standard")) {
+          details.standard = val;
+          totalNeeded += val * 1; // 標準罐消耗 1
+      }
+  });
 
-  // 1 小罐 = 1 包, 1 大罐 = 2 包
-  const totalNeeded = (small * 1) + (large * 2);
-
-  return { totalNeeded, small, large };
+  return { totalNeeded, ...details };
 }
-
 /* ============================================================
 🚀 輔助：自動增長總數 (Bottom-up Logic)
 ============================================================ */
@@ -131,14 +148,19 @@ function syncToCart(id) {
   const packChk = document.getElementById(`pack-${id}`);
   const isPacked = packChk?.checked || false;
 
-  const { small, large, totalNeeded } = calculatePackRequirements(id);
+  // 使用新版計算函式
+  const req = calculatePackRequirements(id);
 
-  // 1. 更新狀態文字 (Feedback)
-  updateStatusText(id, currentTotal, totalNeeded, isPacked);
+  // 更新狀態文字
+  updateStatusText(id, currentTotal, req.totalNeeded, isPacked);
 
-  // 2. 存入購物車
-  // 注意：我們現在傳入物件 { small, large } 作為 packData
-  const packData = { small: isPacked ? small : 0, large: isPacked ? large : 0 };
+  // 存入購物車
+  // 根據商品不同，存入的物件也會不同 (75g存 small/large, 150g存 standard)
+  const packData = { 
+      small: isPacked ? req.small : 0, 
+      large: isPacked ? req.large : 0,
+      standard: isPacked ? req.standard : 0 
+  };
   
   saveCartItem(id, currentTotal, isPacked, packData);
   updateTotals();
