@@ -43,6 +43,7 @@ export async function showCartSheet() {
 // 🔄 同步箭頭狀態：轉向 (變向下)
   const arrow = document.querySelector("#viewCartBtn .arrow-icon");
   if (arrow) arrow.classList.add("rotated");
+  sheet.dataset.open = "true";
 
   // A. 先設定顯示 (但在畫面外)
   backdrop.style.display = "block";
