@@ -320,6 +320,9 @@ function renderSingleProduct(p, container, catInfo) {
   const savedPack = saved.pack || false;
   const savedPackQty = saved.packQty || 1;
   const stock = Number(p.stock || 0);
+  const savedPackData = (typeof cartData.packQty === 'object') 
+    ? cartData.packQty 
+    : { small: (cartData.packQty || 0), large: 0 };
 
   function renderStockTag(stock) {
     if (stock === 0) return `<div class="stock-tag soldout">🚫 缺貨中</div>`;
@@ -329,17 +332,37 @@ function renderSingleProduct(p, container, catInfo) {
 
   // 裝罐選項
   const packHtml = p.packable ? `
-      <div class="pack-row ${savedPack ? 'active' : ''}">
+  <div class="pack-row ${savedPack ? 'active' : ''}">
+    <div class="pack-header">
         <label class="pack-toggle">
           <input type="checkbox" id="pack-${p.id}" ${savedPack ? "checked" : ""}>
-          ✨ 加購精緻茶罐裝
+          <span>✨ 選擇裝罐方式 (+$10/罐)</span>
         </label>
-        <div class="pack-qty ${savedPack ? "" : "hidden"}" id="packQtyWrap-${p.id}">
-          <button class="step" data-dir="minus" data-pack="${p.id}">−</button>
-          <input type="number" id="packQty-${p.id}" value="${savedPackQty}" min="1">
-          <button class="step" data-dir="plus" data-pack="${p.id}">＋</button>
+        <span class="pack-status" id="packStatus-${p.id}"></span>
+    </div>
+
+    <div class="pack-options ${savedPack ? "" : "hidden"}" id="packQtyWrap-${p.id}">
+      
+      <div class="pack-option-item">
+        <span class="lbl">75g 單入小罐 <small>(每罐消耗1包)</small></span>
+        <div class="stepper">
+           <button class="step" data-dir="minus" data-pack="${p.id}" data-type="small">−</button>
+           <input type="number" id="packQtySmall-${p.id}" value="${savedPackData.small || 0}" min="0" readonly>
+           <button class="step" data-dir="plus" data-pack="${p.id}" data-type="small">＋</button>
         </div>
-      </div>` : "";
+      </div>
+
+      <div class="pack-option-item">
+         <span class="lbl">150g 雙入大罐 <small>(每罐消耗2包)</small></span>
+         <div class="stepper">
+           <button class="step" data-dir="minus" data-pack="${p.id}" data-type="large">−</button>
+           <input type="number" id="packQtyLarge-${p.id}" value="${savedPackData.large || 0}" min="0" readonly>
+           <button class="step" data-dir="plus" data-pack="${p.id}" data-type="large">＋</button>
+        </div>
+      </div>
+
+    </div>
+  </div>` : "";
 
   // 主卡片 HTML
   item.innerHTML = `

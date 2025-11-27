@@ -521,21 +521,114 @@ padding: 20px 24px 16px;
 .stock-tag.soldout { background: #ffe6e6; color: #b03535; }
 
 /* Pack Row (裝罐) */
+/* Pack Row 容器 */
 .pack-row {
   background: #f8faf9;
-  padding: 8px;
-  border-radius: 16px;
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  margin-top: 10px;
+  border: 1px solid transparent;
+  transition: all 0.3s ease;
+  flex-direction: column; /* 改為垂直排列 */
+  align-items: stretch;
 }
-.pack-row.active { background: rgba(255, 255, 255, 0.95); border-color: #8fb79c; }
-.pack-toggle { font-weight: 700; color: #305c46; font-size: 15px; display: flex; align-items: center; gap: 8px; cursor: pointer; }
-.pack-qty { display: flex; align-items: center; gap: 8px; opacity: 0; transform: translateX(10px); pointer-events: none; transition: all 0.3s; }
-.pack-qty.hidden { display: none; }
-.pack-row.active .pack-qty { display: flex; opacity: 1; transform: translateX(0); pointer-events: auto; animation: packOpen 0.4s; }
-@keyframes packOpen { from { opacity: 0; transform: scale(0.9) translateX(10px); } to { opacity: 1; transform: scale(1) translateX(0); } }
+.pack-row.active {
+  background: #fff;
+  border-color: #8fb79c;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
 
+/* 標題與開關 */
+.pack-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0px;
+}
+.pack-toggle {
+  font-weight: 700;
+  color: #305c46;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+/* 分配狀態文字 */
+.pack-status {
+  font-size: 12px;
+  color: #666;
+  font-weight: 400;
+}
+.pack-status.ok { color: #2ecc71; font-weight: bold; } /* 全數裝完 */
+.pack-status.warn { color: #e67e22; } /* 還有剩 */
+
+/* 隱藏區塊 */
+.pack-options.hidden {
+  display: none;
+}
+.pack-options {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #eee;
+  animation: slideDown 0.3s ease-out;
+}
+
+/* 單個裝罐選項列 */
+.pack-option-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.pack-option-item:last-child { margin-bottom: 0; }
+
+.pack-option-item .lbl {
+  font-size: 14px;
+  color: #444;
+  display: flex;
+  flex-direction: column;
+}
+.pack-option-item .lbl small {
+  font-size: 11px;
+  color: #888;
+}
+
+/* 輸入框微調 */
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.stepper input {
+  width: 40px;
+  height: 30px;
+  text-align: center;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  font-weight: bold;
+  color: #333;
+}
+.stepper .step {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  background: #f9f9f9;
+  cursor: pointer;
+}
+.stepper .step:active { background: #eee; }
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 /* Step Button (小加減鈕) */
 .step {
   width: 28px; height: 28px; border-radius: 8px; background: #fff;

@@ -1,174 +1,225 @@
 import { $, toast } from "./dom.js";
 import { saveCartItem, updateTotals } from "./cart.js";
 import { CONFIG } from "./config.js";
-import { getQty } from "./cart.js";
 
-
-/** 取得 qty input 元件 */
 function getQtyEl(id) {
   return document.getElementById(`qty-${id}`);
 }
 
-/* ============================================================
-✨ 防止多次綁定事件（最重要）
-============================================================ */
 let qtyEventsBound = false;
 
-/** ➕➖ 數量更新 */
+/* ============================================================
+✨ 1. 購買總數量控制 (+/-)
+============================================================ */
 export function handleQtyClick(btn) {
   const id = btn.dataset.id;
   const dir = btn.dataset.dir;
 
   const qtyEl = getQtyEl(id);
-  let qty = parseInt(qtyEl.value || 0);
+  let currentQty = parseInt(qtyEl.value || 0);
+
+  // 取得目前所需的最小包數
+  const { totalNeeded } = calculatePackRequirements(id);
 
   if (dir === "plus") {
-    qty++;
+    currentQty++;
     spawnQtyBubble(btn, "+1");
   }
-  if (dir === "minus" && qty > 0) {
-    qty--;
-    spawnQtyBubble(btn, "-1");
-  }
-
-  qtyEl.value = qty;
-
-  // ⭐ 重新抓 pack / packQty
-  const pack = $(`pack-${id}`)?.checked || false;
-  const packQty = Number($(`packQty-${id}`)?.value || 0);
-
-  updatePackUI(id);
-  saveCartItem(id, qty, pack, packQty);
-  updateTotals();
-}
-/** 裝罐 +/- */
-function handlePackBtn(btn) {
-  const id = btn.dataset.pack;
-  const dir = btn.dataset.dir;
-
-  const qtyEl = getQtyEl(id);
-  let qty = parseInt(qtyEl.value || 0); // 用 let，因為我們可能會修改它
-
-  const packInput = $(`packQty-${id}`);
-  let packVal = parseInt(packInput.value || 1);
-
-  if (dir === "plus") {
-    packVal++;
-    
-    // 🔥 核心修改：如果「裝罐數」超過「總數量」，總數量也要跟著加
-    if (packVal > qty) {
-      qty = packVal;     // 同步變數
-      qtyEl.value = qty; // 同步 UI
-      
-      // (選用) 可以在這裡也跳一個氣泡提示總數增加了，看你需求
-       spawnQtyBubble(btn, "同步+1"); 
+  
+  if (dir === "minus") {
+    if (currentQty > 0) {
+      // 🛡️ 阻擋邏輯：如果減少後會小於裝罐所需數量，禁止減少
+      if (currentQty - 1 < totalNeeded) {
+        toast(`⚠️ 請先減少裝罐數量<br>目前裝罐至少需要 ${totalNeeded} 包`, "error");
+        // 稍微搖晃提示
+        qtyEl.classList.add("shake");
+        setTimeout(() => qtyEl.classList.remove("shake"), 500);
+        return; 
+      }
+      currentQty--;
+      spawnQtyBubble(btn, "-1");
     }
   }
 
-  if (dir === "minus" && packVal > 1) {
-    packVal--;
-  }
-
-  // 雙重防呆：裝罐數永遠不能大於總數量 (雖然上面 logic 已經處理了，但多一層保障)
-  if (packVal > qty) packVal = qty;
-
-  packInput.value = packVal;
-
-  const pack = $(`pack-${id}`)?.checked || false;
-  const packQty = Number(packInput.value || 0);
-
-  updatePackUI(id);
-  saveCartItem(id, qty, pack, packQty);
-  updateTotals();
+  qtyEl.value = currentQty;
+  syncToCart(id);
 }
 
-/** 裝罐 Checkbox */
-/** 裝罐 Checkbox */
-function handlePackToggle(e) {
-  const chk = e.target;
-  const id = chk.id.replace("pack-", "");
-  
-  // 取得數量輸入框容器
-  const wrap = $(`packQtyWrap-${id}`);
-  // 取得最外層 row
-  const row = chk.closest(".pack-row");
+/* ============================================================
+✨ 2. 裝罐數量控制 (小罐/大罐)
+============================================================ */
+function handlePackBtn(btn) {
+  const id = btn.dataset.pack;
+  const dir = btn.dataset.dir;
+  const type = btn.dataset.type; // "small" 或 "large"
 
-  if (chk.checked) {
-    // 🟢 開啟：顯示數量輸入區
-    wrap.classList.remove("hidden");
-    wrap.classList.add("fade-in"); // 可選：加上淡入動畫 class
-    $(`packQty-${id}`).value = 1;
-    
-    // row 保持開啟樣式 (如果有需要)
-    row.classList.add("active");
-  } else {
-    // 🔴 關閉：隱藏數量輸入區
-    wrap.classList.add("hidden");
-    wrap.classList.remove("fade-in");
-    
-    $(`packQty-${id}`).value = 0; 
-    row.classList.remove("active");
+  // 取得該類型的 input
+  const inputId = type === "small" ? `packQtySmall-${id}` : `packQtyLarge-${id}`;
+  const inputEl = document.getElementById(inputId);
+  if (!inputEl) return;
+
+  let val = parseInt(inputEl.value || 0);
+
+  if (dir === "plus") {
+    val++;
   }
+  if (dir === "minus" && val > 0) {
+    val--;
+  }
+
+  // 更新介面上的 input 數值
+  inputEl.value = val;
+
+  // 🔥 核心邏輯：檢查總數是否足夠，不夠自動加
+  checkAndAutoIncrementTotal(id, btn, type);
   
-  // 儲存邏輯
+  syncToCart(id);
+}
+
+/* ============================================================
+🧮 輔助：計算裝罐需求
+============================================================ */
+function calculatePackRequirements(id) {
+  const sInput = document.getElementById(`packQtySmall-${id}`);
+  const lInput = document.getElementById(`packQtyLarge-${id}`);
+
+  // 如果 UI 沒有展開或找不到，視為 0
+  if (!sInput || !lInput) return { totalNeeded: 0, small: 0, large: 0 };
+
+  const small = parseInt(sInput.value || 0);
+  const large = parseInt(lInput.value || 0);
+
+  // 1 小罐 = 1 包, 1 大罐 = 2 包
+  const totalNeeded = (small * 1) + (large * 2);
+
+  return { totalNeeded, small, large };
+}
+
+/* ============================================================
+🚀 輔助：自動增長總數 (Bottom-up Logic)
+============================================================ */
+function checkAndAutoIncrementTotal(id, btn, type) {
   const qtyEl = getQtyEl(id);
-  const qty = parseInt(qtyEl?.value || 0);
-  const pack = chk.checked;
-  const packQty = chk.checked ? Number($(`packQty-${id}`)?.value || 0) : 0;
+  let currentTotal = parseInt(qtyEl.value || 0);
+  
+  const { totalNeeded } = calculatePackRequirements(id);
 
-  // updatePackUI(id); // ⚠️ 這裡暫時不呼叫 updatePackUI，避免邏輯打架
-  saveCartItem(id, qty, pack, packQty);
+  if (totalNeeded > currentTotal) {
+    // 自動補足
+    qtyEl.value = totalNeeded;
+    
+    // 計算增加了多少
+    const diff = totalNeeded - currentTotal;
+    
+    // 提示氣泡
+    const msg = `同步+${diff}`; 
+    spawnQtyBubble(btn, msg);
+    
+    // 也可以讓總數欄位閃一下
+    qtyEl.classList.add("flash-highlight");
+    setTimeout(() => qtyEl.classList.remove("flash-highlight"), 300);
+  }
+}
+
+/* ============================================================
+💾 輔助：統一儲存與更新 UI 狀態文字
+============================================================ */
+function syncToCart(id) {
+  const qtyEl = getQtyEl(id);
+  const currentTotal = parseInt(qtyEl.value || 0);
+  
+  const packChk = document.getElementById(`pack-${id}`);
+  const isPacked = packChk?.checked || false;
+
+  const { small, large, totalNeeded } = calculatePackRequirements(id);
+
+  // 1. 更新狀態文字 (Feedback)
+  updateStatusText(id, currentTotal, totalNeeded, isPacked);
+
+  // 2. 存入購物車
+  // 注意：我們現在傳入物件 { small, large } 作為 packData
+  const packData = { small: isPacked ? small : 0, large: isPacked ? large : 0 };
+  
+  saveCartItem(id, currentTotal, isPacked, packData);
   updateTotals();
 }
 
-/** 裝罐 UI 動態控制 */
-export function updatePackUI(id) {
-  const qtyEl = document.getElementById(`qty-${id}`);
-  const qty = parseInt(qtyEl?.value || 0);
+function updateStatusText(id, total, needed, isPacked) {
+  const statusEl = document.getElementById(`packStatus-${id}`);
+  if (!statusEl) return;
 
-  const packToggle = $(`pack-${id}`);
-  const wrap = $(`packQtyWrap-${id}`);
-  const row = packToggle?.closest(".pack-row");
-
-  if (!packToggle || !wrap) return;
-
-  // 如果數量為 0，禁用並淡化整個裝罐區
-  if (qty === 0) {
-    packToggle.disabled = true;
-    packToggle.checked = false; // 數量為 0 強制取消勾選
-    wrap.classList.add("hidden");
-    if (row) row.classList.add("disabled");
+  if (!isPacked) {
+    statusEl.textContent = "";
     return;
   }
 
-  // 恢復可用狀態
-  packToggle.disabled = false;
-  if (row) row.classList.remove("disabled");
-
-  // 根據是否勾選來決定顯示狀態
-  if (packToggle.checked) {
-    wrap.classList.remove("hidden");
-    if (row) row.classList.add("active");
+  const remaining = total - needed;
+  if (remaining === 0 && needed > 0) {
+    statusEl.innerHTML = `<span class="ok">✓ 全數裝罐</span>`;
+  } else if (remaining > 0) {
+    statusEl.innerHTML = `<span class="warn">剩 ${remaining} 包裸裝</span>`;
+  } else if (needed === 0) {
+     statusEl.innerHTML = `<span>未設定</span>`;
   } else {
-    wrap.classList.add("hidden");
-    if (row) row.classList.remove("active");
+    // 理論上不會發生 needed > total (因為有自動補足)，除非手動改 code
+    statusEl.textContent = "數量異常"; 
   }
 }
 
+/* ============================================================
+✨ 3. 裝罐開關 Toggle
+============================================================ */
+function handlePackToggle(e) {
+  const chk = e.target;
+  const id = chk.id.replace("pack-", "");
+  const wrap = document.getElementById(`packQtyWrap-${id}`);
+  const row = chk.closest(".pack-row");
 
+  if (chk.checked) {
+    wrap.classList.remove("hidden");
+    row.classList.add("active");
+    
+    // 預設開啟時，如果兩個都是 0，自動幫「小罐」設為 1 (貼心 UX)
+    // 並觸發自動增長檢查
+    const sInput = document.getElementById(`packQtySmall-${id}`);
+    const lInput = document.getElementById(`packQtyLarge-${id}`);
+    if (parseInt(sInput.value)==0 && parseInt(lInput.value)==0) {
+        sInput.value = 1;
+        checkAndAutoIncrementTotal(id, sInput, "small"); // 自動補總數
+    }
+
+  } else {
+    wrap.classList.add("hidden");
+    row.classList.remove("active");
+    // 關閉時不一定要清空 value，可以保留使用者上次輸入的，但 saveCartItem 會判斷 checked=false 就不存
+  }
+
+  syncToCart(id);
+}
 
 /* ============================================================
-✨ 初始化：永遠只會綁一次事件（解決 +2 問題）
+✨ UI 初始化與事件綁定
 ============================================================ */
-export function initQtyControls() {
-  if (qtyEventsBound) return;  // ⭐ 防止重複綁定
+export function updatePackUI(id) {
+    // 這裡主要用來初始化狀態文字
+    const qtyEl = getQtyEl(id);
+    const packChk = document.getElementById(`pack-${id}`);
+    if(qtyEl && packChk) {
+        const { totalNeeded } = calculatePackRequirements(id);
+        updateStatusText(id, parseInt(qtyEl.value||0), totalNeeded, packChk.checked);
+    }
+}
 
+export function initQtyControls() {
+  if (qtyEventsBound) return;
   qtyEventsBound = true;
 
   document.addEventListener("click", (e) => {
+    // 1. 總數按鈕
     const btn = e.target.closest(".qty-btn");
     if (btn) return handleQtyClick(btn);
 
+    // 2. 裝罐按鈕 (step)
     const pbtn = e.target.closest(".step");
     if (pbtn) return handlePackBtn(pbtn);
   });
@@ -176,29 +227,23 @@ export function initQtyControls() {
   document.addEventListener("change", (e) => {
     if (e.target.matches("input[id^='pack-']")) return handlePackToggle(e);
   });
-
-  CONFIG.PRODUCTS.forEach((p) => updatePackUI(p.id));
+  
+  // 初始化所有 UI 狀態
+  CONFIG.PRODUCTS.forEach(p => {
+      // 確保一載入如果有勾選，狀態文字是正確的
+      updatePackUI(p.id);
+  });
 }
 
 function spawnQtyBubble(btn, text) {
   const bubble = document.createElement("div");
   bubble.className = "qty-bubble";
   bubble.textContent = text;
-
   const rect = btn.getBoundingClientRect();
-
-  // 優化 1: 加上 window.scrollX/Y，防止頁面捲動後位置跑掉
-  // 優化 2: 減去 10px (或更多) 讓氣泡起點稍微高於按鈕
-  const topPos = rect.top + window.scrollY - 10; 
+  const topPos = rect.top + window.scrollY - 15;
   const leftPos = rect.left + window.scrollX + (rect.width / 2);
-
   bubble.style.top = topPos + "px";
   bubble.style.left = leftPos + "px";
-
   document.body.appendChild(bubble);
-
-  // 監聽動畫結束自動移除，比 setTimeout 更精準 (雖然 setTimeout 也沒錯)
-  bubble.addEventListener('animationend', () => {
-    bubble.remove();
-  });
+  bubble.addEventListener('animationend', () => bubble.remove());
 }
