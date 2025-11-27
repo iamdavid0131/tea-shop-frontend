@@ -304,6 +304,9 @@ export function initTeaModal() {
 // ============================================================
 // 🟩 Modal 內單品渲染 (內容保持不變)
 // ============================================================
+// ============================================================
+// 🟩 Modal 內單品渲染 (修正版)
+// ============================================================
 function renderSingleProduct(p, container, catInfo) {
   container.innerHTML = "";
   
@@ -315,14 +318,26 @@ function renderSingleProduct(p, container, catInfo) {
   const item = document.createElement("article");
   item.className = "itemcard";
 
-  const saved = (JSON.parse(localStorage.getItem("teaOrderCart") || "{}"))[p.id] || { qty: 0, pack: false, packQty: 0 };
-  const savedQty = saved.qty || 0;
-  const savedPack = saved.pack || false;
-  const savedPackQty = saved.packQty || 1;
+  // 🔥 修正 1：統一變數名稱為 cartData
+  const fullCart = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
+  const cartData = fullCart[p.id] || {}; 
+
+  // 解析基本資料
+  const savedQty = cartData.qty || 0;
+  const savedPack = cartData.pack || false;
   const stock = Number(p.stock || 0);
-  const savedPackData = (typeof cartData.packQty === 'object') 
-    ? cartData.packQty 
-    : { small: (cartData.packQty || 0), large: 0 };
+
+  // 🔥 修正 2：解析裝罐資料 (兼容舊版數字 & 新版物件)
+  // 如果 packQty 是物件，就直接用；如果是數字(舊資料)或未定義，歸類為 small
+  let savedPackData = { small: 0, large: 0 };
+  
+  if (cartData.packQty) {
+    if (typeof cartData.packQty === 'object') {
+      savedPackData = cartData.packQty; // 新版資料
+    } else {
+      savedPackData.small = Number(cartData.packQty); // 舊版資料視為小罐
+    }
+  }
 
   function renderStockTag(stock) {
     if (stock === 0) return `<div class="stock-tag soldout">🚫 缺貨中</div>`;
@@ -330,7 +345,7 @@ function renderSingleProduct(p, container, catInfo) {
     return `<div class="stock-tag ok">🟢 庫存充足</div>`;
   }
 
-  // 裝罐選項
+  // 裝罐選項 (HTML 結構正確，無需修改)
   const packHtml = p.packable ? `
   <div class="pack-row ${savedPack ? 'active' : ''}">
     <div class="pack-header">
@@ -384,7 +399,7 @@ function renderSingleProduct(p, container, catInfo) {
   `;
   container.appendChild(item);
   
-  // 插入裝罐選項 (在主卡片後)
+  // 插入裝罐選項
   if (packHtml) {
       const packContainer = document.createElement("div");
       packContainer.innerHTML = packHtml;
@@ -394,33 +409,39 @@ function renderSingleProduct(p, container, catInfo) {
   // 3. 描述區塊
   if (p.story) {
     const detail = document.createElement("div");
-    detail.className = "detailblock open"; // 預設展開
+    detail.className = "detailblock open"; 
     detail.innerHTML = `<p>${p.story}</p>`;
     container.appendChild(detail);
   }
 
   // 4. 性格分析
-  const profileHtml = renderProfileGroup(p);
+  const profileHtml = renderProfileGroup(p); // 確保此函式存在
   if (profileHtml) {
       container.insertAdjacentHTML('beforeend', profileHtml);
   }
 
   // 5. 泡法指南
-  const brewHtml = renderBrewGuide(p);
+  const brewHtml = renderBrewGuide(p); // 確保此函式存在
   if (brewHtml) {
       container.insertAdjacentHTML('beforeend', brewHtml);
   }
 
-  // 庫存控制邏輯 (維持原樣)
+  // 6. 庫存控制邏輯 
+  // 🔥 注意：這裡只要做初始 UI 狀態設定就好
+  // 點擊事件 (click) 我們已經全部交給 qty.js 的 initQtyControls() 統一處理了
+  // 所以這裡不需要再 addEventListener("click")，否則會重複觸發！
+  
   const qtyInput = container.querySelector(`#qty-${p.id}`);
   const plusBtn = container.querySelector(`.qty-btn[data-dir="plus"]`);
   const minusBtn = container.querySelector(`.qty-btn[data-dir="minus"]`);
 
+  // 缺貨狀態初始化
   if (stock === 0) {
     if(qtyInput) { qtyInput.value = 0; qtyInput.disabled = true; }
     if(plusBtn) plusBtn.disabled = true;
     if(minusBtn) minusBtn.disabled = true;
   } else {
+    // 只有 input 驗證保留在這裡，防止手動輸入超額
     if(qtyInput) {
         qtyInput.addEventListener("input", () => {
           let v = parseInt(qtyInput.value, 10);
@@ -430,20 +451,17 @@ function renderSingleProduct(p, container, catInfo) {
           qtyInput.value = v;
         });
     }
-    if (plusBtn) {
-      plusBtn.addEventListener("click", (e) => {
-        let v = parseInt(qtyInput.value, 10) || 0;
-        if (v >= stock) {
-          e.stopImmediatePropagation();
-          e.preventDefault();
-          qtyInput.value = stock;
-          // 可以加個 toast 提示庫存不足
-        }
-      });
-    }
   }
 
-  setTimeout(() => updatePackUI(p.id), 10);
+  // 🔥 修正 3：確保 updatePackUI 被呼叫以顯示正確的狀態文字 (e.g. 剩餘裸裝數)
+  // 使用 setTimeout 確保 DOM 已經完全渲染
+  setTimeout(() => {
+      if (typeof updatePackUI === 'function') {
+          updatePackUI(p.id);
+      } else {
+          console.warn("updatePackUI 尚未載入，請確認是否已 import");
+      }
+  }, 0);
 }
 // 🌈 茶性格渲染 (旗艦儀表板結構)
 function renderProfileGroup(p) {
