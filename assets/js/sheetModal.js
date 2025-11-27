@@ -24,6 +24,14 @@ const SECRET_PRODUCT_DEF = {
 // 顯示購物明細 Sheet (防呆修復版)
 // ========================================================
 export async function showCartSheet() {
+
+    // 🟢 UX 優化 1：開啟購物車前，先強制關閉商品詳細 Modal (teaModal)
+  const productModal = document.getElementById("teaModal");
+  if (productModal && productModal.classList.contains("show")) {
+      productModal.classList.remove("show");
+      productModal.setAttribute("aria-hidden", "true");
+      // 注意：這裡不清除 body 的 overflow，因為購物車打開後還是需要鎖定背景
+  }
   
   const cart = JSON.parse(localStorage.getItem("teaOrderCart") || "{}");
   if (cart[SECRET_PRODUCT_DEF.id] && !CONFIG.PRODUCTS.find(p => p.id === SECRET_PRODUCT_DEF.id)) {
@@ -289,33 +297,58 @@ export function toggleCartSheet() {
 // 4. 強制關閉所有視窗並前往結帳
 // ========================================================
 export function goToCheckout() {
-  // A. 關閉購物明細 Sheet
+  // 1. 關閉購物明細 Sheet
   hideCartSheet();
 
-  // B. 關閉所有 Bootstrap Modal (如果有用 Bootstrap)
+  // 2. 關閉商品單品 Modal (teaModal)
+  const productModal = document.getElementById("teaModal");
+  if (productModal) {
+      productModal.classList.remove("show");
+      productModal.setAttribute("aria-hidden", "true");
+  }
+  
+  // 3. 關閉禮盒選擇器 (selector-modal) - 如果有的話
+  const selectorModal = document.getElementById("selector-modal");
+  if (selectorModal) selectorModal.style.display = 'none';
+
+  // 4. 關閉其他 Bootstrap Modals (防呆)
   document.querySelectorAll('.modal.show').forEach(modal => {
-    // 嘗試點擊關閉按鈕，或直接移除 class
-    const closeBtn = modal.querySelector('[data-bs-dismiss="modal"]');
-    if(closeBtn) closeBtn.click();
-    else modal.classList.remove('show'); 
+    modal.classList.remove('show'); 
   });
   
-  // C. 關閉任何自定義的 Modal (例如隱藏商品視窗)
-  const customModals = document.querySelectorAll('.custom-modal-backdrop'); // 假設你的 class
-  customModals.forEach(el => el.style.display = 'none');
-
-  // D. 確保 Body 捲動鎖定被解除
+  // 5. 解除背景鎖定
   document.body.classList.remove("modal-open");
   document.body.style.overflow = "";
 
-  // E. 平滑捲動到收件資料區
-  const target = document.getElementById("submit-area");
-  if (target) {
-    // 稍微延遲一點點，確保視窗關閉動畫順暢後再捲動
-    setTimeout(() => {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
-  }
+  // 6. 🚀 精準捲動邏輯
+  setTimeout(() => {
+      // 策略：直接抓「電話輸入框」，因為它在收件資料的第一欄，絕對不會跑錯
+      const phoneInput = document.getElementById("phone");
+
+      if (phoneInput) {
+          // 抓取整個「收件資料區塊」(.section)
+          const targetSection = phoneInput.closest('.section');
+          
+          if (targetSection) {
+              // 計算位置：扣除 Header 高度 (假設 iOS Header 約 100px) + 一點留白
+              const headerOffset = 110; 
+              const elementPosition = targetSection.getBoundingClientRect().top;
+              const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+              window.scrollTo({
+                  top: offsetPosition,
+                  behavior: "smooth"
+              });
+
+              // (選用) 體驗加分：直接幫使用者聚焦在電話欄位，方便輸入
+              // setTimeout(() => phoneInput.focus({preventScroll: true}), 600);
+          }
+      } else {
+          // 備案：如果真的找不到電話欄，就滾到 #paymentCard 的上方
+          const fallback = document.getElementById("paymentCard");
+          if(fallback) fallback.scrollIntoView({ behavior: 'smooth' });
+      }
+  }, 350); // 等待視窗關閉動畫結束
 }
 
 // ========================================================
