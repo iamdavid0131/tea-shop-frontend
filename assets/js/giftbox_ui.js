@@ -122,54 +122,63 @@ function selectProduct(product) {
 // ====== 茶葉飛入動畫 (使用 GSAP) ======
 function playTeaLeavesAnimation(targetSlotId) {
     const slotEl = document.getElementById(`slot${targetSlotId}`);
-    if (!slotEl || !window.gsap) return;
+    // 檢查 GSAP 是否存在，若無則不執行以免報錯
+    if (!slotEl || !window.gsap) {
+        console.warn("GSAP not loaded or Slot not found");
+        return;
+    }
 
     const rect = slotEl.getBoundingClientRect();
-    // 目標點：罐子中心
     const targetX = rect.left + rect.width / 2;
     const targetY = rect.top + rect.height / 2;
+    
+    // 取得 scroll，防止頁面捲動後位置錯誤
+    const scrollY = window.scrollY || window.pageYOffset;
+    const scrollX = window.scrollX || window.pageXOffset;
 
-    // 產生 15 片茶葉
     for (let i = 0; i < 15; i++) {
         const leaf = document.createElement('div');
-        leaf.className = 'leaf-particle';
+        leaf.className = 'leaf-particle'; // 確保這個 class 在 CSS 裡有定義 z-index
         document.body.appendChild(leaf);
 
-        // 起點：螢幕隨機上方
+        // 起點：螢幕隨機上方 (加上 scrollY 確保在當前視窗位置)
         const startX = targetX + (Math.random() - 0.5) * 200; 
-        const startY = rect.top - 300 - Math.random() * 200; 
+        const startY = (rect.top + scrollY) - 200 - Math.random() * 100; 
+        
+        // 修正目標點 Y (也要加上 scrollY，因為是 absolute positioning)
+        const finalY = targetY + scrollY;
+        const finalX = targetX + scrollX + (Math.random() - 0.5) * 40;
 
-        // 設定初始位置
         gsap.set(leaf, { 
             x: startX, 
             y: startY, 
-            opacity: 1, 
+            opacity: 0, // 初始隱藏
             scale: 0.5 + Math.random() * 0.5,
             rotation: Math.random() * 360,
             backgroundColor: Math.random() > 0.5 ? '#5a7b68' : '#8fb79c' 
         });
 
-        // 動畫路徑
         gsap.to(leaf, {
             duration: 0.8 + Math.random() * 0.5,
-            x: targetX + (Math.random() - 0.5) * 40, 
-            y: targetY,
+            x: finalX, 
+            y: finalY,
+            opacity: 1, // 飛入過程現身
             rotation: "+=360",
-            ease: "power2.in",
+            ease: "power2.in", // 加速掉落感
             onComplete: () => {
-                // 碰到罐子後消失
                 gsap.to(leaf, {
                     duration: 0.2,
                     opacity: 0,
                     scale: 0,
                     onComplete: () => leaf.remove()
                 });
-                // 讓罐子震動一下
+                // 罐子震動
                 gsap.to(slotEl, {
                     duration: 0.1,
                     scale: 1.05,
                     yoyo: true,
-                    repeat: 1
+                    repeat: 1,
+                    clearProps: "scale" // 動畫結束後清除 scale，避免模糊
                 });
             }
         });
@@ -333,6 +342,20 @@ export function initGiftBox() {
             if (!qtyInput || !action) return;
             
             let currentQty = parseInt(qtyInput.value) || 1;
+
+            // --- 🟢 新增：觸發氣泡動畫 ---
+            if (action === 'increase') {
+                if (currentQty < 99) {
+                    currentQty++;
+                    spawnQtyBubble(btn, '+1'); // 在加號按鈕上冒泡
+                }
+            }
+            if (action === 'decrease') {
+                if (currentQty > 1) {
+                    currentQty--;
+                    spawnQtyBubble(btn, '-1'); // 在減號按鈕上冒泡
+                }
+            }
             
             if (action === 'increase' && currentQty < 99) currentQty++;
             if (action === 'decrease' && currentQty > 1) currentQty--;
