@@ -57,7 +57,6 @@ export async function showCartSheet() {
     
     // 🔥 關鍵修正：確保這裡設定滑入位置
     sheet.style.transform = "translateY(0)";
-    sheet.dataset.open = "true";
   });
 
   // 渲染列表邏輯 (維持你原本的代碼不變)
@@ -158,69 +157,60 @@ export async function showCartSheet() {
 
 // 處理列表點擊
 function handleItemClick(e) {
-  console.log("👆 點擊事件觸發！目標：", e.target);
-
+  // 1. 抓取點擊的行
   const row = e.target.closest(".line-item.clickable");
-  if (!row) {
-      console.log("❌ 點擊的不是 .line-item.clickable，忽略");
-      return;
-  }
   
-  if (e.target.classList.contains("swipe-delete")) {
-      console.log("🗑 點到刪除按鈕，忽略");
-      return;
-  }
+  // 防呆：沒點到行、或是點到刪除按鈕 -> 不處理
+  if (!row || e.target.classList.contains("swipe-delete")) return;
 
-  const sheet = document.getElementById("cartSheet");
-  console.log("👀 Sheet 狀態:", sheet ? sheet.dataset.open : "找不到 Sheet");
-
-  if (!sheet || sheet.dataset.open !== "true") return;
-
+  // 🔥 修正重點：不再檢查 sheet.dataset.open
+  // 原因：只要使用者點得到這個元素，代表它一定是顯示的。
+  // 我們不需要依賴 dataset.open 這個變數來證明它存在。
+  
   const id = row.dataset.id;
   const type = row.dataset.type || 'regular'; 
-  console.log(`📦 偵測到商品 ID: ${id}, 類型: ${type}`);
 
-  // 1. 先關閉 Cart Sheet
-  console.log("🚪 嘗試關閉購物車 Sheet...");
+  console.log(`🚀 點擊確認！準備開啟商品 ID: ${id}`);
+
+  // 🚪 2. 先關閉購物明細
   hideCartSheet();
 
   const DELAY_TIME = 420; 
 
-  // 2. 禮盒判斷
+  // 🟢 3. 禮盒處理
   if (type === 'giftbox') {
-      console.log("🎁 是禮盒，準備開啟禮盒編輯");
-      // ... (禮盒邏輯省略)
+      const boxData = getGiftBox(id);
+      if (boxData) {
+          setTimeout(() => { loadGiftBoxForEdit(boxData); }, DELAY_TIME);
+      }
       return;
   }
 
-  // 3. 隱藏商品判斷
+  // 🤫 4. 隱藏商品
   if (id === "secret_888") {
-      console.log("🤫 是隱藏商品");
-      // ... (隱藏商品邏輯省略)
-      return;
+    setTimeout(() => { openSecretModal(SECRET_PRODUCT_DEF); }, DELAY_TIME);
+    return;
   }
 
-  // 4. 一般商品：查找並開啟
-  console.log("🔍 開始在 CONFIG.PRODUCTS 尋找商品...");
+  // 🍵 5. 一般商品
   const product = CONFIG.PRODUCTS.find(p => p.id == id);
   
   if (product) {
-      console.log("✅ 找到商品資料：", product.title);
-      console.log(`⏳ 等待 ${DELAY_TIME}ms 後開啟視窗...`);
-      
       setTimeout(() => {
-          console.log("🚀 呼叫 openProductModal...");
-          // 檢查函式是否存在
+          console.log("⚡️ 嘗試呼叫 openProductModal...");
+          
+          // 檢查函式有沒有被 import 進來
           if (typeof openProductModal === 'function') {
               openProductModal(product);
-              console.log("🎉 openProductModal 已執行");
           } else {
-              console.error("❌ 嚴重錯誤：openProductModal 不是一個函式！可能 import 失敗");
+              console.error("❌ 嚴重錯誤：openProductModal 未定義！請確認檔案最上方有 import");
+              // 備用方案：如果真的 import 失敗，死馬當活馬醫，試試看舊方法
+              const card = document.querySelector(`.tea-card[data-id="${id}"]`);
+              if(card) card.click();
           }
       }, DELAY_TIME);
   } else {
-      console.warn(`⚠️ 找不到 ID: ${id} 的商品資料！請檢查 config.js`);
-      console.log("目前的 CONFIG.PRODUCTS:", CONFIG.PRODUCTS);
+      console.warn(`⚠️ 找不到 ID: ${id} 的商品資料`);
       toast("無法讀取商品資料");
   }
 }
