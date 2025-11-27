@@ -107,6 +107,50 @@ function handleAICommand(cmd) {
 }
 
 // ============================================================
+// 🎨 非同步背景畫圖 (v5.3 New)
+// ============================================================
+async function triggerBackgroundPainting(payload, btnId) {
+  console.log("🎨 背景畫圖啟動...", payload.card_title);
+
+  try {
+    // 呼叫原本的 API，帶上 special_intent
+    // 注意：這裡不傳 session，因為畫圖不需要上下文
+    const res = await callAI("", null, null, {
+      special_intent: "generate_card_image",
+      image_payload: payload
+    });
+
+    const imageUrl = res.image_url;
+    const btn = document.getElementById(btnId);
+
+    if (btn && imageUrl) {
+      // 1. 更新按鈕文字
+      btn.innerHTML = `🍌 Nano Banana 靈魂茶籤 (完成)`;
+      btn.classList.remove("loading-state"); // 移除灰色樣式
+      btn.classList.add("ready-state");      // 加入金色閃光樣式
+
+      // 2. 處理字串跳脫 (避免 title 有引號噴錯)
+      const safeTitle = payload.card_title.replace(/'/g, "\\'");
+      const safeText = payload.card_text.replace(/'/g, "\\'").replace(/\n/g, " ");
+      
+      // 3. ⭐ 關鍵：更新 onclick，將算好的 imageUrl 塞進去
+      // 這樣使用者點擊時，drawTeaCard 就不用再等了，直接畫！
+      btn.setAttribute("onclick", `drawTeaCard('${safeTitle}', '${safeText}', '${imageUrl}')`);
+      
+      console.log("✅ 圖片生成完畢，按鈕已更新");
+    }
+
+  } catch (err) {
+    console.error("背景畫圖失敗", err);
+    const btn = document.getElementById(btnId);
+    if (btn) {
+        btn.textContent = "🍌 茶籤圖片讀取失敗 (點擊重試)";
+        // 失敗時保持原本 onclick，讓 drawTeaCard 自己去重試
+    }
+  }
+}
+
+// ============================================================
 // 🎨 3. Modal 建立
 // ============================================================
 
@@ -323,26 +367,31 @@ function showAIModal() {
 
 function handleAIResponse(out, chat) {
 
-  // 🟣 1) 語音播放（TTS）
+  // 🟣 1) 語音播放
   if (out.audio) playAIAudio(out.audio);
 
-  // 🌙 2) 指令（夜間模式）
+  // 🌙 2) 指令
   if (out.command) handleAICommand(out.command);
 
-  // ❌ 3) 錯誤處理
+  // ❌ 3) 錯誤
   if (out.mode === "error") {
     appendAIBubble(chat, "阿興師現在有點忙，請稍後再試 🙏");
     return;
   }
 
-  // 🟡 4) 問句（反問模式）
+  // ⭐ 關鍵新增：為這次回應產生一個唯一的按鈕 ID
+  // 這樣背景圖片算好回來時，才知道要更新哪一顆按鈕
+  const btnId = "ai-card-btn-" + Date.now();
+  out.btnId = btnId; 
+
+  // 🟡 4) 問句
   if (out.mode === "ask") {
     appendAIBubble(chat, out.ask);
     if (out.options) appendAskOptions(chat, out.options);
     return;
   }
 
-  // 🫶 5) 私房貨 / Masterpick
+  // 🫶 5) 私房貨
   if (out.mode === "masterpick") {
     let teaData = out.tea_data || CONFIG.PRODUCTS.find(p => p.id === (out.best?.id || out.best));
     chat.innerHTML += buildMasterpickBubble(out, teaData, out.isSecret);
@@ -350,43 +399,31 @@ function handleAIResponse(out, chat) {
     return;
   }
 
-  // 🟢 6) 正常推薦模式（支援 Upsell）
+  // 🟢 6) 各種模式 UI 建構 (都會用到 out.btnId)
   if (out.mode === "recommend") {
     chat.innerHTML += buildRecommendBubble(out, CONFIG.PRODUCTS);
-  }
-
-  // 🍽 食物搭配模式（圖片/文字都可觸發）
-  else if (out.mode === "pairing") {
+  } else if (out.mode === "pairing") {
     chat.innerHTML += buildPairingBubble(out, CONFIG.PRODUCTS);
-  }
-
-  // 🎁 送禮推薦
-  else if (out.mode === "gift") {
+  } else if (out.mode === "gift") {
     chat.innerHTML += buildGiftBubble(out, CONFIG.PRODUCTS);
-  }
-
-  // 🔍 比較模式
-  else if (out.mode === "compare") {
+  } else if (out.mode === "compare") {
     chat.innerHTML += buildCompareBubble(out, CONFIG.PRODUCTS);
-  }
-
-  // 🍵 泡法模式
-  else if (out.mode === "brew") {
+  } else if (out.mode === "brew") {
     chat.innerHTML += buildBrewBubble(out, CONFIG.PRODUCTS);
-  }
-
-  // 🔮 靈魂茶（人格測試）
-  else if (out.mode === "personality") {
+  } else if (out.mode === "personality") {
     chat.innerHTML += buildPersonalityBubble(out, CONFIG.PRODUCTS);
-  }
-
-  // 🧊 預防 fallback
-  else {
+  } else {
     appendAIBubble(chat, "收到！");
   }
 
   enableProductClicks(chat);
   chat.scrollTop = chat.scrollHeight;
+
+  // ⭐ 關鍵新增：非同步圖片載入觸發器
+  // 如果後端說 "LOADING"，我們就在這裡偷偷發送請求去畫圖
+  if (out.card_image === "LOADING" && out.image_payload) {
+    triggerBackgroundPainting(out.image_payload, btnId);
+  }
 }
 
 // ============================================================
@@ -492,7 +529,7 @@ function buildRecommendBubble(out, products) {
         <div class="prod-reason" style="color:#888;">${out.second.reason}</div>
       </div>` : ""}
 
-      ${getCardButtonHtml(best.title, out.card_text, out.card_image)}
+      ${getCardButtonHtml(best.title, out.card_text, out.card_image,out.btnId)}
     </div>
   `;
 }
@@ -514,7 +551,7 @@ function buildPairingBubble(out, products) {
         <div class="prod-reason">${out.reason}</div>
       </div>
 
-      ${getCardButtonHtml(tea.title, out.card_text, out.card_image)}
+      ${getCardButtonHtml(tea.title, out.card_text, out.card_image,out.btnId)}
     </div>
   `;
 }
@@ -536,7 +573,7 @@ function buildGiftBubble(out, products) {
         </div>
       </div>
 
-      ${getCardButtonHtml(tea.title, out.card_text, out.card_image)}
+      ${getCardButtonHtml(tea.title, out.card_text, out.card_image,out.btnId)}
     </div>
   `;
 }
@@ -638,19 +675,34 @@ function buildMasterpickBubble(out, tea, isSecret = false) {
 }
 
 // ------------------------------------------------------------
-// 💌 茶籤按鈕 (v5.2 支援圖片傳遞)
+// 💌 茶籤按鈕 (v5.3 Async Support)
 // ------------------------------------------------------------
-function getCardButtonHtml(teaTitle, cardText, cardImageUrl = null) {
+function getCardButtonHtml(teaTitle, cardText, cardImageUrl = null, btnId = "") {
+  // 如果沒有 cardText，就不顯示按鈕
   if (!cardText) return "";
 
+  // 如果後端還在算圖 (LOADING 模式)
+  if (cardImageUrl === "LOADING") {
+    return `
+      <button id="${btnId}" 
+              class="ai-card-btn loading-state" 
+              onclick="alert('阿興師正在磨墨畫圖中，請稍候約 10 秒...🎨')"
+              style="background: #e0e0e0; color: #888; border: 1px dashed #ccc; cursor: progress;">
+        🎨 阿興師作畫中... (請稍候)
+      </button>
+    `;
+  }
+
+  // 正常模式 (已有圖片 或 沒有圖片需現場算)
   const safeTitle = teaTitle.replace(/'/g, "\\'");
   const safeText = cardText.replace(/'/g, "\\'").replace(/\n/g, " ");
-  
-  // 如果後端有傳圖片網址，也要處理引號並傳入
   const safeImg = cardImageUrl ? `'${cardImageUrl}'` : "null";
 
+  // 如果沒有傳 btnId 進來，就不用 id 屬性 (相容舊版)
+  const idAttr = btnId ? `id="${btnId}"` : "";
+
   return `
-    <button class="ai-card-btn"
+    <button ${idAttr} class="ai-card-btn"
             onclick="drawTeaCard('${safeTitle}', '${safeText}', ${safeImg})">
       🍌 Nano Banana 靈魂茶籤
     </button>
