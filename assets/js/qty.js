@@ -16,9 +16,10 @@ export function handleQtyClick(btn) {
   const dir = btn.dataset.dir;
 
   const qtyEl = getQtyEl(id);
+  // 防呆：如果找不到數量欄位
+  if (!qtyEl) return;
+  
   let currentQty = parseInt(qtyEl.value || 0);
-
-  // 取得目前所需的最小包數
   const { totalNeeded } = calculatePackRequirements(id);
 
   if (dir === "plus") {
@@ -28,14 +29,19 @@ export function handleQtyClick(btn) {
   
   if (dir === "minus") {
     if (currentQty > 0) {
-      // 🛡️ 阻擋邏輯：如果減少後會小於裝罐所需數量，禁止減少
-      if (currentQty - 1 < totalNeeded) {
+      const nextQty = currentQty - 1;
+
+      // 🔥 修正 2：優化阻擋邏輯
+      // 只有當「減完還大於 0」且「小於裝罐需求」時才阻擋
+      // 意思就是：如果你要減到 0 (刪除商品)，我讓你過！
+      if (nextQty > 0 && nextQty < totalNeeded) {
         toast(`⚠️ 請先減少裝罐數量<br>目前裝罐至少需要 ${totalNeeded} 包`, "error");
-        // 稍微搖晃提示
+        
         qtyEl.classList.add("shake");
         setTimeout(() => qtyEl.classList.remove("shake"), 500);
         return; 
       }
+
       currentQty--;
       spawnQtyBubble(btn, "-1");
     }
@@ -44,7 +50,6 @@ export function handleQtyClick(btn) {
   qtyEl.value = currentQty;
   syncToCart(id);
 }
-
 /* ============================================================
 ✨ 2. 裝罐數量控制 (小罐/大罐)
 ============================================================ */
@@ -89,6 +94,12 @@ function handlePackBtn(btn) {
 🧮 輔助：計算裝罐需求 (通用版)
 ============================================================ */
 function calculatePackRequirements(id) {
+  // 🔥 修正 1：先檢查「裝罐開關」有沒有開！
+  const packChk = document.getElementById(`pack-${id}`);
+  // 如果開關不存在，或是沒勾選，直接回傳 0 (不需要任何包數)
+  if (!packChk || !packChk.checked) {
+      return { totalNeeded: 0, details: { small: 0, large: 0, standard: 0 } };
+  }
   // 取得容器內所有的 input
   const wrap = document.getElementById(`packQtyWrap-${id}`);
   if (!wrap) return { totalNeeded: 0, details: {} };

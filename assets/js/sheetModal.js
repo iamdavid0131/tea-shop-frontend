@@ -86,11 +86,8 @@ export async function showCartSheet() {
   }
 
   items.forEach(i => {
-    // 🕵️‍♂️ Debug 偵測點 1：檢查原始資料
-    console.log(`[Debug] 商品: ${i.name} (ID: ${i.id})`);
-    console.log(`       - 類型: ${i.type || 'regular'}`);
-    console.log(`       - 原始數量: ${i.qty}`);
-    console.log(`       - 裝罐數(packQty):`, i.packQty, typeof i.packQty);
+    // 🕵️‍♂️ Debug (保留以便除錯)
+    console.log(`[Debug] 商品: ${i.name}, 數量: ${i.qty}, 裝罐總數: ${i.packQty}`);
 
     const row = document.createElement("div");
     row.className = "line-item clickable";
@@ -100,13 +97,14 @@ export async function showCartSheet() {
     let titleHtml = i.name;
     let qtyStr = `× ${i.qty}`;
     
-    // 計算金額
+    // 🔥🔥🔥 修正重點 1：金額計算邏輯 🔥🔥🔥
     const PACK_PRICE = 10; 
-    // 強制轉型為數字，避免字串 "1" 導致計算錯誤
     const packQtyNum = Number(i.packQty) || 0; 
-    const packCost = packQtyNum * PACK_PRICE;
-    const realUnitPrice = (i.price || 0) + packCost;
-    const lineTotal = realUnitPrice * (i.qty || 1);
+    const totalPackCost = packQtyNum * PACK_PRICE; // 這是「總」裝罐費
+    
+    // 錯誤寫法 (舊的): const lineTotal = (i.price + totalPackCost) * i.qty;
+    // ✅ 正確寫法: 商品總價 + 裝罐總價
+    const lineTotal = ((i.price || 0) * (i.qty || 1)) + totalPackCost;
 
     // 顯示邏輯
     if (i.type === 'giftbox') {
@@ -120,17 +118,11 @@ export async function showCartSheet() {
             titleHtml = `<span style="color:#b8860b; font-weight:800;">🤫 ${i.name}</span>`;
         }
         
-        // 🕵️‍♂️ Debug 偵測點 2：檢查判斷邏輯
+        // 裝罐文字顯示
         if (packQtyNum > 0) {
-            console.log(`       ✅ 抓到了！有裝罐，準備修改文字...`);
-            qtyStr += ` <span style="font-size:13px; color:#858585; margin-left: 4px;">(裝罐x${packQtyNum} +NT$${packCost})</span>`;
-        } else {
-            console.log(`       ❌ 沒裝罐，或者數量為 0`);
+            qtyStr += ` <span style="font-size:13px; color:#858585; margin-left: 4px;">(裝罐x${packQtyNum} +NT$${totalPackCost})</span>`;
         }
     }
-    
-    // 🕵️‍♂️ Debug 偵測點 3：檢查最終 HTML 字串
-    console.log(`       ➡ 最終數量字串:`, qtyStr);
 
     row.innerHTML = `
         <div class="swipe-content">
@@ -143,7 +135,6 @@ export async function showCartSheet() {
         <button class="swipe-delete" data-id="${i.id}" data-type="${i.type || 'regular'}">刪除</button>
     `;
     list.appendChild(row);
-    
     enableSwipeDelete(row);
   });
 
@@ -316,12 +307,11 @@ export function initSheetModal() {
 // ========================================================
 export function toggleCartSheet() {
   const sheet = $("cartSheet");
-  const backdrop = $("cartSheetBackdrop");
-
-  // 判斷是否開啟：檢查 dataset.open 或是 display 狀態
-  const isOpen = sheet.dataset.open === "true" && backdrop.style.display !== "none";
-
-  if (isOpen) {
+  
+  // 🔥🔥🔥 修正重點 2：簡化判斷 🔥🔥🔥
+  // 只要標記是 true，就執行關閉；否則就打開。
+  // 不要去管 backdrop 的 display 狀態，那會被動畫影響。
+  if (sheet && sheet.dataset.open === "true") {
     hideCartSheet();
   } else {
     showCartSheet();
