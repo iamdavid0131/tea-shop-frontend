@@ -220,8 +220,28 @@ function createAIModal() {
 // - 圖片分析（食物 → 搭配茶）
 // - special_intent: generate_card_image（Nano Banana 茶籤生成）
 //
+// 🌡️ 自動偵測環境小工具
+function getEnvContext() {
+  const now = new Date();
+  const month = now.getMonth() + 1; // 1-12月
+  const hour = now.getHours();      // 0-23時
+
+  // 簡單模擬台灣氣溫邏輯 (也可改接真實氣象 API，但這樣最快最穩)
+  let estimated_temp = 24; // 春秋均溫
+  if (month >= 5 && month <= 10) estimated_temp = 30; // 夏 (熱)
+  if (month >= 12 || month <= 2) estimated_temp = 16; // 冬 (冷)
+
+  return {
+    month: month,
+    time_hour: hour,
+    temperature: estimated_temp,
+    is_night: (hour >= 22 || hour <= 5) // 是否為深夜
+  };
+}
+
 async function callAI(message, session, image = null, extraPayload = {}) {
   try {
+    const env = getEnvContext();
     const res = await fetch("https://tea-order-server.onrender.com/api/ai-tea", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -230,6 +250,7 @@ async function callAI(message, session, image = null, extraPayload = {}) {
         image,
         products: CONFIG.PRODUCTS,
         session,
+        client_env: env,
         previousTaste: JSON.parse(localStorage.getItem("user_taste") || "null"),
         ...extraPayload
       })
