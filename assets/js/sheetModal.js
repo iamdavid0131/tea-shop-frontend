@@ -53,18 +53,24 @@ export async function showCartSheet() {
   if (arrow) arrow.classList.add("rotated");
   sheet.dataset.open = "true";
 
-  // A. 先設定顯示 (但在畫面外)
+  // 🎨 2. 動畫準備 (關鍵修復步驟)
+  // 強制設定好 transition，防止被之前的 cleanup 移除
+  sheet.style.transition = "transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)";
+  
+  // 先把 Sheet 放到下面 (起始點)，並顯示背景
+  sheet.style.transform = "translateY(100%)";
   backdrop.style.display = "block";
-  // 強制瀏覽器重繪 (Reflow)，確保 display: block 生效後才跑 transition
+  document.body.classList.add("modal-open");
+  document.body.style.overflow = "hidden"; // 強制鎖定
+  
+  // 強制瀏覽器 Reflow (讀取一次 offsetWidth)，讓瀏覽器意識到 "它現在在下面"
   void backdrop.offsetWidth; 
 
-  // B. 執行進場動畫
+  // 🚀 3. 執行進場動畫
   requestAnimationFrame(() => {
     backdrop.setAttribute("aria-hidden", "false");
     backdrop.style.opacity = "1";
-    
-    // 🔥 關鍵修正：確保這裡設定滑入位置
-    sheet.style.transform = "translateY(0)";
+    sheet.style.transform = "translateY(0)"; // 滑上來
   });
 
   // 渲染列表邏輯 (維持你原本的代碼不變)
@@ -87,25 +93,36 @@ export async function showCartSheet() {
 
     let titleHtml = i.name;
     let qtyStr = `× ${i.qty}`;
-    let displayPrice = i.price;
-    // 針對禮盒顯示內容物詳情
+    
+    // 🔥 修正 1: 計算單品總金額 (含裝罐費)
+    // 假設每個罐子加 10 元 (如果您的配置不同，請修改這裡的 10)
+    const PACK_PRICE = 10; 
+    const packCost = (i.packQty || 0) * PACK_PRICE;
+    // 單一商品的"真實單價" = 原價 + (罐數 * 10)
+    const realUnitPrice = (i.price || 0) + packCost;
+    const lineTotal = realUnitPrice * (i.qty || 1);
+
+    // 禮盒顯示邏輯
     if (i.type === 'giftbox') {
         const d = i.details;
-        // 禮盒內容顯示邏輯
         const s1Name = d.slot1.title + (d.slot1.qty > 1 ? ` x${d.slot1.qty}` : "");
         const s2Name = d.slot2.title + (d.slot2.qty > 1 ? ` x${d.slot2.qty}` : "");
-        
-        const detailText = `<span class="muted" style="font-size:12px; display:block; margin-top:2px; color:#888;">
-            1. ${s1Name}<br>2. ${s2Name}
-        </span>`;
-        titleHtml += detailText;
+        titleHtml += `<span class="muted" style="font-size:12px; display:block; margin-top:4px; color:#888;">1. ${s1Name}<br>2. ${s2Name}</span>`;
     } else {
-        const packStr = i.packQty > 0 ? `（裝罐 ${i.packQty}）` : "";
+        // 🔥 修正 2: 一般商品顯示裝罐詳情
         const isSecret = i.id === "secret_888";
-        titleHtml = isSecret ? `<span style="color:#b8860b; font-weight:800;">🤫 ${i.name}</span>` : i.name;
-        qtyStr += ` ${packStr}`;
+        if (isSecret) {
+            titleHtml = `<span style="color:#b8860b; font-weight:800;">🤫 ${i.name}</span>`;
+        }
+        
+        // 如果有裝罐，顯示詳細資訊
+        if (i.packQty > 0) {
+            const packInfo = `<span class="muted" style="font-size:12px; color:#858585; display:block; margin-top:2px;">
+                裝罐 × ${i.packQty} ( +NT$ ${packCost} )
+            </span>`;
+            titleHtml += packInfo;
+        }
     }
-    const lineTotal = (displayPrice || 0) * (i.qty || 1);
 
     row.innerHTML = `
         <div class="swipe-content">
@@ -227,6 +244,8 @@ export function hideCartSheet() {
   const backdrop = $("cartSheetBackdrop");
   const sheet = $("cartSheet");
   
+  if (!sheet || !backdrop) return;
+
   // 1. 箭頭同步復原
   const arrow = document.querySelector("#viewCartBtn .arrow-icon");
   if (arrow) arrow.classList.remove("rotated");
@@ -234,28 +253,36 @@ export function hideCartSheet() {
   // 2. 狀態標記更新
   sheet.dataset.open = "false";
 
-  // 🔥🔥🔥 核心修復開始 🔥🔥🔥
-  
-  // A. 強制恢復動畫屬性 (防止被拖曳邏輯的 transition: none 干擾)
-  sheet.style.transition = "transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)";
-  
-  // B. 明確告訴瀏覽器：往下移動 100% (滑下去)
-  // 這行 inline style 會覆蓋掉開啟時的 translateY(0)
-  sheet.style.transform = "translateY(100%)";
+  // 強制瀏覽器 Reflow，確保動畫順暢
+  void sheet.offsetWidth; 
 
-  // C. 只有背景淡出 (背景不需要滑動，只需要淡出)
-  backdrop.style.opacity = "0";
+  requestAnimationFrame(() => {
+      // 確保 Transition 存在
+      sheet.style.transition = "transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)";
+      backdrop.style.transition = "opacity 0.4s ease";
+      
+      // 設定目標位置 (滑下去)
+      sheet.style.transform = "translateY(100%)";
+      // 背景淡出
+      backdrop.style.opacity = "0";
+  });
 
-  // D. 等待動畫跑完 (400ms) 再真的隱藏 DOM
+  // 3. 等待動畫結束後才隱藏 DOM 並解鎖 Body
   setTimeout(() => {
-    backdrop.setAttribute("aria-hidden", "true");
-    backdrop.style.display = "none";
-    document.body.classList.remove("modal-open");
-    
-    // (選用) 動畫結束後，清除所有 inline style，讓下次開啟保持乾淨
-    sheet.style.transform = "";
-    sheet.style.transition = ""; 
-  }, 400); // 這裡的時間要跟上面 transition 的 0.4s 對應
+    // 只有當確實是關閉狀態時才執行 (防止使用者快速開關導致錯亂)
+    if (sheet.dataset.open === "false") {
+        backdrop.setAttribute("aria-hidden", "true");
+        backdrop.style.display = "none";
+        
+        // 🔥🔥🔥 修正重點在此 🔥🔥🔥
+        // 1. 移除 Bootstrap 或其他庫加上的 class
+        document.body.classList.remove("modal-open");
+        
+        // 2. 強制清空 overflow 樣式 (這是導致卡死的主因)
+        document.body.style.overflow = ""; 
+        document.body.style.paddingRight = ""; // 清除可能因 scrollbar 加上的 padding
+    }
+  }, 400); // 時間對應 transition 的 0.4s
 }
 
 // 綁定關閉按鈕
