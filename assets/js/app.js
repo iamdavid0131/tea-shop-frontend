@@ -83,7 +83,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     paymentObserver.observe(document.body, { childList: true, subtree: true });
 
-    $("viewCartBtn")?.addEventListener("click", showCartSheet);
 
     // 🔥【關鍵修正】移除原本的 Scroll Hide 邏輯
     // 讓 Sticky Bar 永遠顯示，不要自動隱藏
