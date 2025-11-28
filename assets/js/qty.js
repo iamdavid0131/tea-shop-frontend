@@ -59,7 +59,11 @@ function handlePackBtn(btn) {
   const inputId = `packQty${typeCap}-${id}`;
   
   const inputEl = document.getElementById(inputId);
-  if (!inputEl) return;
+  // 🛡️ 額外檢查：如果 input 真的不存在 (例如 HTML 結構改變)，就停止
+  if (!inputEl) {
+      console.warn(`找不到對應的輸入框: ${inputId}`);
+      return;
+  }
 
   let val = parseInt(inputEl.value || 0);
 
@@ -193,27 +197,46 @@ function updateStatusText(id, total, needed, isPacked) {
 ============================================================ */
 function handlePackToggle(e) {
   const chk = e.target;
-  const id = chk.id.replace("pack-", "");
+  const id = chk.id.replace("pack-", ""); // 取得商品 ID
   const wrap = document.getElementById(`packQtyWrap-${id}`);
   const row = chk.closest(".pack-row");
 
+  if (!wrap) return; // 防呆：如果找不到容器就結束
+
   if (chk.checked) {
     wrap.classList.remove("hidden");
-    row.classList.add("active");
+    if (row) row.classList.add("active");
     
-    // 預設開啟時，如果兩個都是 0，自動幫「小罐」設為 1 (貼心 UX)
-    // 並觸發自動增長檢查
+    // 🔥🔥🔥 修正重點開始 🔥🔥🔥
+    // 偵測該商品有哪些輸入框 (Small/Large 或是 Standard)
     const sInput = document.getElementById(`packQtySmall-${id}`);
     const lInput = document.getElementById(`packQtyLarge-${id}`);
-    if (parseInt(sInput.value)==0 && parseInt(lInput.value)==0) {
-        sInput.value = 1;
-        checkAndAutoIncrementTotal(id, sInput, "small"); // 自動補總數
+    const stdInput = document.getElementById(`packQtyStandard-${id}`);
+
+    // 情境 A：這是 75g 商品 (有分小/大)
+    if (sInput && lInput) {
+        // 如果兩個都是 0，預設幫他選 1 個小罐
+        const sVal = parseInt(sInput.value || 0);
+        const lVal = parseInt(lInput.value || 0);
+        
+        if (sVal === 0 && lVal === 0) {
+            sInput.value = 1;
+            checkAndAutoIncrementTotal(id, sInput, "small"); 
+        }
+    } 
+    // 情境 B：這是 150g 商品 (只有標準罐)
+    else if (stdInput) {
+        const stdVal = parseInt(stdInput.value || 0);
+        if (stdVal === 0) {
+            stdInput.value = 1;
+            checkAndAutoIncrementTotal(id, stdInput, "standard");
+        }
     }
+    // 🔥🔥🔥 修正重點結束 🔥🔥🔥
 
   } else {
     wrap.classList.add("hidden");
-    row.classList.remove("active");
-    // 關閉時不一定要清空 value，可以保留使用者上次輸入的，但 saveCartItem 會判斷 checked=false 就不存
+    if (row) row.classList.remove("active");
   }
 
   syncToCart(id);

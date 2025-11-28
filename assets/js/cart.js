@@ -228,10 +228,18 @@ export function getCartItems() {
       if (!p) return null;
 
       // 整理 packQty 為物件格式
-      let packDetails = { small: 0, large: 0 };
+      let packDetails = { small: 0, large: 0, standard: 0 }; // 補上 standard 初始值
       if (data.pack && data.packQty) {
-          if (typeof data.packQty === 'number') packDetails.small = data.packQty;
-          else packDetails = data.packQty;
+          if (typeof data.packQty === 'number') {
+             packDetails.small = data.packQty;
+          } else {
+             // 確保完整複製
+             packDetails = { 
+                 small: data.packQty.small || 0,
+                 large: data.packQty.large || 0,
+                 standard: data.packQty.standard || 0
+             };
+          }
       }
 
       return {
@@ -239,8 +247,10 @@ export function getCartItems() {
         name: p.title || p.name || "",
         qty: data.qty,
         pack: data.pack,
-        packDetails: packDetails, // 送給後端的新欄位
-        packQty: (packDetails.small || 0) + (packDetails.large || 0) // 保持一個總數給舊後端參考 (可選)
+        packDetails: packDetails, 
+        
+        // 🔥 修正：總數計算要包含 standard
+        packQty: (packDetails.small || 0) + (packDetails.large || 0) + (packDetails.standard || 0)
       };
     }).filter(Boolean);
 
@@ -299,6 +309,7 @@ export function getQty(id) {
   return isNaN(q) ? 0 : q;
 }
 
+
 // ============================================================
 // 📊 建立訂單物件列表（核心函式 - 已整合禮盒）
 // ============================================================
@@ -314,7 +325,7 @@ export function buildOrderItems() {
     if (p) {
       let packSmall = 0;
       let packLarge = 0;
-      let packStandard = 0; // 🔥 新增 standard
+      let packStandard = 0; 
 
       if (data.pack && data.packQty) {
           if (typeof data.packQty === 'number') {
@@ -322,9 +333,12 @@ export function buildOrderItems() {
           } else {
               packSmall = data.packQty.small || 0;
               packLarge = data.packQty.large || 0;
-              packStandard = data.packQty.standard || 0; // 🔥 讀取
+              packStandard = data.packQty.standard || 0; 
           }
       }
+
+      // 🔥 計算總裝罐數
+      const totalPacks = packSmall + packLarge + packStandard;
 
       items.push({
         type: 'regular',
@@ -333,15 +347,17 @@ export function buildOrderItems() {
         price: p.price,
         qty: data.qty,
         pack: data.pack, 
+        
+        // 🔥🔥🔥 補上這一行！ UI (sheetModal) 就是在找這個！ 🔥🔥🔥
+        packQty: totalPacks, 
+
         packDetails: { small: packSmall, large: packLarge, standard: packStandard },
-        // 🔥 裝罐費：給那些後端還沒計算 packFee 的情況備用
-        // 但我們主要依賴後端算好的 subtotal
-        packFee: (packSmall + packLarge + packStandard) * 10 
+        packFee: totalPacks * 10 
       });
     }
   });
 
-  // 2. 禮盒
+  // 2. 禮盒 (維持不變)
   const giftboxes = JSON.parse(localStorage.getItem("teaGiftBoxCart") || "[]");
   giftboxes.forEach(box => {
     items.push({
