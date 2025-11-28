@@ -510,7 +510,8 @@ function enableProductClicks(chat) {
 // ------------------------------------------------------------
 // 🌟 推薦（含 v5.2 Upsell 雙卡片）
 // ------------------------------------------------------------
-// 1. 取得 AI 推薦的 ID
+function buildRecommendBubble(out, products) {
+  // 1. 取得 AI 推薦的 ID
   // 相容兩種格式：out.best 是物件(包含 id) 或 out.best 直接是字串
   const rawId = out.best?.id || out.best;
   
