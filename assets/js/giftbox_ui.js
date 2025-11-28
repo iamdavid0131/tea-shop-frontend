@@ -414,33 +414,3 @@ export function initGiftBox() {
     if(slot1) slot1.addEventListener("click", () => openProductSelector(1));
     if(slot2) slot2.addEventListener("click", () => openProductSelector(2));
 }
-
-// 放到 cart.js 或 dom.js 中，並 import 進來，或者直接定義在下方
-function spawnQtyBubble(targetElement, text) {
-    const bubble = document.createElement('div');
-    bubble.textContent = text;
-    bubble.style.position = 'absolute';
-    bubble.style.color = '#e67e22';
-    bubble.style.fontWeight = 'bold';
-    bubble.style.fontSize = '14px';
-    bubble.style.pointerEvents = 'none';
-    bubble.style.zIndex = '1000';
-    bubble.style.transition = 'all 0.6s ease-out';
-    
-    // 定位
-    const rect = targetElement.getBoundingClientRect();
-    bubble.style.left = rect.left + (rect.width / 2) - 10 + 'px'; // 簡單置中
-    bubble.style.top = rect.top + 'px';
-
-    document.body.appendChild(bubble);
-
-    // 動畫
-    requestAnimationFrame(() => {
-        bubble.style.transform = 'translateY(-30px)';
-        bubble.style.opacity = '0';
-    });
-
-    setTimeout(() => {
-        bubble.remove();
-    }, 600);
-}
