@@ -296,6 +296,7 @@ export function initSheetModal() {
   sheet.style.transform = "translateY(100%)"; 
   sheet.style.transition = "transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)";
   backdrop.style.display = "none";
+  sheet.dataset.open = "false"; 
 
   backdrop.addEventListener("touchmove", (e) => {
     if (e.target === backdrop) e.preventDefault();
@@ -306,11 +307,10 @@ export function initSheetModal() {
 // 3. 切換開關 (Toggle) - 給箭頭按鈕用
 // ========================================================
 export function toggleCartSheet() {
-  const backdrop = document.getElementById("cartSheetBackdrop");
-  
-  // 🔍 判斷邏輯：直接問瀏覽器「遮罩現在看得到嗎？」
-  // 如果 display 不是 none，代表現在是開著的
-  const isOpen = backdrop && window.getComputedStyle(backdrop).display !== "none";
+  const sheet = $("cartSheet");
+  if (!sheet) return;
+
+  const isOpen = sheet.dataset.open === "true";
 
   console.log(`點擊切換 | 目前狀態: ${isOpen ? "開啟中 (準備關閉)" : "關閉中 (準備開啟)"}`);
 
@@ -320,6 +320,7 @@ export function toggleCartSheet() {
     showCartSheet();
   }
 }
+
 
 // ========================================================
 // 4. 強制關閉所有視窗並前往結帳
