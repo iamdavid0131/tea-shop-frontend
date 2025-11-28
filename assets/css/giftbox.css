@@ -326,76 +326,92 @@
 /* =========================================
    GIFTBOX QUANTITY SELECTOR (數量控制器)
    ========================================= */
-/* --- 1. 數量控制器 UI 優化 (輕奢膠囊風) --- */
+/* --- 1. 數量控制器容器 --- */
 .giftbox-qty-row {
-  margin: 10px auto;
+  margin: 8px auto; /* 縮減上下間距 */
   display: flex;
-  flex-direction: column;
+  flex-direction: row; /* 🟢 改為橫向排列：標籤在左，控制在右 */
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 15px; /* 標籤與控制器之間的距離 */
 }
 
-/* 標籤：使用較細緻的字體顏色，不要全黑 */
+/* 標籤：放在左側，與數字平視 */
 .giftbox-qty-row label {
-  font-family: "Noto Serif TC", serif; /* 建議引入襯線體增加高級感 */
-  font-size: 13px;
-  color: #8c7c62; /* 淺棕色，比深咖啡更柔和 */
+  font-family: "Noto Serif TC", serif;
+  font-size: 14px;
+  color: #8c7c62;
   letter-spacing: 1px;
-  text-transform: uppercase;
+  margin: 0; /* 移除額外邊距 */
+  padding-top: 2px; /* 微調對齊 */
 }
 
-/* 控制器本體：膠囊狀，取消明顯邊框 */
+/* --- 2. 控制器本體：移除外框，改為透明背景 --- */
 .qty-control {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  width: 110px; /* 縮小寬度 */
-  height: 36px; /* 縮小高度 */
-  background: #fdfcf8; /* 極淺的米白 */
-  border: 1px solid #e0dcd0; /* 非常淡的邊界 */
-  border-radius: 50px; /* 圓角膠囊 */
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); /* 極微弱的內陰影增加質感 */
-  overflow: hidden;
-  position: relative; /* 為了氣泡定位 */
+  gap: 12px; /* 🟢 關鍵：拉開按鈕與數字的距離，解決擁擠感 */
+  width: auto; /* 不再強制固定寬度 */
+  height: auto; /* 高度隨內容自動調整 */
+  background: transparent;
+  border: none; /* 移除外框 */
+  box-shadow: none;
+  position: relative;
 }
 
-/* 加減按鈕：去除背景，改用文字色 */
+/* --- 3. 加減按鈕：獨立的小圓圈 --- */
 .qty-btn {
-  background: transparent;
-  border: none;
-  width: 32px;
-  height: 100%;
-  color: #a8a192; /* 預設淺灰 */
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.2s;
+  width: 28px; /* 🟢 縮小尺寸 (原本可能太大) */
+  height: 28px;
+  border-radius: 50%; /* 圓形 */
+  border: 1px solid #e0dcd0; /* 給予淡淡的邊框 */
+  background: #fff;
+  color: #2f4b3c;
+  font-size: 14px; /* 符號稍微縮小，顯得精緻 */
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
-  /* 防止手機點擊有藍色框 */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  /* 禁止選取 */
+  user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
 
-.qty-btn:hover, .qty-btn:active {
-  color: #2f4b3c; /* 點擊時變深綠 */
-  background: rgba(47, 75, 60, 0.05); /* 極淡的綠色背景回饋 */
+/* 按鈕懸停與點擊效果 */
+.qty-btn:hover {
+  border-color: #b8a88f; /* 懸停時邊框變金棕色 */
+  color: #b8a88f;
 }
 
-/* 輸入框：純淨數字 */
+.qty-btn:active {
+  background: #f4f1ea; /* 點擊時微微的底色 */
+  transform: scale(0.95); /* 微縮回饋 */
+}
+
+/* --- 4. 輸入框：純數字展示 --- */
 .qty-control input {
-  width: 40px;
+  width: 36px; /* 寬度適中 */
   border: none;
   background: transparent;
   text-align: center;
-  font-family: "Didot", "Bodoni MT", serif; /* 數字用襯線體更高級 */
+  
+  /* 字體設定 */
+  font-family: "Didot", "Times New Roman", serif; /* 襯線體 */
   font-size: 18px;
-  font-weight: 600;
-  color: #2f4b3c;
+  font-weight: 500;
+  color: #2f4b3c; /* 深綠色 */
+  
   padding: 0;
-  pointer-events: none; /* 禁止手機鍵盤跳出，強制用按鈕操作 (可選) */
+  margin: 0;
+  pointer-events: none; /* 維持禁止手動輸入 */
 }
 
+/* (選用) 如果想要數字底部有一條線 */
+.qty-control input {
+  border-bottom: 1px solid transparent; /* 預留空間 */
+}
 /* --- 2. 修復茶葉動畫 (補上缺少的 CSS) --- */
 .leaf-particle {
   position: absolute;

@@ -1,6 +1,7 @@
 import { addGiftBoxToCart, updateGiftBoxInCart } from './cart.js';
 import { CONFIG } from './config.js';
 import { $ } from './dom.js';
+import { spawnQtyBubble } from './qty.js';
 
 // ==========================================
 // 1. 狀態變數 (State Variables)
@@ -335,35 +336,44 @@ export function initGiftBox() {
     const qtyInput = document.getElementById('box-qty');
     const qtyControls = document.querySelector('.giftbox-qty-row');
 
-    // 🟢 數量控制綁定
+    // 🟢 數量控制綁
     if (qtyControls) {
         qtyControls.addEventListener('click', (e) => {
-            const action = e.target.dataset.action;
-            if (!qtyInput || !action) return;
+            // 1. 修正：使用 closest 確保點擊 icon 也能抓到按鈕
+            const btn = e.target.closest('[data-action]'); 
             
+            // 如果沒點到按鈕或沒有輸入框，直接結束
+            if (!btn || !qtyInput) return;
+            
+            const action = btn.dataset.action;
             let currentQty = parseInt(qtyInput.value) || 1;
 
-            // --- 🟢 新增：觸發氣泡動畫 ---
+            // 2. 修正：邏輯整合，避免重複加減
             if (action === 'increase') {
                 if (currentQty < 99) {
                     currentQty++;
-                    spawnQtyBubble(btn, '+1'); // 在加號按鈕上冒泡
+                    // 呼叫氣泡動畫 (需確認此函式存在)
+                    if (typeof spawnQtyBubble === 'function') {
+                        spawnQtyBubble(btn, '+1'); 
+                    }
                 }
-            }
-            if (action === 'decrease') {
+            } else if (action === 'decrease') { // 使用 else if
                 if (currentQty > 1) {
                     currentQty--;
-                    spawnQtyBubble(btn, '-1'); // 在減號按鈕上冒泡
+                    if (typeof spawnQtyBubble === 'function') {
+                        spawnQtyBubble(btn, '-1');
+                    }
                 }
             }
             
-            if (action === 'increase' && currentQty < 99) currentQty++;
-            if (action === 'decrease' && currentQty > 1) currentQty--;
+            // 移除原本下方重複的 if (action === 'increase'...) 區塊
 
+            // 3. 更新數值與狀態
             qtyInput.value = currentQty;
-            boxQuantity = currentQty; // 更新狀態
-            validateGiftbox();
-            updateGiftboxProgress();
+            boxQuantity = currentQty; // 更新全域變數
+            
+            validateGiftbox();       // 重新計算價格
+            updateGiftboxProgress(); // 更新進度條
         });
     }
 
@@ -403,4 +413,34 @@ export function initGiftBox() {
     const slot2 = document.getElementById("slot2");
     if(slot1) slot1.addEventListener("click", () => openProductSelector(1));
     if(slot2) slot2.addEventListener("click", () => openProductSelector(2));
+}
+
+// 放到 cart.js 或 dom.js 中，並 import 進來，或者直接定義在下方
+function spawnQtyBubble(targetElement, text) {
+    const bubble = document.createElement('div');
+    bubble.textContent = text;
+    bubble.style.position = 'absolute';
+    bubble.style.color = '#e67e22';
+    bubble.style.fontWeight = 'bold';
+    bubble.style.fontSize = '14px';
+    bubble.style.pointerEvents = 'none';
+    bubble.style.zIndex = '1000';
+    bubble.style.transition = 'all 0.6s ease-out';
+    
+    // 定位
+    const rect = targetElement.getBoundingClientRect();
+    bubble.style.left = rect.left + (rect.width / 2) - 10 + 'px'; // 簡單置中
+    bubble.style.top = rect.top + 'px';
+
+    document.body.appendChild(bubble);
+
+    // 動畫
+    requestAnimationFrame(() => {
+        bubble.style.transform = 'translateY(-30px)';
+        bubble.style.opacity = '0';
+    });
+
+    setTimeout(() => {
+        bubble.remove();
+    }, 600);
 }

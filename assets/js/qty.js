@@ -257,7 +257,7 @@ export function initQtyControls() {
   });
 }
 
-function spawnQtyBubble(btn, text) {
+export function spawnQtyBubble(btn, text) {
   const bubble = document.createElement("div");
   bubble.className = "qty-bubble";
   bubble.textContent = text;
