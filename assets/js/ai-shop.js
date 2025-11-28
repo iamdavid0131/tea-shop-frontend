@@ -883,6 +883,9 @@ export function openSecretModal(product) {
 // ============================================================
 // ✨ 11. Nano Banana AI — 茶籤金框卡片生成器 (v5.2 Fix)
 // ============================================================
+// ============================================================
+// ✨ 11. Nano Banana AI — 茶籤金框卡片生成器 (v5.2 Fix)
+// ============================================================
 window.drawTeaCard = async function(title, text, preGeneratedUrl = null) {
   console.log("🎨 開始生成茶籤：", title);
 
@@ -898,19 +901,16 @@ window.drawTeaCard = async function(title, text, preGeneratedUrl = null) {
   // 2. 如果沒有預先生成的圖，才呼叫後端 API 現場生成
   if (!bgSrc) {
     try {
-      // 注意：這裡網址改成跟 callAI 一樣的主路徑
-      const res = await fetch("https://tea-order-server.onrender.com/api/ai-tea", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          special_intent: "generate_card_image", // 告訴後端我要畫圖
+      // ✅ 改用 callAI，並帶上 image_payload（與 v6 後端一致）
+      const out = await callAI("", null, null, {
+        special_intent: "generate_card_image",
+        image_payload: {
           card_title: title,
           card_text: text
-        })
+        }
       });
 
-      const json = await res.json();
-      bgSrc = json.image_url; // 後端 v5.2 回傳的是 image_url
+      bgSrc = out.image_url;
     } catch (err) {
       console.error("AI 背景生成失敗:", err);
     }
@@ -925,20 +925,23 @@ window.drawTeaCard = async function(title, text, preGeneratedUrl = null) {
   canvas.width = width;
   canvas.height = height;
 
-  // 4. 繪製背景 (處理跨域問題)
+  // 4. 繪製背景 (處理圖片 / Fallback 底色)
   if (bgSrc) {
     const img = new Image();
-    img.crossOrigin = "Anonymous"; // ⭐ 關鍵：允許跨域，否則無法導出圖片
+    img.crossOrigin = "Anonymous"; // 保留你原本設定，避免日後改成遠端 URL 時畫布被汙染
     img.src = bgSrc;
-    await new Promise((resolve, reject) => {
-      img.onload = resolve;
+
+    await new Promise((resolve) => {
+      img.onload = () => {
+        // 保持圖片比例填滿
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve();
+      };
       img.onerror = () => {
         console.warn("圖片載入失敗，使用預設背景");
         resolve(); // 失敗也繼續，改用純色
       };
     });
-    // 保持圖片比例填滿
-    ctx.drawImage(img, 0, 0, width, height);
   } else {
     // Fallback：米白底
     ctx.fillStyle = "#F9F7F0";
@@ -960,7 +963,7 @@ window.drawTeaCard = async function(title, text, preGeneratedUrl = null) {
   ctx.font = "bold 64px 'Noto Serif TC', serif";
   ctx.textAlign = "center";
   
-  // 標題陰影增強可讀性 (因為背景變複雜了)
+  // 標題陰影增強可讀性
   ctx.shadowColor = "rgba(255,255,255,0.8)";
   ctx.shadowBlur = 10;
   ctx.fillText(title, width / 2, 180);
@@ -975,11 +978,10 @@ window.drawTeaCard = async function(title, text, preGeneratedUrl = null) {
   ctx.stroke();
 
   // 內文 (自動換行)
-  ctx.fillStyle = "#1a1a1a"; // 改深一點，避免背景干擾
+  ctx.fillStyle = "#1a1a1a";
   ctx.font = "36px 'Noto Serif TC', serif";
   ctx.textAlign = "center";
   
-  // 內文加一點白底暈光，確保在複雜背景上看得到
   ctx.shadowColor = "rgba(255,255,255, 1)";
   ctx.shadowBlur = 15;
 
@@ -1008,6 +1010,7 @@ window.drawTeaCard = async function(title, text, preGeneratedUrl = null) {
   ctx.fillStyle = "#b8860b";
   ctx.font = "bold 40px 'Noto Serif TC', serif";
   ctx.fillText("—— 祥興茶行", width / 2, height - 180);
+
   // 移除 Loading
   loadingBubble.remove();
 
@@ -1016,10 +1019,77 @@ window.drawTeaCard = async function(title, text, preGeneratedUrl = null) {
     const dataUrl = canvas.toDataURL("image/png");
     showCardModal(dataUrl);
   } catch (e) {
-    alert("圖片生成失敗 (跨域安全性阻擋)，請聯絡管理員");
-    console.error(e);
+    console.error("茶籤輸出失敗:", e);
+    alert("圖片生成失敗，請稍後再試或聯絡管理員。");
   }
 };
+
+// ============================================================
+// ✨ 11.1 Show 茶籤 Modal（展示 Canvas 生成結果）
+// ============================================================
+function showCardModal(dataUrl) {
+  // 先確保只會有一個 Modal 存在
+  const existing = document.getElementById("teaCardModal");
+  if (existing) existing.remove();
+
+  const overlay = document.createElement("div");
+  overlay.id = "teaCardModal";
+  overlay.className = "ai-modal-overlay show";
+  overlay.style.zIndex = "10000";
+
+  overlay.innerHTML = `
+    <div class="ai-box" 
+         style="
+           max-width: 420px;
+           margin: 0 auto;
+           padding: 16px;
+           background: #fffbf3;
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+         ">
+      <div style="margin-bottom: 12px; font-size: 1.05rem; color:#2f4b3c;">
+        靈魂茶籤
+      </div>
+
+      <img src="${dataUrl}" 
+           alt="靈魂茶籤" 
+           style="
+             width: 100%;
+             border-radius: 18px;
+             box-shadow: 0 10px 28px rgba(0,0,0,0.22);
+           " />
+
+      <div style="
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color:#666;
+            text-align:center;
+            line-height: 1.5;
+          ">
+        長按圖片即可儲存或分享這張茶籤。<br/>
+        （若無法長按，請截圖保存 😀）
+      </div>
+
+      <button id="closeTeaCardModal"
+              class="ai-send-btn"
+              style="margin-top: 16px; width: 100%;">
+        關閉
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  const close = () => overlay.remove();
+
+  const closeBtn = document.getElementById("closeTeaCardModal");
+  if (closeBtn) closeBtn.onclick = close;
+
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) close();
+  });
+}
 // ============================================================
 // 🚀 12. 注入 AI 導購按鈕（入口模組）
 // ============================================================
