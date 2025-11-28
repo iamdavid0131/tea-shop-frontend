@@ -110,7 +110,7 @@ function handleAICommand(cmd) {
 // 🎨 非同步背景畫圖 (v5.3 New)
 // ============================================================
 async function triggerBackgroundPainting(payload, btnId) {
-  console.log("🎨 背景畫圖啟動...", payload.card_title);
+  console.log("🎨 [Imagen 3] 背景畫圖啟動...", payload.card_title);
 
   try {
     // 呼叫原本的 API，帶上 special_intent
@@ -122,6 +122,12 @@ async function triggerBackgroundPainting(payload, btnId) {
 
     const imageUrl = res.image_url;
     const btn = document.getElementById(btnId);
+
+    // 👇 這裡加一個檢查，確保後端真的有回傳東西
+    if (!imageUrl) {
+        console.warn("⚠️ 圖片生成回傳為空");
+        throw new Error("Empty image url");
+    }
 
     if (btn && imageUrl) {
       // 1. 更新按鈕文字
@@ -504,21 +510,52 @@ function enableProductClicks(chat) {
 // ------------------------------------------------------------
 // 🌟 推薦（含 v5.2 Upsell 雙卡片）
 // ------------------------------------------------------------
-function buildRecommendBubble(out, products) {
-  const best = products.find(p => p.id === (out.best?.id || out.best));
-  const second = products.find(p => p.id === (out.second?.id || out.second));
+// 1. 取得 AI 推薦的 ID
+  // 相容兩種格式：out.best 是物件(包含 id) 或 out.best 直接是字串
+  const rawId = out.best?.id || out.best;
+  
+  // 2. 嘗試在前端商品列表尋找
+  let best = products.find(p => p.id === rawId);
 
+  // 🚨 3. 如果找不到，印出詳細兇手資訊 (請按 F12 看 Console)
+  if (!best) {
+    console.group("%c🚨 抓到了！AI 推薦的商品 ID 對不上！", "color: red; font-size: 14px; font-weight: bold;");
+    console.log("🔍 AI 回傳的原始 ID:", rawId);
+    console.log("📦 AI 回傳的完整資料:", out);
+    console.log("📋 前端目前有的 ID 列表:", products.map(p => p.id));
+    
+    // 分析原因
+    if (rawId === "fallback") {
+      console.warn("💡 原因：後端發生錯誤 (Catch Error)，回傳了 'fallback'。");
+    } else {
+      console.warn("💡 原因：可能是 AI 幻覺，或者前後端商品資料不同步。");
+    }
+    console.groupEnd();
+
+    // 為了不讓畫面當掉，還是得先拿一個墊檔，但至少我們知道發生什麼事了
+    best = products[0]; 
+  }
+
+  // 4. 第二名處理 (同理)
+  let second = null;
+  if (out.second) {
+    const secondId = out.second?.id || out.second;
+    second = products.find(p => p.id === secondId);
+    if (!second && secondId) {
+        console.warn("⚠️ 第二名推薦也找不到 ID:", secondId);
+    }
+  }
+
+  // ... (以下 HTML 生成保持不變) ...
   return `
     <div class="ai-bubble ai-bubble-ai">
       <div class="ai-bubble-title">🌟 阿興師推薦</div>
 
-      <!-- 第一名 -->
       <div class="ai-prod-item" data-prod="${best.id}">
         <div class="prod-name">👑 ${best.title}</div>
-        <div class="prod-reason">${out.best.reason}</div>
+        <div class="prod-reason">${out.best?.reason || "這款非常適合你！(系統預設)"}</div>
       </div>
 
-      <!-- 第二名 Upsell -->
       ${second ? `
       <div class="ai-prod-item" 
            data-prod="${second.id}" 
@@ -527,7 +564,7 @@ function buildRecommendBubble(out, products) {
         <div class="prod-reason" style="color:#888;">${out.second.reason}</div>
       </div>` : ""}
 
-      ${getCardButtonHtml(best.title, out.card_text, out.card_image,out.btnId)}
+      ${getCardButtonHtml(best.title, out.card_text, out.card_image, out.btnId)}
     </div>
   `;
 }
@@ -930,22 +967,31 @@ window.drawTeaCard = async function(title, text, preGeneratedUrl = null) {
   // 4. 繪製背景 (處理圖片 / Fallback 底色)
   if (bgSrc) {
     const img = new Image();
-    img.crossOrigin = "Anonymous"; // 保留你原本設定，避免日後改成遠端 URL 時畫布被汙染
-    img.src = bgSrc;
+    img.crossOrigin = "Anonymous";
+    img.src = bgSrc; // 設定圖片來源
 
+    // 等待圖片載入完成
     await new Promise((resolve) => {
       img.onload = () => {
-        // 保持圖片比例填滿
+        // 👇 確保這裡是用 drawImage 填滿整個畫布
+        // Imagen 3 預設也是正方形，配合你的 Canvas (900x1400) 會被拉長
+        // 如果覺得拉長很醜，可以改用「裁切填滿」邏輯，但目前先維持原樣即可
         ctx.drawImage(img, 0, 0, width, height);
+        
+        // 💡 加上一層半透明白色遮罩 (30%)，讓文字更清楚
+        ctx.fillStyle = "rgba(255, 255, 255, 0.3)"; 
+        ctx.fillRect(0, 0, width, height);
+        
         resolve();
       };
+      
       img.onerror = () => {
         console.warn("圖片載入失敗，使用預設背景");
         resolve(); // 失敗也繼續，改用純色
       };
     });
   } else {
-    // Fallback：米白底
+    // Fallback：若無圖片則使用米白底
     ctx.fillStyle = "#F9F7F0";
     ctx.fillRect(0, 0, width, height);
   }

@@ -381,3 +381,49 @@
     background: rgba(240, 240, 240, 0.8); /* 讓它在手機上更明顯 */
   }
 }
+
+/* === 📸 修正使用者上傳圖片樣式 === */
+.ai-bubble-img {
+  display: block;
+  max-width: 100%;       /* 確保不超過氣泡範圍 */
+  height: auto;          /* 保持比例 */
+  max-height: 300px;     /* 限制最大高度，避免洗版 */
+  border-radius: 12px;   /* 圖片圓角 */
+  margin-top: 4px;
+  object-fit: cover;     /* 裁切填滿 */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* === 🖼 美化茶籤 Modal 的關閉按鈕 === */
+#closeTeaCardModal {
+  /* 覆蓋原本 ai-send-btn 的圓形設定 */
+  width: 100% !important;
+  height: auto !important;
+  border-radius: 12px !important; /* 改回正常的圓角 */
+  padding: 12px 0 !important;     /* 增加上下高度 */
+  margin-top: 16px;
+  
+  /* 按鈕配色 (深綠色系，搭配茶行風格) */
+  background: linear-gradient(135deg, #2f4b3c, #1a2e24);
+  color: #fff !important;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  border: none;
+  box-shadow: 0 4px 12px rgba(47, 75, 60, 0.3);
+  
+  /* 移除原本 icon 的偏倚 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#closeTeaCardModal:hover {
+  background: linear-gradient(135deg, #3e5c4a, #2a4034);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(47, 75, 60, 0.4);
+}
+
+#closeTeaCardModal:active {
+  transform: scale(0.98);
+}
