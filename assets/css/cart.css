@@ -335,17 +335,45 @@
   display: flex; justify-content: space-between; align-items: center;
   padding: 16px 18px; background: #fff; position: relative; z-index: 1;
   transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.5, 1);
+  /* 🔥 新增：確保高度能隨內容撐開 */
+  height: auto; 
+  min-height: 72px; /* 設定一個舒適的最小高度 */
 }
 
 /* 商品資訊 */
-.swipe-info { display: flex; flex-direction: column; gap: 4px; }
-.li-title { font-size: 16px; font-weight: 700; color: #2f4b3c; letter-spacing: 0.3px; }
+.swipe-info { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 4px; 
+  
+  /* 🔥 新增：佔據剩餘空間，防止被價格擠壓 */
+  flex: 1; 
+  min-width: 0; /* Flexbox 換行救星 (防止文字溢出容器) */
+  padding-right: 12px; /* 跟右邊價格保持距離 */ 
+}
+.li-title { 
+  font-size: 16px; 
+  font-weight: 700; 
+  color: #2f4b3c; 
+  letter-spacing: 0.3px;
+  
+  /* 🔥 新增：強制換行與行高優化 */
+  white-space: normal !important; /* 強制覆蓋任何可能導致不換行的設定 */
+  word-wrap: break-word;          /* 過長的字強制切斷 */
+  line-height: 1.4;               /* 讓多行文字閱讀不擁擠 */
+}
 .li-qty { font-size: 13px; color: #889990; font-weight: 500; }
 
 /* 價格 (右側強調) */
 .li-sub { 
-  font-size: 16px; font-weight: 700; color: #305c46; 
-  font-family: "Noto Serif TC", serif; /* 數字用宋體 */
+  font-size: 16px; 
+  font-weight: 700; 
+  color: #305c46; 
+  font-family: "Noto Serif TC", serif;
+  
+  /* 🔥 新增：防止價格被擠壓或換行 */
+  white-space: nowrap; 
+  flex-shrink: 0; /* 空間不夠時，絕不縮小價格欄位 */
 }
 
 /* === 刪除按鈕 (紅色漸層) === */
@@ -403,6 +431,15 @@
   background: linear-gradient(90deg, #b8860b, #d4af37);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   text-shadow: 0 1px 2px rgba(184, 134, 11, 0.1);
+}
+/* 明細小字 (裝罐資訊、禮盒內容) */
+.li-title .muted {
+  display: block;      /* 讓它自動變到下一行 */
+  margin-top: 4px;     /* 與標題的距離 */
+  font-size: 13px;     /* 字體小一點 */
+  font-weight: 400;    /* 字體細一點 */
+  color: #858585;      /* 灰色 */
+  line-height: 1.4;
 }
 /* ============================================================
    3. Success Modal (成功畫面 - 旗艦儀式感版)
