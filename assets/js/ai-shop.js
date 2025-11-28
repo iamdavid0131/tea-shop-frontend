@@ -686,22 +686,40 @@ function buildBrewBubble(out, products) {
 // 🔮 靈魂茶（人格分析）
 // ------------------------------------------------------------
 function buildPersonalityBubble(out, products) {
-  const tea = products.find(p => p.id === out.tea);
+  // 1. 嘗試抓取商品 ID
+  // 新版後端放在: out.best.id
+  // 舊版後端放在: out.tea
+  const targetId = (out.best && out.best.id) || out.tea || out.best;
+
+  // 2. 在商品列表中尋找
+  let tea = products.find(p => p.id === targetId);
+
+  // 🛑 3. 防呆：如果 ID 對不上或找不到，強制使用第一個商品
+  if (!tea) {
+    console.warn("⚠️ [Personality] 找不到對應 ID:", targetId, "自動切換為預設商品");
+    tea = products[0]; 
+  }
+
+  // 4. 抓取理由/文案
+  const reason = out.best?.reason || out.summary || "這是你的命定茶。";
 
   return `
     <div class="ai-bubble ai-bubble-ai">
       <div class="ai-bubble-title">🔮 你的靈魂茶飲</div>
 
-      <div class="person-summary">${out.summary}</div>
+      <div class="person-summary">${out.summary || reason}</div>
 
       <div class="ai-prod-item" data-prod="${tea.id}">
         <div class="prod-name">${tea.title}</div>
         <div class="prod-reason" style="color:#2f4b3c;">
-          查看詳情 →
+           ${reason}
+        </div>
+        <div style="margin-top:4px; font-size:0.85rem; color:#888; text-align:right;">
+           查看詳情 →
         </div>
       </div>
 
-      ${getCardButtonHtml(tea.title, out.card_text, out.card_image)}
+      ${getCardButtonHtml(tea.title, out.card_text, out.card_image, out.btnId)}
     </div>
   `;
 }
