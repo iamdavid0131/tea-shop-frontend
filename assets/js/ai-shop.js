@@ -558,7 +558,9 @@ function buildPairingBubble(out, products) {
 // 🎁 送禮推薦
 // ------------------------------------------------------------
 function buildGiftBubble(out, products) {
-  const tea = products.find(p => p.id === out.tea || out.best.id);
+  // 先決定這次要顯示哪個商品的 id：優先用 out.tea，沒有就用 best.id
+  const targetId = out.tea || (out.best && out.best.id);
+  const tea = products.find(p => p.id === targetId) || products[0];
 
   return `
     <div class="ai-bubble ai-bubble-ai">
