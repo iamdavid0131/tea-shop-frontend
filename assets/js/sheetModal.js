@@ -94,36 +94,35 @@ export async function showCartSheet() {
     let titleHtml = i.name;
     let qtyStr = `× ${i.qty}`;
     
-    // 🔥 修正 1: 計算單品總金額 (含裝罐費)
-    // 假設每個罐子加 10 元 (如果您的配置不同，請修改這裡的 10)
+    // 1. 計算金額邏輯 (維持不變)
     const PACK_PRICE = 10; 
     const packCost = (i.packQty || 0) * PACK_PRICE;
-    // 單一商品的"真實單價" = 原價 + (罐數 * 10)
     const realUnitPrice = (i.price || 0) + packCost;
     const lineTotal = realUnitPrice * (i.qty || 1);
 
-    // 禮盒顯示邏輯
+    // 2. 顯示內容邏輯 (這裡改了！)
     if (i.type === 'giftbox') {
+        // --- 禮盒維持原樣 ---
         const d = i.details;
         const s1Name = d.slot1.title + (d.slot1.qty > 1 ? ` x${d.slot1.qty}` : "");
         const s2Name = d.slot2.title + (d.slot2.qty > 1 ? ` x${d.slot2.qty}` : "");
         titleHtml += `<span class="muted" style="font-size:12px; display:block; margin-top:4px; color:#888;">1. ${s1Name}<br>2. ${s2Name}</span>`;
     } else {
-        // 🔥 修正 2: 一般商品顯示裝罐詳情
+        // --- 一般商品修改處 ---
         const isSecret = i.id === "secret_888";
         if (isSecret) {
             titleHtml = `<span style="color:#b8860b; font-weight:800;">🤫 ${i.name}</span>`;
         }
         
-        // 如果有裝罐，顯示詳細資訊
+        // 🔥 修改重點：將裝罐資訊移到 qtyStr (數量) 後面
         if (i.packQty > 0) {
-            const packInfo = `<span class="muted" style="font-size:12px; color:#858585; display:block; margin-top:2px;">
-                裝罐 × ${i.packQty} ( +NT$ ${packCost} )
-            </span>`;
-            titleHtml += packInfo;
+            // 樣式：灰色小字，並顯示加價金額
+            // 顯示範例： × 5 (裝罐x5 +NT$50)
+            qtyStr += ` <span style="font-size:13px; color:#858585; margin-left: 4px;">(裝罐x${i.packQty} +NT$${packCost})</span>`;
         }
     }
 
+    // 3. 渲染 HTML (維持乾淨版，因為 CSS 已經在 style 檔修好了)
     row.innerHTML = `
         <div class="swipe-content">
           <div class="swipe-info">
