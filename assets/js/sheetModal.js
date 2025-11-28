@@ -59,7 +59,7 @@ export async function showCartSheet() {
   
   // 先把 Sheet 放到下面 (起始點)，並顯示背景
   sheet.style.transform = "translateY(100%)";
-  backdrop.style.display = "block";
+  backdrop.style.display = "flex";
   document.body.classList.add("modal-open");
   document.body.style.overflow = "hidden"; // 強制鎖定
   
@@ -306,12 +306,15 @@ export function initSheetModal() {
 // 3. 切換開關 (Toggle) - 給箭頭按鈕用
 // ========================================================
 export function toggleCartSheet() {
-  const sheet = $("cartSheet");
+  const backdrop = document.getElementById("cartSheetBackdrop");
   
-  // 🔥🔥🔥 修正重點 2：簡化判斷 🔥🔥🔥
-  // 只要標記是 true，就執行關閉；否則就打開。
-  // 不要去管 backdrop 的 display 狀態，那會被動畫影響。
-  if (sheet && sheet.dataset.open === "true") {
+  // 🔍 判斷邏輯：直接問瀏覽器「遮罩現在看得到嗎？」
+  // 如果 display 不是 none，代表現在是開著的
+  const isOpen = backdrop && window.getComputedStyle(backdrop).display !== "none";
+
+  console.log(`點擊切換 | 目前狀態: ${isOpen ? "開啟中 (準備關閉)" : "關閉中 (準備開啟)"}`);
+
+  if (isOpen) {
     hideCartSheet();
   } else {
     showCartSheet();
@@ -380,15 +383,17 @@ export function goToCheckout() {
 // 5. 初始化互動 (請在 main.js 或 app 啟動時呼叫此函式)
 // ========================================================
 export function initStickyBarInteractions() {
-  // 綁定「箭頭按鈕」
   const viewBtn = $("viewCartBtn");
+  
   if (viewBtn) {
-    // 移除舊的監聽器 (防呆)
+    // 移除舊的監聽器 (透過複製節點大法)
     const newBtn = viewBtn.cloneNode(true);
     viewBtn.parentNode.replaceChild(newBtn, viewBtn);
     
+    // 綁定新的點擊事件
     newBtn.addEventListener("click", (e) => {
-      e.stopPropagation(); // 防止冒泡
+      e.stopPropagation(); // 防止事件穿透到後面
+      e.preventDefault();  // 防止按鈕預設行為
       toggleCartSheet();
     });
   }
@@ -396,7 +401,6 @@ export function initStickyBarInteractions() {
   // 綁定「去買單按鈕」
   const submitBtn = $("submitBtnSticky");
   if (submitBtn) {
-    // 移除舊的監聽器
     const newSubmit = submitBtn.cloneNode(true);
     submitBtn.parentNode.replaceChild(newSubmit, submitBtn);
 
@@ -406,10 +410,23 @@ export function initStickyBarInteractions() {
     });
   }
   
-  // 綁定「背景遮罩」點擊關閉 (原本應該有了，再次確保)
+  // 綁定「背景遮罩」點擊關閉
   const backdrop = $("cartSheetBackdrop");
   if (backdrop) {
-      backdrop.addEventListener("click", hideCartSheet);
+      // 移除舊的 (防呆)
+      const newBackdrop = backdrop.cloneNode(true);
+      backdrop.parentNode.replaceChild(newBackdrop, backdrop);
+      
+      newBackdrop.addEventListener("click", (e) => {
+          // 只有點擊遮罩本身才關閉 (防止點到底下的 Sheet 也關掉)
+          if (e.target === newBackdrop) {
+              hideCartSheet();
+          }
+      });
+      // 手機滑動防護
+      newBackdrop.addEventListener("touchmove", (e) => {
+        if (e.target === newBackdrop) e.preventDefault();
+      }, { passive: false });
   }
 }
 
