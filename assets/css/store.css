@@ -57,41 +57,91 @@ body.sp-lock-scroll {
 }
 .sp-sheet.sp-open { transform: translateY(0); }
 
-/* === 拉桿 === */
+/* === 1. 拉桿 (Handle) === */
+/* 優化點：增加頂部間距，使用更柔和的顏色和更細緻的陰影，看起來更有立體感 */
 .sp-handle {
-  width: 48px; height: 5px; background: #dbebe2;
-  border-radius: 10px; margin: 6px auto 4px; flex-shrink: 0;
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); cursor: grab;
+  width: 40px; /* 稍微變窄一點，更優雅 */
+  height: 5px;
+  background: #e0e8e4; /* 使用帶一點點綠色調的淺灰，比純灰更有質感 */
+  border-radius: 10px;
+  margin: 12px auto 8px; /* 增加上方間距，讓它不要貼著頂部邊緣 */
+  flex-shrink: 0;
+  /* 增加一點點內部陰影，製造凹槽感，提升精緻度 */
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
+  cursor: grab;
+  opacity: 0.8;
 }
 
-/* === 標題列 === */
+/* === 2. 標題列容器 (Header) === */
+/* 優化點：移除生硬的底部邊框線，改用更大的 Padding 來創造空間感 */
 .sp-header {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 0 4px 8px; flex-shrink: 0;
-  border-bottom: 1px solid rgba(0,0,0,0.06);
-  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* 增加內距，讓標題有呼吸空間 */
+  padding: 12px 24px 16px; 
+  flex-shrink: 0;
+  /* 🔥 移除這條生硬的線，用空間區隔更有質感 */
+  /* border-bottom: 1px solid rgba(0,0,0,0.06); */
+  margin-bottom: 0; 
 }
 
+/* === 3. 標題文字 (H3) === */
+/* 優化點：微調字體大小，確保與圖標垂直置中對齊 */
 .sp-header h3 {
-  font-size: 18px; font-weight: 700; color: #2f4b3c; letter-spacing: 0.5px;
-  display: flex; align-items: center; margin: 0;
+  font-size: 20px; /* 稍微加大一點氣勢 */
+  font-weight: 700;
+  color: #2f4b3c; /* 維持深綠色主題 */
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center; /* 確保圖標和文字垂直置中 */
+  margin: 0;
 }
 
-/* SVG 圖釘 (修正顯示問題) */
+/* === 4. SVG 圖釘圖標 (Icon) === */
+/* 優化點：調整金色，使其更溫潤，並增加與文字的間距 */
 .sp-header h3::before {
-  content: ""; display: inline-block; width: 24px; height: 24px; margin-right: 6px;
-  background-color: #b8860b; /* 金色 */
+  content: "";
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  margin-right: 10px; /* 增加與文字的距離 */
+  /* 使用更溫潤、更有質感的金色 */
+  background-color: #c49a25; 
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z' clip-rule='evenodd' /%3E%3C/svg%3E") no-repeat center;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z' clip-rule='evenodd' /%3E%3C/svg%3E") no-repeat center;
-  -webkit-mask-size: contain; mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-size: contain;
 }
 
+/* === 5. 關閉按鈕 (Close Button) === */
+/* 優化點：移除顯眼的灰色背景，改用透明背景和主題色圖標，並加入 Hover 效果 */
 .sp-close {
-  font-size: 24px; width: 36px; height: 36px; background: rgba(0,0,0,0.04);
-  border-radius: 50%; border: none; color: #5a7b68; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; /* 圖標稍微大一點 */
+  width: 36px;
+  height: 36px;
+  /* background: rgba(0,0,0,0.04); 🔥 移除這個灰底 */
+  background: transparent; /* 改為透明 */
+  border-radius: 50%;
+  border: none;
+  color: #2f4b3c; /* 使用主題深綠色，比較強烈 */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease; /* 加入過渡效果 */
 }
 
+/* 加入高質感的 Hover 效果 */
+.sp-close:hover {
+  background-color: rgba(47, 75, 60, 0.08); /* 滑鼠移上去時出現淡淡的主題色背景 */
+  color: #1a2e24; /* 顏色變深一點 */
+  transform: scale(1.05); /* 微微放大 */
+}
+
+.sp-close:active {
+  transform: scale(0.95); /* 點擊時微微縮小，增加回饋感 */
+}
 
 /* === 🔥 工具列修正 (強制樣式) === */
 .sp-toolbar {
