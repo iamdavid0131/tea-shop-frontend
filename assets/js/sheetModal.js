@@ -292,6 +292,18 @@ export function initSheetModal() {
   const sheet = $("cartSheet");
   const backdrop = $("cartSheetBackdrop");
   if (!sheet || !backdrop) return;
+  // 🔥 加入捲動監聽 (偵測地圖是否黏頂)
+  sheet.addEventListener("scroll", () => {
+    // 1. 動態計算 Header + Toolbar 的總高度 (這就是黏住的臨界點)
+    const threshold = (header?.offsetHeight || 0) + (toolbar?.offsetHeight || 0);
+    
+    // 2. 判斷捲動距離是否超過臨界點
+    if (sheet.scrollTop > threshold - 5) { // -5 是為了讓反應稍微靈敏一點點
+      mapElement.classList.add("is-stuck");
+    } else {
+      mapElement.classList.remove("is-stuck");
+    }
+  }, { passive: true }); // passive: true 可提升捲動效能
 
   sheet.style.transform = "translateY(100%)"; 
   sheet.style.transition = "transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)";

@@ -23,32 +23,37 @@ body.sp-lock-scroll {
 
 /* === 主面板 === */
 .sp-sheet {
-  position: relative; bottom: 0; left: 0; right: 0;
+  /* 定位與外觀 */
+  position: relative; 
+  bottom: 0; left: 0; right: 0;
   background: rgba(255, 255, 255, 0.94);
   border-radius: 28px 28px 0 0;
   border-top: 1px solid rgba(255, 255, 255, 0.8);
   box-shadow: 0 -10px 40px rgba(90, 123, 104, 0.2);
   backdrop-filter: blur(20px);
-  padding: 12px 20px 0; /* 🔥 修改：底部 padding 改為 0，由內部控制 */
+  z-index: 10000;
+
+  /* 🔥 修正 1：移除 padding，避免 sticky 時上方出現白邊空隙 */
+  /* padding: 12px 20px 0;  <-- 移除這行 */
+  padding: 0; 
   
-  /* 高度設定 */
-  max-height: 85vh; 
-  height: 90vh; 
+  /* 🔥 修正 2：明確的高度設定 */
+  height: 85vh; /* 直接鎖定高度，讓內部可以捲動 */
+  max-height: 85vh;
   
-  /* 動畫與定位 */
+  /* 動畫 */
   transform: translateY(110%);
   transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
   
-  /* 佈局 */
+  /* 🔥 修正 3：捲動核心設定 */
+  overflow-y: auto;        /* 讓這裡產生捲軸 */
+  overscroll-behavior: contain; /* 防止捲到底部時觸發瀏覽器下拉重整 */
+  -webkit-overflow-scrolling: touch; /* iOS 滑順捲動 */
+  
+  /* 佈局 (維持 Flex 可以，但要小心子元素壓縮) */
   display: flex; 
   flex-direction: column; 
-  gap: 12px;
-  
-  /* 🔥 關鍵：雖然外層禁止 touch，但要允許溢出隱藏，避免雙捲軸 */
-  touch-action: pan-y;
-  overflow-y: auto; 
-  z-index: 10000;
-  
+  /* gap: 12px; <-- 建議移除外層 gap，改用 margin 控制，sticky 比較精準 */
 }
 .sp-sheet.sp-open { transform: translateY(0); }
 
