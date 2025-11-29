@@ -195,12 +195,12 @@ function createAIModal() {
     document.body.appendChild(modal);
 
     const closeAction = () => {
-      document.body.style.filter = "none";
-      if (currentAudio) currentAudio.pause();
-      resetSession();
-      modal.classList.remove("show");
-      setTimeout(() => modal.remove(), 260);
-    };
+    document.body.style.filter = "none";
+    if (currentAudio) currentAudio.pause();
+    
+    modal.classList.remove("show");
+  
+  };
 
     modal.querySelector("#aiClose").onclick = closeAction;
     modal.addEventListener("click", e => {
@@ -281,7 +281,6 @@ function toBase64(file) {
 // ============================================================
 
 function showAIModal() {
-  resetSession();
 
   const modal = createAIModal();
   const chat = modal.querySelector("#aiChat");
