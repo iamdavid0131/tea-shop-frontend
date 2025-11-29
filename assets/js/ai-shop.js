@@ -975,6 +975,13 @@ window.drawTeaCard = async function(title, text, preGeneratedUrl = null) {
   loadingBubble.innerHTML = `<div style="color:#fff; font-size:1.5rem;">🍌 阿興師正在磨墨畫圖...</div>`;
   document.body.appendChild(loadingBubble);
 
+  try {
+    await document.fonts.load('60px "Zen Kurenaido"');
+    console.log("✅ 手寫字體載入完成");
+  } catch (e) {
+    console.warn("⚠️ 字體載入超時，將使用系統預設字體");
+  }
+
   let bgSrc = preGeneratedUrl;
 
   // 2. 如果沒有預先生成的圖，才呼叫後端 API 現場生成
@@ -1038,44 +1045,48 @@ window.drawTeaCard = async function(title, text, preGeneratedUrl = null) {
 
   // === 以下繪圖樣式保持不變 ===
 
-  // 金色雙框
-  ctx.strokeStyle = "#D4AF37";
-  ctx.lineWidth = 12;
-  ctx.strokeRect(40, 40, width - 80, height - 80);
-  ctx.strokeStyle = "rgba(255,255,255,0.85)";
-  ctx.lineWidth = 6;
-  ctx.strokeRect(60, 60, width - 120, height - 120);
-
-  // 標題
-  ctx.fillStyle = "#2F4B3C";
-  ctx.font = "bold 64px 'Noto Serif TC', serif";
+  // --- 標題 ---
+  // 🔥 改用 Zen Kurenaido 字體
+  ctx.font = "bold 80px 'Zen Kurenaido', sans-serif"; 
   ctx.textAlign = "center";
-  
-  // 標題陰影增強可讀性
-  ctx.shadowColor = "rgba(255,255,255,0.8)";
-  ctx.shadowBlur = 10;
-  ctx.fillText(title, width / 2, 180);
-  ctx.shadowBlur = 0; // 重置
+  ctx.textBaseline = "middle";
 
-  // 分隔線
+  const titleX = width / 2;
+  const titleY = 200;
+
+  // 標題白色粗描邊
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.9)";
+  ctx.lineWidth = 12;
+  ctx.lineJoin = "round";
+  ctx.strokeText(title, titleX, titleY);
+
+  // 標題深色字
+  ctx.fillStyle = "#1a3c2b"; // 深綠
+  ctx.shadowColor = "rgba(0,0,0,0.2)";
+  ctx.shadowBlur = 5;
+  ctx.fillText(title, titleX, titleY);
+  ctx.shadowBlur = 0;
+
+  // 裝飾線
   ctx.beginPath();
-  ctx.moveTo(width / 2 - 120, 220);
-  ctx.lineTo(width / 2 + 120, 220);
-  ctx.strokeStyle = "rgba(255,255,255,0.8)";
-  ctx.lineWidth = 3;
+  ctx.moveTo(width / 2 - 100, 260);
+  ctx.lineTo(width / 2 + 100, 260);
+  ctx.strokeStyle = "#888";
+  ctx.lineWidth = 2;
   ctx.stroke();
 
-  // 內文 (自動換行)
-  ctx.fillStyle = "#1a1a1a";
-  ctx.font = "36px 'Noto Serif TC', serif";
+  // --- 內文 (詩) ---
+  // 🔥 改用 Zen Kurenaido 字體，字號稍微加大，因為手寫體通常視覺比較小
+  ctx.font = "50px 'Zen Kurenaido', sans-serif"; 
   ctx.textAlign = "center";
-  
-  ctx.shadowColor = "rgba(255,255,255, 1)";
-  ctx.shadowBlur = 15;
+  ctx.fillStyle = "#222"; 
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+  ctx.lineWidth = 6;
+  ctx.lineJoin = "round";
 
-  const maxWidth = 700;
-  const lineHeight = 55;
-  let y = 320;
+  const maxWidth = 720;
+  const lineHeight = 80; // 行距拉開一點，手寫體比較舒服
+  let y = 380;
   const chars = text.replace(/\n/g, "").split(""); 
   let line = "";
 
@@ -1083,6 +1094,8 @@ window.drawTeaCard = async function(title, text, preGeneratedUrl = null) {
     const testLine = line + chars[i];
     const metrics = ctx.measureText(testLine);
     if (metrics.width > maxWidth) {
+      // 先描邊再填色
+      ctx.strokeText(line, width / 2, y);
       ctx.fillText(line, width / 2, y);
       line = chars[i];
       y += lineHeight;
@@ -1090,14 +1103,19 @@ window.drawTeaCard = async function(title, text, preGeneratedUrl = null) {
       line = testLine;
     }
   }
+  ctx.strokeText(line, width / 2, y);
   ctx.fillText(line, width / 2, y);
-  
-  ctx.shadowBlur = 0; // 重置陰影
 
-  // 落款
+  // --- 落款 ---
+  // 🔥 改用 Zen Kurenaido
+  ctx.font = "50px 'Zen Kurenaido', sans-serif";
+  
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+  ctx.lineWidth = 5;
+  ctx.strokeText("—— 祥興茶行", width / 2, height - 200);
+
   ctx.fillStyle = "#b8860b";
-  ctx.font = "bold 40px 'Noto Serif TC', serif";
-  ctx.fillText("—— 祥興茶行", width / 2, height - 180);
+  ctx.fillText("—— 祥興茶行", width / 2, height - 200);
 
   // 移除 Loading
   loadingBubble.remove();
