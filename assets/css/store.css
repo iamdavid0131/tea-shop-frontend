@@ -75,6 +75,7 @@ body.sp-lock-scroll {
 /* === 2. 標題列容器 (Header) === */
 /* 優化點：移除生硬的底部邊框線，改用更大的 Padding 來創造空間感 */
 .sp-header {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -84,6 +85,18 @@ body.sp-lock-scroll {
   /* 🔥 移除這條生硬的線，用空間區隔更有質感 */
   /* border-bottom: 1px solid rgba(0,0,0,0.06); */
   margin-bottom: 0; 
+}
+.sp-header::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px; /* 設定高度為 1px */
+  background-color: rgba(0, 0, 0, 0.08); /* 很淡的灰色，不刺眼 */
+  transform: scaleY(0.5); /* 🔥 魔法：壓縮成 0.5px，在手機上看會超細緻 */
+  transform-origin: bottom;
+  width: 100%;
 }
 
 /* === 3. 標題文字 (H3) === */
