@@ -167,6 +167,7 @@ body.sp-lock-scroll {
   width: 100% !important;            /* 容器本身也要滿寬 */
   box-sizing: border-box;
   flex-shrink: 0;
+  padding: 20px 20px 12px 20px;
 }
 
 /* 強制指定工具列內的輸入框樣式 */
