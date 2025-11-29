@@ -23,7 +23,7 @@ body.sp-lock-scroll {
 
 /* === 主面板 === */
 .sp-sheet {
-  position: absolute; bottom: 0; left: 0; right: 0;
+  position: relative; bottom: 0; left: 0; right: 0;
   background: rgba(255, 255, 255, 0.94);
   border-radius: 28px 28px 0 0;
   border-top: 1px solid rgba(255, 255, 255, 0.8);
@@ -32,7 +32,7 @@ body.sp-lock-scroll {
   padding: 12px 20px 0; /* 🔥 修改：底部 padding 改為 0，由內部控制 */
   
   /* 高度設定 */
-  max-height: 90vh; 
+  max-height: 85vh; 
   height: 90vh; 
   
   /* 動畫與定位 */
@@ -46,8 +46,9 @@ body.sp-lock-scroll {
   
   /* 🔥 關鍵：雖然外層禁止 touch，但要允許溢出隱藏，避免雙捲軸 */
   touch-action: pan-y;
-  overflow: hidden; 
+  overflow-y: auto; 
   z-index: 10000;
+  
 }
 .sp-sheet.sp-open { transform: translateY(0); }
 
@@ -97,6 +98,7 @@ body.sp-lock-scroll {
   margin-bottom: 16px;
   width: 100% !important;            /* 容器本身也要滿寬 */
   box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 /* 強制指定工具列內的輸入框樣式 */
@@ -195,35 +197,49 @@ body.sp-lock-scroll {
   box-shadow: inset 0 2px 6px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03);
   z-index: 1;
   touch-action: pan-x pan-y !important;
+  position: -webkit-sticky; /* Safari 支援 */
+  position: sticky;
+  top: 0;           /* 當捲動到頂部時，停留在距離頂部 0px 的位置 */
+  z-index: 10;      /* 確保地圖蓋在列表上方，或確保層級正確 */
+  
+  /* 選用：加個陰影讓層次更明顯 */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 /* === 搜尋結果 === */
 .sp-scroll {
-  /* 🔥 1. 確保佔滿剩餘空間 */
-  flex: 1;
-  min-height: 0; /* 防止 Flex 子元素溢出問題 */
+  /* 🛑 1. 關鍵修改：取消內部捲動 */
+  /* 因為現在是讓外層 (.sp-sheet) 捲動，這裡必須讓內容自然撐開 */
+  overflow-y: visible !important; 
+  height: auto !important;      
+  flex: none; /* 取消 flex 伸縮，避免被壓縮 */
+
+  /* 🗑️ 2. 移除不再需要的捲動設定 (這些現在由 sp-sheet 負責) */
+  /* overscroll-behavior: contain; */
+  /* -webkit-overflow-scrolling: touch; */
+  /* touch-action: pan-y !important; */
   
-  /* 🔥 2. 捲動設定 */
-  overflow-y: auto !important;
-  overscroll-behavior: contain; /* 捲到底部時不觸發網頁重新整理或背景捲動 */
-  -webkit-overflow-scrolling: touch; /* iOS 慣性捲動 */
-  
-  /* 🔥 3. 復活捲動能力 (覆蓋掉父層的 none) */
-  touch-action: pan-y !important;
-  
-  /* 🔥 4. 排版與間距 */
+  /* 🎨 3. 排版調整 */
   margin-top: 8px;
-  padding-right: 4px; /* 預留捲軸空間 */
+  padding-right: 0; /* 不需要預留捲軸空間了，因為捲軸在外層 */
   
-  /* 🔥 5. 解決被 Sticky Bar 擋住的問題 */
-  /* 加大底部內距，讓最後一個項目可以被滑到視窗中間 */
+  /* 🔥 4. 底部留白 (保留，這很重要) */
+  /* 讓列表最後一項能滑上來，不會被 Sheet 底部或手機 Home Bar 擋住 */
   padding-bottom: 100px !important; 
   
-  /* 確保內容寬度正確 */
+  /* 確保寬度 */
   width: 100%;
   box-sizing: border-box;
 }
 #sp-results { display: flex; flex-direction: column; }
+/* 隱藏外層 Scrollbar 但保留功能 (美觀考量) */
+.sp-sheet::-webkit-scrollbar {
+  width: 6px;
+}
+.sp-sheet::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.2);
+  border-radius: 3px;
+}
 
 .sp-item {
   padding: 16px 14px; margin-bottom: 8px; border-radius: 14px;

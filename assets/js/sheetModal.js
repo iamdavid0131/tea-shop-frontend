@@ -301,6 +301,7 @@ export function initSheetModal() {
   backdrop.addEventListener("touchmove", (e) => {
     if (e.target === backdrop) e.preventDefault();
   }, { passive: false });
+  enableSmartSheetControl();
 }
 
 // ========================================================
