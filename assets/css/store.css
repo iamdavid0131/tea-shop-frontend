@@ -24,7 +24,7 @@ body.sp-lock-scroll {
 /* === 主面板 === */
 .sp-sheet {
   /* 定位與外觀 */
-  position: relative; 
+  position: fixed; 
   bottom: 0; left: 0; right: 0;
   background: rgba(255, 255, 255, 0.94);
   border-radius: 28px 28px 0 0;
