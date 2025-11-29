@@ -38,8 +38,8 @@ body.sp-lock-scroll {
   padding: 0; 
   
   /* 🔥 修正 2：明確的高度設定 */
-  height: 95vh; /* 直接鎖定高度，讓內部可以捲動 */
-  max-height: 95vh;
+  height: 75vh; /* 直接鎖定高度，讓內部可以捲動 */
+  max-height: 75vh;
   
   /* 動畫 */
   transform: translateY(110%);
